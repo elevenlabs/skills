@@ -61,7 +61,7 @@ const client = new ElevenLabsClient();
 
 const audioStream = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   text: "Streaming audio in JavaScript.",
-  model_id: "eleven_flash_v2_5",
+  modelId: "eleven_flash_v2_5",
 });
 
 // Write to file
@@ -93,7 +93,7 @@ async def stream_tts():
 
     async with websockets.connect(
         uri,
-        extra_headers={"xi-api-key": os.environ["ELEVEN_API_KEY"]}
+        extra_headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"]}
     ) as ws:
         # Initialize stream
         await ws.send(json.dumps({

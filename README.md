@@ -21,7 +21,7 @@ npx skills add elevenlabs/skills
 All skills require an ElevenLabs API key. Set it as an environment variable:
 
 ```bash
-export ELEVEN_API_KEY="your-api-key"
+export ELEVENLABS_API_KEY="your-api-key"
 ```
 
 Get your API key from the [ElevenLabs dashboard](https://elevenlabs.io/app/settings/api-keys).

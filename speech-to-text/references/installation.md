@@ -15,8 +15,8 @@ from elevenlabs import ElevenLabs
 client = ElevenLabs(api_key="your-api-key")
 
 # Option 2: Environment variable (recommended)
-# Set ELEVEN_API_KEY in your environment
-client = ElevenLabs()  # Automatically reads ELEVEN_API_KEY
+# Set ELEVENLABS_API_KEY in your environment
+client = ElevenLabs()  # Automatically reads ELEVENLABS_API_KEY
 ```
 
 ## JavaScript / TypeScript
@@ -34,7 +34,7 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 const client = new ElevenLabsClient({ apiKey: "your-api-key" });
 
 // Option 2: Environment variable (recommended)
-// Set ELEVEN_API_KEY in your environment
+// Set ELEVENLABS_API_KEY in your environment
 const client = new ElevenLabsClient();
 ```
 
@@ -43,16 +43,16 @@ const client = new ElevenLabsClient();
 Set your API key as an environment variable:
 
 ```bash
-export ELEVEN_API_KEY="your-api-key"
+export ELEVENLABS_API_KEY="your-api-key"
 ```
 
 Include in requests:
 
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVEN_API_KEY" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -F "file=@audio.mp3" \
-  -F "model_id=scribe_v1"
+  -F "model_id=scribe_v2"
 ```
 
 ## Getting an API Key
@@ -66,4 +66,4 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 
 | Variable | Description |
 |----------|-------------|
-| `ELEVEN_API_KEY` | Your ElevenLabs API key (required) |
+| `ELEVENLABS_API_KEY` | Your ElevenLabs API key (required) |

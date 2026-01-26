@@ -35,7 +35,7 @@ const client = new ElevenLabsClient();
 
 const result = await client.speechToText.convert({
   file: createReadStream("audio.mp3"),
-  model_id: "scribe_v2",
+  modelId: "scribe_v2",
 });
 
 console.log(result.text);
@@ -45,7 +45,7 @@ console.log(result.text);
 
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVEN_API_KEY" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -F "file=@audio.mp3" \
   -F "model_id=scribe_v2"
 ```
@@ -79,8 +79,8 @@ for word in result.words:
 ```javascript
 const result = await client.speechToText.convert({
   file: createReadStream("audio.mp3"),
-  model_id: "scribe_v2",
-  timestamps_granularity: "word",
+  modelId: "scribe_v2",
+  timestampsGranularity: "word",
 });
 
 for (const word of result.words) {
