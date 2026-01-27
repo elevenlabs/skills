@@ -36,7 +36,7 @@ These skills follow the [Agent Skills specification](https://agentskills.io/spec
 |-------|-------------|
 | [text-to-speech](./text-to-speech) | Convert text to lifelike speech using ElevenLabs' AI voices |
 | [speech-to-text](./speech-to-text) | Transcribe audio files to text with timestamps |
-| [conversational-ai](./conversational-ai) | Build conversational voice AI agents |
+| [agents](./agents) | Build conversational voice AI agents |
 | [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
 
 ## Configuration

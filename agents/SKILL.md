@@ -1,5 +1,5 @@
 ---
-name: conversational-ai
+name: agents
 description: Build conversational voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience.
 ---
 
