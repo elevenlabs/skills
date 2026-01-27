@@ -406,21 +406,359 @@ Common errors:
 
 ## Managing Agents
 
+### List Agents
+
+#### Python
+
 ```python
-# List all agents
 agents = client.conversational_ai.agents.list()
+for agent in agents.agents:
+    print(f"{agent.name}: {agent.agent_id}")
+```
 
-# Get agent details
+#### JavaScript
+
+```javascript
+const agents = await client.conversationalAi.agents.list();
+agents.agents.forEach((agent) => {
+  console.log(`${agent.name}: ${agent.agentId}`);
+});
+```
+
+#### cURL
+
+```bash
+curl -X GET "https://api.elevenlabs.io/v1/convai/agents" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+### Get Agent
+
+#### Python
+
+```python
 agent = client.conversational_ai.agents.get(agent_id="your-agent-id")
+print(f"Name: {agent.name}")
+print(f"Voice: {agent.conversation_config.tts.voice_id}")
+```
 
-# Update agent
+#### JavaScript
+
+```javascript
+const agent = await client.conversationalAi.agents.get("your-agent-id");
+console.log(`Name: ${agent.name}`);
+console.log(`Voice: ${agent.conversationConfig.tts.voiceId}`);
+```
+
+#### cURL
+
+```bash
+curl -X GET "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+### Update Agent
+
+Update any agent configuration after creation. Only include the fields you want to change - all other settings remain unchanged.
+
+#### Python
+
+```python
+# Update basic settings
 client.conversational_ai.agents.update(
     agent_id="your-agent-id",
-    name="Updated Name"
+    name="Updated Assistant Name"
 )
 
-# Delete agent
+# Update conversation config
+client.conversational_ai.agents.update(
+    agent_id="your-agent-id",
+    conversation_config={
+        "agent": {
+            "first_message": "Welcome back! How can I assist you?",
+            "language": "en"
+        },
+        "tts": {
+            "voice_id": "EXAVITQu4vr4xnSDxMaL",
+            "model_id": "eleven_flash_v2_5"
+        },
+        "turn": {
+            "mode": "server_vad",
+            "silence_threshold_ms": 600
+        }
+    }
+)
+
+# Update prompt and LLM settings
+client.conversational_ai.agents.update(
+    agent_id="your-agent-id",
+    prompt={
+        "prompt": "You are an updated assistant with new instructions.",
+        "llm": "claude-3-5-sonnet",
+        "temperature": 0.8,
+        "max_tokens": 600
+    }
+)
+
+# Update tools
+client.conversational_ai.agents.update(
+    agent_id="your-agent-id",
+    tools=[
+        {
+            "type": "webhook",
+            "name": "check_inventory",
+            "description": "Check product inventory",
+            "webhook": {
+                "url": "https://api.example.com/inventory",
+                "method": "GET"
+            },
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "string", "description": "Product ID"}
+                },
+                "required": ["product_id"]
+            }
+        },
+        {"type": "system", "name": "end_call"}
+    ]
+)
+
+# Update platform settings
+client.conversational_ai.agents.update(
+    agent_id="your-agent-id",
+    platform_settings={
+        "auth": {
+            "enable_auth": True,
+            "allowlist": ["https://myapp.com", "https://staging.myapp.com"]
+        },
+        "call_limits": {
+            "max_call_duration_secs": 1200,
+            "max_concurrent_calls": 20
+        },
+        "privacy": {
+            "record_conversation": True,
+            "retention_days": 90
+        }
+    }
+)
+
+# Full update - combine multiple sections
+client.conversational_ai.agents.update(
+    agent_id="your-agent-id",
+    name="Production Assistant",
+    conversation_config={
+        "agent": {"first_message": "Hello! I'm your production assistant."},
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}
+    },
+    prompt={
+        "prompt": "You are a production-ready assistant.",
+        "llm": "gpt-4o",
+        "temperature": 0.5
+    },
+    platform_settings={
+        "call_limits": {"max_concurrent_calls": 50}
+    }
+)
+```
+
+#### JavaScript
+
+```javascript
+// Update basic settings
+await client.conversationalAi.agents.update("your-agent-id", {
+  name: "Updated Assistant Name",
+});
+
+// Update conversation config
+await client.conversationalAi.agents.update("your-agent-id", {
+  conversationConfig: {
+    agent: {
+      firstMessage: "Welcome back! How can I assist you?",
+      language: "en",
+    },
+    tts: {
+      voiceId: "EXAVITQu4vr4xnSDxMaL",
+      modelId: "eleven_flash_v2_5",
+    },
+    turn: {
+      mode: "server_vad",
+      silenceThresholdMs: 600,
+    },
+  },
+});
+
+// Update prompt and LLM settings
+await client.conversationalAi.agents.update("your-agent-id", {
+  prompt: {
+    prompt: "You are an updated assistant with new instructions.",
+    llm: "claude-3-5-sonnet",
+    temperature: 0.8,
+    maxTokens: 600,
+  },
+});
+
+// Update tools
+await client.conversationalAi.agents.update("your-agent-id", {
+  tools: [
+    {
+      type: "webhook",
+      name: "check_inventory",
+      description: "Check product inventory",
+      webhook: {
+        url: "https://api.example.com/inventory",
+        method: "GET",
+      },
+      parameters: {
+        type: "object",
+        properties: {
+          product_id: { type: "string", description: "Product ID" },
+        },
+        required: ["product_id"],
+      },
+    },
+    { type: "system", name: "end_call" },
+  ],
+});
+
+// Update platform settings
+await client.conversationalAi.agents.update("your-agent-id", {
+  platformSettings: {
+    auth: {
+      enableAuth: true,
+      allowlist: ["https://myapp.com", "https://staging.myapp.com"],
+    },
+    callLimits: {
+      maxCallDurationSecs: 1200,
+      maxConcurrentCalls: 20,
+    },
+    privacy: {
+      recordConversation: true,
+      retentionDays: 90,
+    },
+  },
+});
+
+// Full update - combine multiple sections
+await client.conversationalAi.agents.update("your-agent-id", {
+  name: "Production Assistant",
+  conversationConfig: {
+    agent: { firstMessage: "Hello! I'm your production assistant." },
+    tts: { voiceId: "JBFqnCBsd6RMkjVDRZzb" },
+  },
+  prompt: {
+    prompt: "You are a production-ready assistant.",
+    llm: "gpt-4o",
+    temperature: 0.5,
+  },
+  platformSettings: {
+    callLimits: { maxConcurrentCalls: 50 },
+  },
+});
+```
+
+#### cURL
+
+```bash
+# Update basic settings
+curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Assistant Name"
+  }'
+
+# Update conversation config
+curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "conversation_config": {
+      "agent": {
+        "first_message": "Welcome back! How can I assist you?",
+        "language": "en"
+      },
+      "tts": {
+        "voice_id": "EXAVITQu4vr4xnSDxMaL",
+        "model_id": "eleven_flash_v2_5"
+      },
+      "turn": {
+        "mode": "server_vad",
+        "silence_threshold_ms": 600
+      }
+    }
+  }'
+
+# Update prompt and LLM settings
+curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": {
+      "prompt": "You are an updated assistant with new instructions.",
+      "llm": "claude-3-5-sonnet",
+      "temperature": 0.8,
+      "max_tokens": 600
+    }
+  }'
+
+# Full update - combine multiple sections
+curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production Assistant",
+    "conversation_config": {
+      "agent": {"first_message": "Hello! I am your production assistant."},
+      "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}
+    },
+    "prompt": {
+      "prompt": "You are a production-ready assistant.",
+      "llm": "gpt-4o",
+      "temperature": 0.5
+    },
+    "platform_settings": {
+      "call_limits": {"max_concurrent_calls": 50}
+    }
+  }'
+```
+
+#### Updatable Fields
+
+| Section | Fields |
+|---------|--------|
+| Root | `name` |
+| `conversation_config.agent` | `first_message`, `language`, `max_tokens_agent_response` |
+| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `optimize_streaming_latency` |
+| `conversation_config.asr` | `model_id`, `keyterms` |
+| `conversation_config.turn` | `mode`, `silence_threshold_ms`, `interrupt_sensitivity` |
+| `prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `tools_strict_mode`, `custom_llm` |
+| `tools` | Array of webhook, client, or system tools (replaces existing tools) |
+| `platform_settings.auth` | `enable_auth`, `allowlist` |
+| `platform_settings.privacy` | `record_conversation`, `retention_days` |
+| `platform_settings.call_limits` | `max_call_duration_secs`, `max_concurrent_calls` |
+
+See [Agent Configuration](references/agent-configuration.md) for complete field documentation.
+
+### Delete Agent
+
+#### Python
+
+```python
 client.conversational_ai.agents.delete(agent_id="your-agent-id")
+```
+
+#### JavaScript
+
+```javascript
+await client.conversationalAi.agents.delete("your-agent-id");
+```
+
+#### cURL
+
+```bash
+curl -X DELETE "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY"
 ```
 
 ## References
