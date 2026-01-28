@@ -5,13 +5,11 @@ description: Convert text to speech using ElevenLabs voice AI. Use when generati
 
 # ElevenLabs Text-to-Speech
 
-Generate natural speech from text with ElevenLabs - supports 74+ languages, multiple models for quality vs latency tradeoffs.
+Generate natural speech from text - supports 74+ languages, multiple models for quality vs latency tradeoffs.
 
-> **Before you start:** See [Installation Guide](references/installation.md) for SDK setup. For JavaScript, always use the `@elevenlabs/*` packages - never `npm install elevenlabs` (outdated) or `@11labs/*` (deprecated).
+> **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
 ## Quick Start
-
-### Python
 
 ```python
 from elevenlabs import ElevenLabs
@@ -29,35 +27,27 @@ with open("output.mp3", "wb") as f:
         f.write(chunk)
 ```
 
-### JavaScript
+<details>
+<summary>JavaScript / cURL examples</summary>
 
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { createWriteStream } from "fs";
 
 const client = new ElevenLabsClient();
-
 const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   text: "Hello, welcome to ElevenLabs!",
   modelId: "eleven_multilingual_v2",
 });
-
-const writeStream = createWriteStream("output.mp3");
-audio.pipe(writeStream);
+audio.pipe(createWriteStream("output.mp3"));
 ```
-
-### cURL
 
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Hello, welcome to ElevenLabs!",
-    "model_id": "eleven_multilingual_v2"
-  }' \
-  --output output.mp3
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"text": "Hello!", "model_id": "eleven_multilingual_v2"}' --output output.mp3
 ```
+</details>
 
 ## Models
 
@@ -208,45 +198,14 @@ Common errors:
 
 ## Tracking Costs
 
-Monitor character usage via response headers:
-
-### Python
+Monitor character usage via response headers (`x-character-count`, `request-id`):
 
 ```python
 response = client.text_to_speech.convert.with_raw_response(
-    text="Hello, welcome to ElevenLabs!",
-    voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_multilingual_v2"
+    text="Hello!", voice_id="JBFqnCBsd6RMkjVDRZzb", model_id="eleven_multilingual_v2"
 )
-
 audio = response.parse()
-character_count = response.headers.get("x-character-count")
-request_id = response.headers.get("request-id")
-
-print(f"Characters used: {character_count}")
-```
-
-### JavaScript
-
-```javascript
-const response = await client.textToSpeech.convert.withRawResponse("JBFqnCBsd6RMkjVDRZzb", {
-  text: "Hello, welcome to ElevenLabs!",
-  modelId: "eleven_multilingual_v2",
-});
-
-const audio = response.body;
-const characterCount = response.headers.get("x-character-count");
-const requestId = response.headers.get("request-id");
-
-console.log(`Characters used: ${characterCount}`);
-```
-
-### Response Headers
-
-| Header | Description |
-|--------|-------------|
-| `x-character-count` | Number of characters processed |
-| `request-id` | Unique identifier for the request |
+print(f"Characters used: {response.headers.get('x-character-count')}")
 
 ## References
 

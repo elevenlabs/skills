@@ -5,13 +5,11 @@ description: Transcribe audio to text using ElevenLabs Scribe. Use when converti
 
 # ElevenLabs Speech-to-Text
 
-Transcribe audio to text with Scribe v2 - supports 90+ languages, speaker diarization, and word-level timestamps. Use the batch API for files or the real-time API for live streaming.
+Transcribe audio to text with Scribe v2 - supports 90+ languages, speaker diarization, and word-level timestamps.
 
-> **Before you start:** See [Installation Guide](references/installation.md) for SDK setup. For JavaScript, always use the `@elevenlabs/*` packages - never `npm install elevenlabs` (outdated) or `@11labs/*` (deprecated).
+> **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
 ## Quick Start
-
-### Python
 
 ```python
 from elevenlabs import ElevenLabs
@@ -19,38 +17,31 @@ from elevenlabs import ElevenLabs
 client = ElevenLabs()
 
 with open("audio.mp3", "rb") as audio_file:
-    result = client.speech_to_text.convert(
-        file=audio_file,
-        model_id="scribe_v2"
-    )
+    result = client.speech_to_text.convert(file=audio_file, model_id="scribe_v2")
 
 print(result.text)
 ```
 
-### JavaScript
+<details>
+<summary>JavaScript / cURL examples</summary>
 
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { createReadStream } from "fs";
 
 const client = new ElevenLabsClient();
-
 const result = await client.speechToText.convert({
   file: createReadStream("audio.mp3"),
   modelId: "scribe_v2",
 });
-
 console.log(result.text);
 ```
 
-### cURL
-
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@audio.mp3" \
-  -F "model_id=scribe_v2"
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -F "file=@audio.mp3" -F "model_id=scribe_v2"
 ```
+</details>
 
 ## Models
 
@@ -63,32 +54,13 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 
 Word-level timestamps include type classification and speaker identification:
 
-### Python
-
 ```python
 result = client.speech_to_text.convert(
-    file=audio_file,
-    model_id="scribe_v2",
-    timestamps_granularity="word"
+    file=audio_file, model_id="scribe_v2", timestamps_granularity="word"
 )
 
 for word in result.words:
     print(f"{word.text}: {word.start}s - {word.end}s (type: {word.type})")
-```
-
-### JavaScript
-
-```javascript
-const result = await client.speechToText.convert({
-  file: createReadStream("audio.mp3"),
-  modelId: "scribe_v2",
-  timestampsGranularity: "word",
-});
-
-for (const word of result.words) {
-  console.log(`${word.text}: ${word.start}s - ${word.end}s (type: ${word.type})`);
-}
-```
 
 ## Speaker Diarization
 
@@ -175,41 +147,12 @@ Common errors:
 
 ## Tracking Costs
 
-Monitor usage via response headers:
-
-### Python
+Monitor usage via `request-id` response header:
 
 ```python
-response = client.speech_to_text.convert.with_raw_response(
-    file=audio_file,
-    model_id="scribe_v2"
-)
-
+response = client.speech_to_text.convert.with_raw_response(file=audio_file, model_id="scribe_v2")
 result = response.parse()
-request_id = response.headers.get("request-id")
-
-print(f"Request ID: {request_id}")
-```
-
-### JavaScript
-
-```javascript
-const response = await client.speechToText.convert.withRawResponse({
-  file: createReadStream("audio.mp3"),
-  modelId: "scribe_v2",
-});
-
-const result = response.body;
-const requestId = response.headers.get("request-id");
-
-console.log(`Request ID: ${requestId}`);
-```
-
-### Response Headers
-
-| Header | Description |
-|--------|-------------|
-| `request-id` | Unique identifier for the request |
+print(f"Request ID: {response.headers.get('request-id')}")
 
 ## Real-Time Streaming
 
