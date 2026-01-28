@@ -205,6 +205,118 @@ agent = client.conversational_ai.agents.create(
 )
 ```
 
+## CRUD Operations
+
+### List Agents
+
+```python
+agents = client.conversational_ai.agents.list()
+for agent in agents.agents:
+    print(f"{agent.name}: {agent.agent_id}")
+```
+
+```javascript
+const agents = await client.conversationalAi.agents.list();
+```
+
+```bash
+curl -X GET "https://api.elevenlabs.io/v1/convai/agents" -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+### Get Agent
+
+```python
+agent = client.conversational_ai.agents.get(agent_id="your-agent-id")
+```
+
+```javascript
+const agent = await client.conversationalAi.agents.get("your-agent-id");
+```
+
+```bash
+curl -X GET "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+### Update Agent
+
+Only include fields you want to change. All other settings remain unchanged.
+
+**Python:**
+```python
+# Update name
+client.conversational_ai.agents.update(agent_id="id", name="New Name")
+
+# Update conversation config
+client.conversational_ai.agents.update(agent_id="id", conversation_config={
+    "agent": {"first_message": "Welcome back!"},
+    "tts": {"voice_id": "EXAVITQu4vr4xnSDxMaL", "model_id": "eleven_flash_v2_5"}
+})
+
+# Update prompt/LLM
+client.conversational_ai.agents.update(agent_id="id", prompt={
+    "prompt": "New instructions.", "llm": "claude-3-5-sonnet", "temperature": 0.8
+})
+
+# Update tools (replaces existing)
+client.conversational_ai.agents.update(agent_id="id", tools=[
+    {"type": "webhook", "name": "check_inventory", ...},
+    {"type": "system", "name": "end_call"}
+])
+
+# Update platform settings
+client.conversational_ai.agents.update(agent_id="id", platform_settings={
+    "auth": {"enable_auth": True, "allowlist": ["https://myapp.com"]},
+    "call_limits": {"max_concurrent_calls": 20}
+})
+```
+
+**JavaScript:**
+```javascript
+await client.conversationalAi.agents.update("id", { name: "New Name" });
+await client.conversationalAi.agents.update("id", {
+  conversationConfig: { tts: { voiceId: "EXAVITQu4vr4xnSDxMaL" } }
+});
+await client.conversationalAi.agents.update("id", {
+  prompt: { prompt: "New instructions.", llm: "claude-3-5-sonnet" }
+});
+```
+
+**cURL:**
+```bash
+curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"name": "New Name"}'
+```
+
+#### Updatable Fields
+
+| Section | Fields |
+|---------|--------|
+| Root | `name` |
+| `conversation_config.agent` | `first_message`, `language`, `max_tokens_agent_response` |
+| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `optimize_streaming_latency` |
+| `conversation_config.asr` | `model_id`, `keyterms` |
+| `conversation_config.turn` | `mode`, `silence_threshold_ms`, `interrupt_sensitivity` |
+| `prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `tools_strict_mode`, `custom_llm` |
+| `tools` | Array of tools (replaces existing) |
+| `platform_settings.auth` | `enable_auth`, `allowlist` |
+| `platform_settings.privacy` | `record_conversation`, `retention_days` |
+| `platform_settings.call_limits` | `max_call_duration_secs`, `max_concurrent_calls` |
+
+### Delete Agent
+
+```python
+client.conversational_ai.agents.delete(agent_id="your-agent-id")
+```
+
+```javascript
+await client.conversationalAi.agents.delete("your-agent-id");
+```
+
+```bash
+curl -X DELETE "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
 ## Example Configurations
 
 ### Customer Support Agent
@@ -213,65 +325,16 @@ agent = client.conversational_ai.agents.create(
 agent = client.conversational_ai.agents.create(
     name="Support Agent",
     conversation_config={
-        "agent": {
-            "first_message": "Hi! Thanks for calling TechCorp support. How can I help?",
-            "language": "en"
-        },
-        "tts": {
-            "voice_id": "XB0fDUnXU5powFXDhCwa",
-            "model_id": "eleven_flash_v2_5"
-        },
-        "turn": {
-            "mode": "server_vad",
-            "silence_threshold_ms": 700
-        }
+        "agent": {"first_message": "Hi! Thanks for calling TechCorp support.", "language": "en"},
+        "tts": {"voice_id": "XB0fDUnXU5powFXDhCwa", "model_id": "eleven_flash_v2_5"},
+        "turn": {"mode": "server_vad", "silence_threshold_ms": 700}
     },
     prompt={
-        "prompt": """You are a customer support agent for TechCorp.
-Be helpful, professional, and concise.
-If you can't resolve an issue, offer to transfer to a human agent.""",
-        "llm": "gpt-4o-mini",
-        "temperature": 0.5
+        "prompt": "You are a customer support agent. Be helpful, professional, concise.",
+        "llm": "gpt-4o-mini", "temperature": 0.5
     },
-    tools=[
-        {"type": "system", "name": "end_call"},
-        {"type": "system", "name": "transfer_to_number", "phone_number": "+1234567890"}
-    ],
-    platform_settings={
-        "call_limits": {"max_call_duration_secs": 900}
-    }
-)
-```
-
-### Voice Character
-
-```python
-agent = client.conversational_ai.agents.create(
-    name="Adventure Guide",
-    conversation_config={
-        "agent": {
-            "first_message": "Greetings, brave adventurer! What quest brings you to my domain?",
-            "language": "en"
-        },
-        "tts": {
-            "voice_id": "onwK4e9ZLuTAKqWW03F9",
-            "model_id": "eleven_multilingual_v2",
-            "stability": 0.3,
-            "similarity_boost": 0.8
-        },
-        "turn": {
-            "mode": "server_vad",
-            "silence_threshold_ms": 400
-        }
-    },
-    prompt={
-        "prompt": """You are a wise wizard guide in a fantasy world.
-Speak dramatically and mysteriously.
-Reference magic, quests, and ancient lore.
-Keep responses under 3 sentences for natural conversation flow.""",
-        "llm": "gpt-4o",
-        "temperature": 0.9
-    }
+    tools=[{"type": "system", "name": "end_call"}, {"type": "system", "name": "transfer_to_number", "phone_number": "+1234567890"}],
+    platform_settings={"call_limits": {"max_call_duration_secs": 900}}
 )
 ```
 
@@ -281,27 +344,10 @@ Keep responses under 3 sentences for natural conversation flow.""",
 agent = client.conversational_ai.agents.create(
     name="Quick Assistant",
     conversation_config={
-        "agent": {
-            "first_message": "Hey! What do you need?",
-            "language": "en",
-            "max_tokens_agent_response": 100
-        },
-        "tts": {
-            "voice_id": "JBFqnCBsd6RMkjVDRZzb",
-            "model_id": "eleven_flash_v2_5",
-            "optimize_streaming_latency": 4
-        },
-        "turn": {
-            "mode": "server_vad",
-            "silence_threshold_ms": 300,
-            "interrupt_sensitivity": 0.8
-        }
+        "agent": {"first_message": "Hey! What do you need?", "max_tokens_agent_response": 100},
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5", "optimize_streaming_latency": 4},
+        "turn": {"mode": "server_vad", "silence_threshold_ms": 300, "interrupt_sensitivity": 0.8}
     },
-    prompt={
-        "prompt": "You are a fast, efficient assistant. Give very brief answers.",
-        "llm": "gpt-4o-mini",
-        "temperature": 0.3,
-        "max_tokens": 100
-    }
+    prompt={"prompt": "Fast, efficient assistant. Brief answers.", "llm": "gpt-4o-mini", "temperature": 0.3, "max_tokens": 100}
 )
 ```
