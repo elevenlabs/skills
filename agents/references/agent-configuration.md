@@ -207,7 +207,43 @@ agent = client.conversational_ai.agents.create(
 
 ## CRUD Operations
 
-### List Agents
+### Using CLI (Recommended)
+
+```bash
+# Initialize project
+elevenlabs agents init
+
+# Create agent from template
+elevenlabs agents add "My Agent" --template default
+elevenlabs agents add "Support Bot" --template customer-service
+
+# List agents
+elevenlabs agents list
+
+# Check status
+elevenlabs agents status
+
+# Push local changes to platform
+elevenlabs agents push
+elevenlabs agents push --dry-run    # Preview changes first
+
+# Import agents from platform
+elevenlabs agents pull                      # Import all
+elevenlabs agents pull --agent <agent-id>   # Import specific agent
+elevenlabs agents pull --update             # Override local configs
+
+# View available templates
+elevenlabs agents templates list
+elevenlabs agents templates show <template-name>
+
+# Add tools
+elevenlabs agents tools add "API Tool" --type webhook --config-path ./config.json
+
+# Generate widget code
+elevenlabs agents widget <agent-id>
+```
+
+### SDK: List Agents
 
 ```python
 agents = client.conversational_ai.agents.list()
@@ -223,7 +259,7 @@ const agents = await client.conversationalAi.agents.list();
 curl -X GET "https://api.elevenlabs.io/v1/convai/agents" -H "xi-api-key: $ELEVENLABS_API_KEY"
 ```
 
-### Get Agent
+### SDK: Get Agent
 
 ```python
 agent = client.conversational_ai.agents.get(agent_id="your-agent-id")
@@ -237,7 +273,7 @@ const agent = await client.conversationalAi.agents.get("your-agent-id");
 curl -X GET "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
 ```
 
-### Update Agent
+### SDK: Update Agent
 
 Only include fields you want to change. All other settings remain unchanged.
 
@@ -303,7 +339,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `platform_settings.privacy` | `record_conversation`, `retention_days` |
 | `platform_settings.call_limits` | `max_call_duration_secs`, `max_concurrent_calls` |
 
-### Delete Agent
+### SDK: Delete Agent
 
 ```python
 client.conversational_ai.agents.delete(agent_id="your-agent-id")
@@ -315,6 +351,18 @@ await client.conversationalAi.agents.delete("your-agent-id");
 
 ```bash
 curl -X DELETE "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+## CI/CD Integration
+
+Use the CLI in your deployment pipeline:
+
+```bash
+# Set API key as environment variable
+export ELEVENLABS_API_KEY="your-api-key"
+
+# Push changes (non-interactive)
+elevenlabs agents push
 ```
 
 ## Example Configurations

@@ -7,9 +7,29 @@ description: Build voice AI agents with ElevenLabs. Use when creating voice assi
 
 Build voice AI agents with natural conversations, multiple LLM providers, custom tools, and easy web embedding.
 
-> **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
+> **Setup:** See [Installation Guide](references/installation.md) for CLI and SDK setup.
 
-## Quick Start
+## Quick Start with CLI
+
+The ElevenLabs CLI is the recommended way to create and manage agents:
+
+```bash
+# Install CLI and authenticate
+npm install -g @elevenlabs/cli
+elevenlabs auth login
+
+# Initialize project and create an agent
+elevenlabs agents init
+elevenlabs agents add "My Assistant" --template default
+
+# Push to ElevenLabs platform
+elevenlabs agents push
+```
+
+**Available templates:** `default`, `minimal`, `voice-only`, `text-only`, `customer-service`, `assistant`
+
+<details>
+<summary>SDK examples (Python / JavaScript / cURL)</summary>
 
 ```python
 from elevenlabs import ElevenLabs
@@ -29,9 +49,6 @@ agent = client.conversational_ai.agents.create(
     }
 )
 ```
-
-<details>
-<summary>JavaScript / cURL examples</summary>
 
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
@@ -138,6 +155,40 @@ See [Widget Embedding Reference](references/widget-embedding.md) for all options
 
 ## Managing Agents
 
+### Using CLI (Recommended)
+
+```bash
+# List agents and check status
+elevenlabs agents list
+elevenlabs agents status
+
+# Import agents from platform to local config
+elevenlabs agents pull                      # Import all agents
+elevenlabs agents pull --agent <agent-id>   # Import specific agent
+
+# Push local changes to platform
+elevenlabs agents push              # Upload configurations
+elevenlabs agents push --dry-run    # Preview changes first
+
+# Add tools to agents
+elevenlabs agents tools add "Weather API" --type webhook --config-path ./weather.json
+```
+
+### Project Structure
+
+The CLI creates a project structure for managing agents:
+
+```
+your_project/
+├── agents.json       # Agent definitions
+├── tools.json        # Tool configurations
+├── agent_configs/    # Individual agent configs
+└── tool_configs/     # Individual tool configs
+```
+
+<details>
+<summary>SDK examples (Python / JavaScript / cURL)</summary>
+
 ```python
 # List
 agents = client.conversational_ai.agents.list()
@@ -153,8 +204,9 @@ client.conversational_ai.agents.update(agent_id="your-agent-id",
 # Delete
 client.conversational_ai.agents.delete(agent_id="your-agent-id")
 ```
+</details>
 
-See [Agent Configuration](references/agent-configuration.md) for update examples in JavaScript/cURL and all updatable fields.
+See [Agent Configuration](references/agent-configuration.md) for all configuration options and SDK examples.
 
 ## Error Handling
 

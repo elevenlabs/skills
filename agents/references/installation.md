@@ -1,6 +1,45 @@
 # Installation
 
-## JavaScript / TypeScript
+## CLI (Recommended)
+
+The ElevenLabs CLI is the recommended way to create and manage agents:
+
+```bash
+npm install -g @elevenlabs/cli
+# or
+pnpm add -g @elevenlabs/cli
+# or
+yarn global add @elevenlabs/cli
+```
+
+Requires Node.js 16.0.0 or higher.
+
+### Authentication
+
+```bash
+elevenlabs auth login          # Authenticate with API key
+elevenlabs auth whoami         # Verify current login status
+elevenlabs auth logout         # Remove stored credentials
+```
+
+API keys are securely stored in `~/.agents/api_keys.json`.
+
+### Quick Start
+
+```bash
+# Initialize a new project
+elevenlabs agents init
+
+# Create an agent from template
+elevenlabs agents add "My Assistant" --template default
+
+# Push to ElevenLabs platform
+elevenlabs agents push
+```
+
+## JavaScript / TypeScript SDK
+
+For programmatic access and client-side integration:
 
 ```bash
 npm install @elevenlabs/elevenlabs-js
