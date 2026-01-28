@@ -1,9 +1,9 @@
 ---
 name: agents
-description: Build conversational voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience.
+description: Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience.
 ---
 
-# ElevenLabs Conversational AI
+# ElevenLabs Agents Platform
 
 Build voice AI agents that can have natural conversations - supports multiple LLM providers, custom tools, and easy web embedding. Create customer service bots, voice assistants, interactive characters, and more.
 
