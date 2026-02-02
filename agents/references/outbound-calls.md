@@ -8,54 +8,9 @@ Make outbound phone calls using your ElevenLabs agent via Twilio integration.
 2. A Twilio phone number linked to your agent (obtain `agent_phone_number_id` from ElevenLabs dashboard)
 3. Your ElevenLabs API key
 
-## Making an Outbound Call
+## Basic Usage
 
-### Python
-
-```python
-from elevenlabs import ElevenLabs
-
-client = ElevenLabs()
-
-response = client.conversational_ai.twilio.outbound_call(
-    agent_id="your-agent-id",
-    agent_phone_number_id="your-phone-number-id",
-    to_number="+1234567890"
-)
-
-print(f"Call initiated: {response.conversation_id}")
-print(f"Twilio Call SID: {response.call_sid}")
-```
-
-### JavaScript
-
-```javascript
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-
-const client = new ElevenLabsClient();
-
-const response = await client.conversationalAi.twilio.outboundCall({
-  agentId: "your-agent-id",
-  agentPhoneNumberId: "your-phone-number-id",
-  toNumber: "+1234567890",
-});
-
-console.log(`Call initiated: ${response.conversationId}`);
-console.log(`Twilio Call SID: ${response.callSid}`);
-```
-
-### cURL
-
-```bash
-curl -X POST "https://api.elevenlabs.io/v1/convai/twilio/outbound-call" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent_id": "your-agent-id",
-    "agent_phone_number_id": "your-phone-number-id",
-    "to_number": "+1234567890"
-  }'
-```
+See the [main agents skill](../SKILL.md#outbound-calls) for basic Python, JavaScript, and cURL examples.
 
 ## Request Parameters
 
@@ -160,28 +115,6 @@ const response = await client.conversationalAi.twilio.outboundCall({
 ### Dynamic Variables
 
 Pass custom data to your agent's prompt using `dynamic_variables`. Reference them in your agent's prompt with `{{variable_name}}` syntax.
-
-## Error Handling
-
-```python
-try:
-    response = client.conversational_ai.twilio.outbound_call(
-        agent_id="your-agent-id",
-        agent_phone_number_id="your-phone-number-id",
-        to_number="+1234567890"
-    )
-except Exception as e:
-    print(f"Failed to initiate call: {e}")
-```
-
-Common errors:
-
-| Code | Description |
-|------|-------------|
-| 401 | Invalid API key |
-| 404 | Agent or phone number not found |
-| 422 | Invalid request parameters |
-| 429 | Rate limit exceeded |
 
 ## Complete Example
 
