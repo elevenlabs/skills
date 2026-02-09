@@ -115,6 +115,8 @@ await conversation.startSession({ signedUrl: token });
 
 **Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel), `XB0fDUnXU5powFXDhCwa` (Charlotte)
 
+**TTS models:** `eleven_flash_v2_5` (ultra-low latency), `eleven_turbo_v2_5` (balanced), `eleven_v3_conversational` (optimized for agents)
+
 **Turn-taking modes:** `server_vad` (auto-detect speech end) or `turn_based` (explicit signals)
 
 See [Agent Configuration](references/agent-configuration.md) for all options.

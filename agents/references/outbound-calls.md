@@ -116,6 +116,21 @@ const response = await client.conversationalAi.twilio.outboundCall({
 
 Pass custom data to your agent's prompt using `dynamic_variables`. Reference them in your agent's prompt with `{{variable_name}}` syntax.
 
+Each dynamic variable can include a `sanitize` field for privacy protection:
+
+```python
+"dynamic_variables": [
+    {"name": "customer_name", "value": "John Doe"},
+    {"name": "ssn_last_four", "value": "1234", "sanitize": True}  # Redacted in logs
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Variable name to reference in prompts |
+| `value` | string | Variable value |
+| `sanitize` | bool | Redact value in logs/recordings for privacy |
+
 ## Complete Example
 
 ```python

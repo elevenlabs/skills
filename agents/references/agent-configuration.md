@@ -57,10 +57,12 @@ conversation_config={
 | `stability` | float | 0-1, lower = more expressive |
 | `similarity_boost` | float | 0-1, higher = closer to original voice |
 | `optimize_streaming_latency` | int | 0-4, higher = faster but lower quality |
+| `suggested_audio_tags` | array | Audio style tags for v3 models (max 20 items) |
 
 **Recommended TTS models for real-time:**
 - `eleven_flash_v2_5` - Ultra-low latency (~75ms)
 - `eleven_turbo_v2_5` - Balanced quality/speed
+- `eleven_v3_conversational` - Optimized for conversational agents, supports `suggested_audio_tags`
 
 ### asr (Automatic Speech Recognition)
 
@@ -84,6 +86,7 @@ conversation_config={
 conversation_config={
     "turn": {
         "mode": "server_vad",
+        "turn_model": "turn_v3",
         "silence_threshold_ms": 500,
         "interrupt_sensitivity": 0.5
     }
@@ -93,6 +96,7 @@ conversation_config={
 | Field | Type | Description |
 |-------|------|-------------|
 | `mode` | string | `server_vad` (auto) or `turn_based` (manual) |
+| `turn_model` | string | Turn detection model: `turn_v2` or `turn_v3` (recommended) |
 | `silence_threshold_ms` | int | Silence duration before agent responds |
 | `interrupt_sensitivity` | float | 0-1, how easily user can interrupt |
 
@@ -117,6 +121,7 @@ prompt={
 | `temperature` | float | 0-1, higher = more creative |
 | `max_tokens` | int | Max tokens for LLM response |
 | `tools_strict_mode` | bool | Enforce strict tool parameter validation |
+| `tool_error_handling_mode` | string | How to handle tool errors: `auto`, `summarized`, `passthrough`, `hide` |
 
 ### LLM Providers
 
@@ -182,6 +187,36 @@ platform_settings={
 |-------|------|-------------|
 | `max_call_duration_secs` | int | Max conversation length |
 | `max_concurrent_calls` | int | Max simultaneous conversations |
+
+### guardrails
+
+Add custom guardrails to control agent behavior and content filtering:
+
+```python
+platform_settings={
+    "guardrails": {
+        "custom": [
+            {
+                "name": "no_competitor_mentions",
+                "prompt": "Do not mention or recommend competitor products.",
+                "model": "gpt-4o-mini"
+            },
+            {
+                "name": "pii_protection",
+                "prompt": "Never ask for or repeat social security numbers, credit card numbers, or passwords.",
+                "model": "claude-3-5-haiku"
+            }
+        ]
+    }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `custom` | array | List of custom guardrail configurations (max 20) |
+| `custom[].name` | string | Unique identifier for the guardrail |
+| `custom[].prompt` | string | Instructions defining the guardrail behavior |
+| `custom[].model` | string | LLM model to use for guardrail evaluation |
 
 ## Knowledge Base / RAG
 
@@ -332,8 +367,8 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.agent` | `first_message`, `language`, `max_tokens_agent_response` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `optimize_streaming_latency` |
 | `conversation_config.asr` | `model_id`, `keyterms` |
-| `conversation_config.turn` | `mode`, `silence_threshold_ms`, `interrupt_sensitivity` |
-| `prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `tools_strict_mode`, `custom_llm` |
+| `conversation_config.turn` | `mode`, `turn_model`, `silence_threshold_ms`, `interrupt_sensitivity` |
+| `prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `tools_strict_mode`, `tool_error_handling_mode`, `custom_llm` |
 | `tools` | Array of tools (replaces existing) |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.privacy` | `record_conversation`, `retention_days` |
