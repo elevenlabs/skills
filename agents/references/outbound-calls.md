@@ -116,6 +116,12 @@ const response = await client.conversationalAi.twilio.outboundCall({
 
 Pass custom data to your agent's prompt using `dynamic_variables`. Reference them in your agent's prompt with `{{variable_name}}` syntax.
 
+When assigning dynamic variables, you can use the `sanitize` option to remove sensitive values from tool responses before they are sent to the LLM and transcript, while still allowing variable assignment:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `sanitize` | boolean | `false` | If true, the assignment's value is removed from tool responses before sending to LLM/transcript but still processed for variable assignment |
+
 ## Complete Example
 
 ```python
