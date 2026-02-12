@@ -57,10 +57,12 @@ conversation_config={
 | `stability` | float | 0-1, lower = more expressive |
 | `similarity_boost` | float | 0-1, higher = closer to original voice |
 | `optimize_streaming_latency` | int | 0-4, higher = faster but lower quality |
+| `suggested_audio_tags` | array | Audio tags for v3 models. Array of objects with `tag` (string, 1-2 words like "happy", "excited") and optional `description` (when to use). Max 20 items. |
 
 **Recommended TTS models for real-time:**
 - `eleven_flash_v2_5` - Ultra-low latency (~75ms)
 - `eleven_turbo_v2_5` - Balanced quality/speed
+- `eleven_v3_conversational` - High quality conversational model
 
 ### asr (Automatic Speech Recognition)
 

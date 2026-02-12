@@ -340,6 +340,15 @@ Help the LLM extract correct values:
 
 ### Error Handling
 
+Configure how tool errors are shared with the agent using `tool_error_handling_mode`:
+
+| Mode | Behavior |
+|------|----------|
+| `auto` | ElevenLabs automatically decides how to handle errors |
+| `summarized` | Errors are summarized before being sent to the agent |
+| `passthrough` | Full error details are passed to the agent |
+| `hide` | Errors are hidden from the agent |
+
 Return helpful error messages:
 
 ```javascript
