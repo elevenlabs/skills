@@ -17,7 +17,7 @@ Generate music from text prompts - supports instrumental tracks, songs with lyri
 ### Python
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 

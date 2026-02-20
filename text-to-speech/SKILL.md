@@ -8,7 +8,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 # ElevenLabs Text-to-Speech
 
-Generate natural speech from text - supports 74+ languages, multiple models for quality vs latency tradeoffs.
+Generate natural speech from text - supports 70+ languages, multiple models for quality vs latency tradeoffs.
 
 > **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
@@ -17,7 +17,7 @@ Generate natural speech from text - supports 74+ languages, multiple models for 
 ### Python
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
@@ -58,11 +58,12 @@ curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" 
 
 | Model ID | Languages | Latency | Best For |
 |----------|-----------|---------|----------|
-| `eleven_v3` | 74 | Standard | Highest quality, emotional range |
-| `eleven_multilingual_v2` | 29 | Standard | High quality, most use cases |
+| `eleven_v3` | 70+ | Standard | Highest quality, emotional range |
+| `eleven_multilingual_v2` | 29 | Standard | High quality, long-form content |
 | `eleven_flash_v2_5` | 32 | ~75ms | Ultra-low latency, real-time |
 | `eleven_flash_v2` | English | ~75ms | English-only, fastest |
-| `eleven_turbo_v2_5` | 32 | Low | Balanced quality/speed |
+| `eleven_turbo_v2_5` | 32 | ~250-300ms | Balanced quality/speed |
+| `eleven_turbo_v2` | English | ~250-300ms | English-only, balanced |
 
 ## Voice IDs
 
@@ -99,6 +100,7 @@ audio = client.text_to_speech.convert(
         stability=0.5,
         similarity_boost=0.75,
         style=0.5,
+        speed=1.0,             # 0.25 to 4.0 (default 1.0)
         use_speaker_boost=True
     )
 )
@@ -159,18 +161,24 @@ audio2 = client.text_to_speech.convert(
 |--------|-------------|
 | `mp3_44100_128` | MP3 44.1kHz 128kbps (default) - compressed, good for web/apps |
 | `mp3_44100_192` | MP3 44.1kHz 192kbps (Creator+) - higher quality compressed |
-| `pcm_16000` | Raw uncompressed audio at 16kHz - use for real-time processing |
-| `pcm_22050` | Raw uncompressed audio at 22.05kHz |
-| `pcm_24000` | Raw uncompressed audio at 24kHz - good balance for streaming |
-| `pcm_44100` | Raw uncompressed audio at 44.1kHz (Pro+) - CD quality |
-| `ulaw_8000` | μ-law compressed 8kHz - standard for phone systems (Twilio, telephony) |
+| `mp3_44100_64` | MP3 44.1kHz 64kbps - lower quality, smaller files |
+| `mp3_22050_32` | MP3 22.05kHz 32kbps - smallest MP3 files |
+| `pcm_16000` | Raw PCM 16kHz - use for real-time processing |
+| `pcm_22050` | Raw PCM 22.05kHz |
+| `pcm_24000` | Raw PCM 24kHz - good balance for streaming |
+| `pcm_44100` | Raw PCM 44.1kHz (Pro+) - CD quality |
+| `pcm_48000` | Raw PCM 48kHz (Pro+) - highest quality |
+| `ulaw_8000` | μ-law 8kHz - standard for phone systems (Twilio, telephony) |
+| `alaw_8000` | A-law 8kHz - telephony (alternative to μ-law) |
+| `opus_48000_64` | Opus 48kHz 64kbps - efficient streaming codec |
+| `wav_44100` | WAV 44.1kHz - uncompressed with headers |
 
 ## Streaming
 
-For real-time applications:
+For real-time applications, use the `stream` method (returns audio chunks as they're generated):
 
 ```python
-audio_stream = client.text_to_speech.convert(
+audio_stream = client.text_to_speech.stream(
     text="This text will be streamed as audio.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_flash_v2_5"  # Ultra-low latency

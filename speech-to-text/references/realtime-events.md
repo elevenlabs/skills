@@ -2,7 +2,7 @@
 
 Complete reference for events in real-time speech-to-text streaming.
 
-## Sent Events
+## Sent Events (Client → Server)
 
 ### input_audio_chunk
 
@@ -12,16 +12,18 @@ Send audio data for transcription.
 {
   "message_type": "input_audio_chunk",
   "audio_base_64": "<base64-encoded-pcm-audio>",
+  "commit": false,
   "sample_rate": 16000
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `message_type` | string | Always `"input_audio_chunk"` |
-| `audio_base_64` | string | Base64-encoded PCM audio data |
-| `sample_rate` | number | Sample rate in Hz (8000-48000) |
-| `previous_text` | string | Optional context (first chunk only, max 50 chars) |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message_type` | string | Yes | Always `"input_audio_chunk"` |
+| `audio_base_64` | string | Yes | Base64-encoded PCM audio data |
+| `commit` | boolean | Yes | Whether to commit after this chunk |
+| `sample_rate` | number | No | Sample rate in Hz (8000-48000) |
+| `previous_text` | string | No | Context from prior transcript (first chunk only, max 50 chars) |
 
 ### commit
 
@@ -33,7 +35,9 @@ Finalize the current transcript segment.
 }
 ```
 
-## Received Events
+## Received Events (Server → Client)
+
+All received events use `message_type` as the discriminator field.
 
 ### session_started
 
@@ -41,9 +45,16 @@ Connection established successfully.
 
 ```json
 {
-  "type": "session_started",
-  "session_id": "abc123",
-  "model_id": "scribe_v2_realtime"
+  "message_type": "session_started",
+  "session_id": "0b0a72b57fd743ebbed6555d44836cf2",
+  "config": {
+    "sample_rate": 16000,
+    "audio_format": "pcm_16000",
+    "language_code": "en",
+    "model_id": "scribe_v2_realtime",
+    "commit_strategy": "manual",
+    "include_timestamps": true
+  }
 }
 ```
 
@@ -53,14 +64,14 @@ Interim transcription results, updates frequently as audio is processed.
 
 ```json
 {
-  "type": "partial_transcript",
+  "message_type": "partial_transcript",
   "text": "Hello, how are"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | string | `"partial_transcript"` |
+| `message_type` | string | `"partial_transcript"` |
 | `text` | string | Current partial transcription |
 
 ### committed_transcript
@@ -69,14 +80,14 @@ Final transcription after commit.
 
 ```json
 {
-  "type": "committed_transcript",
+  "message_type": "committed_transcript",
   "text": "Hello, how are you today?"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | string | `"committed_transcript"` |
+| `message_type` | string | `"committed_transcript"` |
 | `text` | string | Finalized transcription |
 
 ### committed_transcript_with_timestamps
@@ -85,11 +96,12 @@ Final transcription with word-level timing. Sent after `committed_transcript` wh
 
 ```json
 {
-  "type": "committed_transcript_with_timestamps",
+  "message_type": "committed_transcript_with_timestamps",
+  "text": "Hello, how are you today?",
+  "language_code": "en",
   "words": [
     {"text": "Hello", "start": 0.0, "end": 0.32, "type": "word"},
-    {"text": ",", "start": 0.32, "end": 0.35, "type": "punctuation"},
-    {"text": " ", "start": 0.35, "end": 0.40, "type": "spacing"},
+    {"text": " ", "start": 0.32, "end": 0.35, "type": "spacing"},
     {"text": "how", "start": 0.40, "end": 0.55, "type": "word"}
   ]
 }
@@ -97,12 +109,15 @@ Final transcription with word-level timing. Sent after `committed_transcript` wh
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | string | `"committed_transcript_with_timestamps"` |
+| `message_type` | string | `"committed_transcript_with_timestamps"` |
+| `text` | string | Full transcription text |
+| `language_code` | string | Detected language code |
 | `words` | array | Word-level timing data |
 | `words[].text` | string | The word or token |
 | `words[].start` | number | Start time in seconds |
 | `words[].end` | number | End time in seconds |
-| `words[].type` | string | `"word"`, `"spacing"`, `"punctuation"`, `"audio_event"` |
+| `words[].type` | string | `"word"`, `"spacing"`, or `"audio_event"` |
+| `words[].speaker_id` | string | Speaker identifier (if diarization enabled) |
 
 ## Error Events
 
@@ -112,9 +127,8 @@ Sent when an error occurs.
 
 ```json
 {
-  "type": "error",
-  "code": "invalid_audio",
-  "message": "Audio format not supported"
+  "message_type": "error",
+  "error": "input_error"
 }
 ```
 
@@ -122,36 +136,34 @@ Sent when an error occurs.
 
 | Code | Description |
 |------|-------------|
-| `authentication_failed` | Invalid API key or token |
+| `auth_error` | Invalid API key or token |
 | `quota_exceeded` | Usage limit reached |
-| `invalid_audio` | Unsupported audio format |
+| `input_error` | Unsupported audio format or invalid input |
 | `rate_limited` | Too many requests |
+| `commit_throttled` | Commits sent too frequently |
 | `session_time_limit_exceeded` | Session exceeded max duration |
 | `unaccepted_terms` | Terms not accepted in dashboard |
 | `resource_exhausted` | Server capacity reached |
-| `transcription_error` | Internal processing error |
+| `queue_overflow` | Server queue capacity reached |
+| `chunk_size_exceeded` | Audio chunk too large |
+| `insufficient_audio_activity` | Not enough speech detected |
+| `transcriber_error` | Internal processing error |
 
 ## Connection Events
 
 ### open
 
-WebSocket connection established.
+WebSocket connection established (standard WebSocket event, not a JSON message).
 
 ### close
 
-WebSocket connection closed.
-
-```json
-{
-  "type": "close",
-  "code": 1000,
-  "reason": "Normal closure"
-}
-```
+WebSocket connection closed (standard WebSocket close frame with code and reason).
 
 ## Event Handling Examples
 
 ### Python
+
+The Python SDK abstracts the wire protocol. You can use `event.type` (not `message_type`) when using the SDK's event objects:
 
 ```python
 async for event in connection:
@@ -165,10 +177,12 @@ async for event in connection:
         for word in event.words:
             print(f"  {word.text}: {word.start}s - {word.end}s")
     elif event.type == "error":
-        print(f"Error: {event.code} - {event.message}")
+        print(f"Error: {event.error}")
 ```
 
 ### JavaScript
+
+The JavaScript SDK uses event names matching the `message_type` values:
 
 ```javascript
 connection.on("session_started", (data) => {
@@ -190,6 +204,6 @@ connection.on("committed_transcript_with_timestamps", (data) => {
 });
 
 connection.on("error", (error) => {
-  console.error("Error:", error.code, error.message);
+  console.error("Error:", error);
 });
 ```

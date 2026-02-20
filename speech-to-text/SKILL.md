@@ -17,7 +17,7 @@ Transcribe audio to text with Scribe v2 - supports 90+ languages, speaker diariz
 ### Python
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
@@ -158,6 +158,7 @@ Monitor usage via `request-id` response header:
 response = client.speech_to_text.convert.with_raw_response(file=audio_file, model_id="scribe_v2")
 result = response.parse()
 print(f"Request ID: {response.headers.get('request-id')}")
+```
 
 ## Real-Time Streaming
 
@@ -172,7 +173,7 @@ A "commit" tells the model to finalize the current segment. You can commit manua
 
 ```python
 import asyncio
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 

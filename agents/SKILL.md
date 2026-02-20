@@ -23,31 +23,34 @@ elevenlabs auth login
 
 # Initialize project and create an agent
 elevenlabs agents init
-elevenlabs agents add "My Assistant" --template default
+elevenlabs agents add "My Assistant" --template complete
 
 # Push to ElevenLabs platform
 elevenlabs agents push
 ```
 
-**Available templates:** `default`, `minimal`, `voice-only`, `text-only`, `customer-service`, `assistant`
+**Available templates:** `complete`, `minimal`, `voice-only`, `text-only`, `customer-service`, `assistant`
 
 ### Python
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
 agent = client.conversational_ai.agents.create(
     name="My Assistant",
     conversation_config={
-        "agent": {"first_message": "Hello! How can I help?", "language": "en"},
+        "agent": {
+            "first_message": "Hello! How can I help?",
+            "language": "en",
+            "prompt": {
+                "prompt": "You are a helpful assistant. Be concise and friendly.",
+                "llm": "gemini-2.0-flash",
+                "temperature": 0.7
+            }
+        },
         "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}
-    },
-    prompt={
-        "prompt": "You are a helpful assistant. Be concise and friendly.",
-        "llm": "gpt-4o-mini",
-        "temperature": 0.7
     }
 )
 ```
@@ -61,10 +64,17 @@ const client = new ElevenLabsClient();
 const agent = await client.conversationalAi.agents.create({
   name: "My Assistant",
   conversationConfig: {
-    agent: { firstMessage: "Hello! How can I help?", language: "en" },
+    agent: {
+      firstMessage: "Hello! How can I help?",
+      language: "en",
+      prompt: {
+        prompt: "You are a helpful assistant.",
+        llm: "gemini-2.0-flash",
+        temperature: 0.7
+      }
+    },
     tts: { voiceId: "JBFqnCBsd6RMkjVDRZzb" }
-  },
-  prompt: { prompt: "You are a helpful assistant.", llm: "gpt-4o-mini", temperature: 0.7 }
+  }
 });
 ```
 
@@ -73,7 +83,7 @@ const agent = await client.conversationalAi.agents.create({
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en"}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}, "prompt": {"prompt": "You are helpful.", "llm": "gpt-4o-mini"}}'
+  -d '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
 
 ## Starting Conversations
@@ -108,31 +118,40 @@ await conversation.startSession({ signedUrl: token });
 
 | Provider | Models |
 |----------|--------|
-| OpenAI | `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-3-5-sonnet`, `claude-3-5-haiku` |
-| Google | `gemini-1.5-pro`, `gemini-1.5-flash` |
+| OpenAI | `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
+| Anthropic | `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
+| Google | `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
+| ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
 
 **Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel), `XB0fDUnXU5powFXDhCwa` (Charlotte)
 
-**Turn-taking modes:** `server_vad` (auto-detect speech end) or `turn_based` (explicit signals)
+**Turn eagerness:** `patient` (waits longer for user to finish), `normal`, or `eager` (responds quickly)
 
 See [Agent Configuration](references/agent-configuration.md) for all options.
 
 ## Tools
 
-Extend agents with webhook, client, or system tools:
+Extend agents with webhook, client, or built-in system tools. Tools are defined inside `conversation_config.agent.prompt`:
 
 ```python
-tools=[
-    # Webhook: server-side API call
-    {"type": "webhook", "name": "get_weather", "description": "Get weather",
-     "webhook": {"url": "https://api.example.com/weather", "method": "POST"},
-     "parameters": {"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}},
-    # System: built-in capabilities
-    {"type": "system", "name": "end_call"},
-    {"type": "system", "name": "transfer_to_number", "phone_number": "+1234567890"}
-]
+"prompt": {
+    "prompt": "You are a helpful assistant that can check the weather.",
+    "llm": "gemini-2.0-flash",
+    "tools": [
+        # Webhook: server-side API call
+        {"type": "webhook", "name": "get_weather", "description": "Get weather",
+         "api_schema": {"url": "https://api.example.com/weather", "method": "POST",
+             "request_body_schema": {"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}}},
+        # Client: runs in the browser
+        {"type": "client", "name": "show_product", "description": "Display a product",
+         "parameters": {"type": "object", "properties": {"productId": {"type": "string"}}, "required": ["productId"]}}
+    ],
+    "built_in_tools": {
+        "end_call": {},
+        "transfer_to_number": {"transfers": [{"transfer_destination": {"type": "phone", "phone_number": "+1234567890"}, "condition": "User asks for human support"}]}
+    }
+}
 ```
 
 **Client tools** run in browser:
@@ -210,8 +229,9 @@ elevenlabs agents pull --agent <agent-id>   # Import specific agent
 elevenlabs agents push              # Upload configurations
 elevenlabs agents push --dry-run    # Preview changes first
 
-# Add tools to agents
-elevenlabs agents tools add "Weather API" --type webhook --config-path ./weather.json
+# Add tools
+elevenlabs tools add-webhook "Weather API"
+elevenlabs tools add-client "UI Tool"
 ```
 
 ### Project Structure
@@ -222,8 +242,10 @@ The CLI creates a project structure for managing agents:
 your_project/
 ├── agents.json       # Agent definitions
 ├── tools.json        # Tool configurations
+├── tests.json        # Test configurations
 ├── agent_configs/    # Individual agent configs
-└── tool_configs/     # Individual tool configs
+├── tool_configs/     # Individual tool configs
+└── test_configs/     # Individual test configs
 ```
 
 ### SDK Examples
@@ -238,7 +260,9 @@ agent = client.conversational_ai.agents.get(agent_id="your-agent-id")
 # Update (partial - only include fields to change)
 client.conversational_ai.agents.update(agent_id="your-agent-id", name="New Name")
 client.conversational_ai.agents.update(agent_id="your-agent-id",
-    prompt={"prompt": "New instructions", "llm": "claude-3-5-sonnet"})
+    conversation_config={
+        "agent": {"prompt": {"prompt": "New instructions", "llm": "claude-sonnet-4"}}
+    })
 
 # Delete
 client.conversational_ai.agents.delete(agent_id="your-agent-id")

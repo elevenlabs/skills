@@ -10,6 +10,23 @@ Extend your agent with custom capabilities. Tools let the agent take actions bey
 | **Client** | Browser-side JavaScript | UI updates, local storage, navigation |
 | **System** | Built-in ElevenLabs | End call, transfer, standard actions |
 
+## Where Tools Live
+
+Tools are defined inside `conversation_config.agent.prompt`. Webhook and client tools go in the `tools` array. System tools go in `built_in_tools`:
+
+```python
+conversation_config={
+    "agent": {
+        "prompt": {
+            "prompt": "You are helpful.",
+            "llm": "gemini-2.0-flash",
+            "tools": [...],            # Webhook and client tools
+            "built_in_tools": {...}     # System tools (end_call, transfer, etc.)
+        }
+    }
+}
+```
+
 ## Webhook Tools
 
 Execute server-side logic when the agent needs external data or actions.
@@ -19,36 +36,41 @@ Execute server-side logic when the agent needs external data or actions.
 ```python
 agent = client.conversational_ai.agents.create(
     name="Weather Assistant",
-    tools=[{
-        "type": "webhook",
-        "name": "get_weather",
-        "description": "Get current weather for a city. Use when user asks about weather.",
-        "webhook": {
-            "url": "https://api.example.com/weather",
-            "method": "POST",
-            "headers": {
-                "Authorization": "Bearer {{API_KEY}}"
+    conversation_config={
+        "agent": {
+            "prompt": {
+                "prompt": "You are a helpful assistant that can check the weather.",
+                "llm": "gemini-2.0-flash",
+                "tools": [{
+                    "type": "webhook",
+                    "name": "get_weather",
+                    "description": "Get current weather for a city. Use when user asks about weather.",
+                    "api_schema": {
+                        "url": "https://api.example.com/weather",
+                        "method": "POST",
+                        "request_headers": {
+                            "Authorization": "Bearer {{API_KEY}}"
+                        },
+                        "request_body_schema": {
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "type": "string",
+                                    "description": "City name, e.g., 'San Francisco'"
+                                },
+                                "units": {
+                                    "type": "string",
+                                    "enum": ["celsius", "fahrenheit"],
+                                    "description": "Temperature units"
+                                }
+                            },
+                            "required": ["city"]
+                        }
+                    }
+                }]
             }
         },
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "description": "City name, e.g., 'San Francisco'"
-                },
-                "units": {
-                    "type": "string",
-                    "enum": ["celsius", "fahrenheit"],
-                    "description": "Temperature units"
-                }
-            },
-            "required": ["city"]
-        }
-    }],
-    prompt={
-        "prompt": "You are a helpful assistant that can check the weather.",
-        "llm": "gpt-4o-mini"
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}
     }
 )
 ```
@@ -94,31 +116,45 @@ Or for structured data:
 ### Webhook with Authentication
 
 ```python
-tools=[{
+# Inside conversation_config.agent.prompt.tools:
+{
     "type": "webhook",
     "name": "lookup_order",
     "description": "Look up order status by order ID",
-    "webhook": {
+    "response_timeout_secs": 10,
+    "api_schema": {
         "url": "https://api.mystore.com/orders/lookup",
         "method": "POST",
-        "headers": {
+        "request_headers": {
             "Authorization": "Bearer {{ORDER_API_KEY}}",
             "X-Store-ID": "store_123"
         },
-        "timeout_ms": 5000
-    },
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "order_id": {
-                "type": "string",
-                "description": "Order ID (e.g., ORD-12345)"
-            }
-        },
-        "required": ["order_id"]
+        "request_body_schema": {
+            "type": "object",
+            "properties": {
+                "order_id": {
+                    "type": "string",
+                    "description": "Order ID (e.g., ORD-12345)"
+                }
+            },
+            "required": ["order_id"]
+        }
     }
-}]
+}
 ```
+
+### Webhook Tool Options
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `response_timeout_secs` | int | `20` | Timeout in seconds (5-120) |
+| `disable_interruptions` | bool | `false` | Prevent user interruptions during tool execution |
+| `execution_mode` | string | `"immediate"` | `immediate`, `post_tool_speech`, or `async` |
+| `tool_call_sound` | string | - | Sound during execution: `typing`, `elevator1`-`elevator4` |
+| `force_pre_tool_speech` | bool | `false` | Force agent to speak before executing tool |
+| `tool_error_handling_mode` | string | `"auto"` | `auto`, `summarized`, `passthrough`, or `hide` |
+
+**Note:** The default `api_schema.method` is `GET`. Always set `"method": "POST"` explicitly for webhook tools that send request bodies.
 
 ### Server Implementation (Node.js)
 
@@ -192,52 +228,63 @@ const conversation = await Conversation.startSession({
 
 ### Registering Client Tools with Agent
 
-Tell the agent about available client tools in the agent config:
+Tell the agent about available client tools in `conversation_config.agent.prompt.tools`:
 
 ```python
 agent = client.conversational_ai.agents.create(
     name="Shopping Assistant",
-    tools=[
-        {
-            "type": "client",
-            "name": "show_product",
-            "description": "Display a product card to the user",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "productId": {
-                        "type": "string",
-                        "description": "Product ID to display"
-                    }
-                },
-                "required": ["productId"]
-            }
-        },
-        {
-            "type": "client",
-            "name": "navigate_to",
-            "description": "Navigate user to a different page",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "page": {
-                        "type": "string",
-                        "enum": ["cart", "checkout", "account", "home"],
-                        "description": "Page to navigate to"
-                    }
-                },
-                "required": ["page"]
-            }
-        }
-    ],
-    prompt={
-        "prompt": """You are a shopping assistant.
+    conversation_config={
+        "agent": {
+            "prompt": {
+                "prompt": """You are a shopping assistant.
 When users want to see a product, use show_product.
 When users want to go somewhere, use navigate_to.""",
-        "llm": "gpt-4o-mini"
+                "llm": "gemini-2.0-flash",
+                "tools": [
+                    {
+                        "type": "client",
+                        "name": "show_product",
+                        "description": "Display a product card to the user",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "productId": {
+                                    "type": "string",
+                                    "description": "Product ID to display"
+                                }
+                            },
+                            "required": ["productId"]
+                        }
+                    },
+                    {
+                        "type": "client",
+                        "name": "navigate_to",
+                        "description": "Navigate user to a different page",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "page": {
+                                    "type": "string",
+                                    "enum": ["cart", "checkout", "account", "home"],
+                                    "description": "Page to navigate to"
+                                }
+                            },
+                            "required": ["page"]
+                        }
+                    }
+                ]
+            }
+        },
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}
     }
 )
 ```
+
+### Client Tool Options
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `expects_response` | bool | `false` | Whether the tool returns data to the agent |
 
 ### Client Tool Return Values
 
@@ -258,18 +305,31 @@ clientTools: {
 
 The agent receives this data and can say: "You have 3 items in your cart totaling $45.99."
 
-## System Tools
+## System Tools (built_in_tools)
 
-Built-in tools provided by ElevenLabs.
+Built-in tools provided by ElevenLabs. These are configured in `conversation_config.agent.prompt.built_in_tools` (not in the `tools` array):
+
+```python
+"built_in_tools": {
+    "end_call": {},
+    "transfer_to_number": {...},
+    "transfer_to_agent": {...},
+    "language_detection": {},
+    "skip_turn": {},
+    "voicemail_detection": {...},
+    "play_keypad_touch_tone": {},
+    "search_documentation": {...}
+}
+```
 
 ### end_call
 
 Ends the current conversation:
 
 ```python
-tools=[
-    {"type": "system", "name": "end_call"}
-]
+"built_in_tools": {
+    "end_call": {}
+}
 ```
 
 The agent can say "Goodbye!" and then end the call programmatically.
@@ -279,14 +339,14 @@ The agent can say "Goodbye!" and then end the call programmatically.
 Transfer to a phone number (requires telephony integration):
 
 ```python
-tools=[
-    {
-        "type": "system",
-        "name": "transfer_to_number",
-        "phone_number": "+1234567890",
-        "description": "Transfer to human support"
+"built_in_tools": {
+    "transfer_to_number": {
+        "transfers": [{
+            "transfer_destination": {"type": "phone", "phone_number": "+1234567890"},
+            "condition": "User asks to speak with a human agent"
+        }]
     }
-]
+}
 ```
 
 ### transfer_to_agent
@@ -294,14 +354,14 @@ tools=[
 Transfer to another ElevenLabs agent:
 
 ```python
-tools=[
-    {
-        "type": "system",
-        "name": "transfer_to_agent",
-        "agent_id": "other-agent-id",
-        "description": "Transfer to sales specialist"
+"built_in_tools": {
+    "transfer_to_agent": {
+        "transfers": [{
+            "agent_id": "other-agent-id",
+            "condition": "User asks about sales"
+        }]
     }
-]
+}
 ```
 
 ## Best Practices
@@ -364,13 +424,18 @@ app.post("/webhook/lookup_order", async (req, res) => {
 
 ### Timeouts
 
-Set reasonable timeouts for webhooks:
+Set reasonable timeouts for webhooks using `response_timeout_secs` (5-120 seconds, default 20):
 
 ```python
-"webhook": {
-    "url": "https://api.example.com/slow-operation",
-    "method": "POST",
-    "timeout_ms": 10000  # 10 seconds
+{
+    "type": "webhook",
+    "name": "slow_operation",
+    "description": "Run a slow operation",
+    "response_timeout_secs": 30,
+    "api_schema": {
+        "url": "https://api.example.com/slow-operation",
+        "method": "POST"
+    }
 }
 ```
 
@@ -379,48 +444,12 @@ Set reasonable timeouts for webhooks:
 ```python
 agent = client.conversational_ai.agents.create(
     name="E-commerce Assistant",
-    tools=[
-        # Webhook: Server-side order lookup
-        {
-            "type": "webhook",
-            "name": "lookup_order",
-            "description": "Look up order status by order ID or email",
-            "webhook": {
-                "url": "https://api.mystore.com/orders/lookup",
-                "method": "POST",
-                "headers": {"Authorization": "Bearer {{API_KEY}}"}
-            },
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "order_id": {"type": "string"},
-                    "email": {"type": "string"}
-                }
-            }
-        },
-        # Client: Browser-side product display
-        {
-            "type": "client",
-            "name": "show_product",
-            "description": "Display product details to the customer",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "product_id": {"type": "string"}
-                },
-                "required": ["product_id"]
-            }
-        },
-        # System: Built-in call control
-        {"type": "system", "name": "end_call"},
-        {
-            "type": "system",
-            "name": "transfer_to_number",
-            "phone_number": "+1234567890"
-        }
-    ],
-    prompt={
-        "prompt": """You are an e-commerce support assistant.
+    conversation_config={
+        "agent": {
+            "first_message": "Hi! How can I help you today?",
+            "language": "en",
+            "prompt": {
+                "prompt": """You are an e-commerce support assistant.
 
 Available actions:
 - lookup_order: Check order status
@@ -429,7 +458,52 @@ Available actions:
 - transfer_to_number: Transfer to human support
 
 Always verify order ID before lookup. Offer transfer for complex issues.""",
-        "llm": "gpt-4o-mini"
+                "llm": "gemini-2.0-flash",
+                "tools": [
+                    # Webhook: Server-side order lookup
+                    {
+                        "type": "webhook",
+                        "name": "lookup_order",
+                        "description": "Look up order status by order ID or email",
+                        "api_schema": {
+                            "url": "https://api.mystore.com/orders/lookup",
+                            "method": "POST",
+                            "request_headers": {"Authorization": "Bearer {{API_KEY}}"},
+                            "request_body_schema": {
+                                "type": "object",
+                                "properties": {
+                                    "order_id": {"type": "string"},
+                                    "email": {"type": "string"}
+                                }
+                            }
+                        }
+                    },
+                    # Client: Browser-side product display
+                    {
+                        "type": "client",
+                        "name": "show_product",
+                        "description": "Display product details to the customer",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "product_id": {"type": "string"}
+                            },
+                            "required": ["product_id"]
+                        }
+                    }
+                ],
+                "built_in_tools": {
+                    "end_call": {},
+                    "transfer_to_number": {
+                        "transfers": [{
+                            "transfer_destination": {"type": "phone", "phone_number": "+1234567890"},
+                            "condition": "User asks for human support"
+                        }]
+                    }
+                }
+            }
+        },
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5"}
     }
 )
 ```

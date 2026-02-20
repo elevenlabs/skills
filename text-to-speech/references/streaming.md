@@ -13,11 +13,11 @@ Stream audio chunks as they're generated for lower latency.
 ## Python Streaming
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
-audio_stream = client.text_to_speech.convert(
+audio_stream = client.text_to_speech.stream(
     text="This is a streaming example with ultra-low latency.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_flash_v2_5"
@@ -43,7 +43,7 @@ def play_stream(audio_stream):
     process.stdin.close()
     process.wait()
 
-audio_stream = client.text_to_speech.convert(
+audio_stream = client.text_to_speech.stream(
     text="Playing this audio in real-time.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_flash_v2_5"

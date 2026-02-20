@@ -49,7 +49,7 @@ pip install elevenlabs
 ```
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 # Option 1: Environment variable (recommended)
 # Set ELEVENLABS_API_KEY in your environment

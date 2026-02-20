@@ -31,7 +31,7 @@ API keys are securely stored in `~/.agents/api_keys.json`.
 elevenlabs agents init
 
 # Create an agent from template
-elevenlabs agents add "My Assistant" --template default
+elevenlabs agents add "My Assistant" --template complete
 
 # Push to ElevenLabs platform
 elevenlabs agents push
@@ -88,7 +88,7 @@ pip install elevenlabs
 ```
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 # Option 1: Environment variable (recommended)
 # Set ELEVENLABS_API_KEY in your environment
@@ -112,7 +112,7 @@ Include in requests via the `xi-api-key` header:
 curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"name": "My Agent", "prompt": {"prompt": "You are helpful.", "llm": "gpt-4o-mini"}}'
+  -d '{"name": "My Agent", "conversation_config": {"agent": {"prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
 
 ## Getting an API Key

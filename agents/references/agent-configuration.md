@@ -21,7 +21,9 @@ agent = client.conversational_ai.agents.create(
         "tts": {...},             # Voice and TTS model settings
         "asr": {...},             # Speech recognition settings
         "turn": {...},            # Turn-taking behavior
-        "conversation": {...}     # Duration, events, monitoring
+        "conversation": {...},    # Duration, events, monitoring
+        "vad": {...},             # Voice activity detection config
+        "language_presets": {...}  # Language-specific overrides
     },
     platform_settings={...}       # Auth, call limits
 )
@@ -53,7 +55,8 @@ conversation_config={
 | `first_message` | string | `""` | What the agent says when conversation starts |
 | `language` | string | `"en"` | ISO 639-1 language code (en, es, fr, etc.) |
 | `disable_first_message_interruptions` | bool | `false` | Prevent user from interrupting the first message |
-| `dynamic_variables` | object | - | Key-value pairs for template variables in prompts |
+| `hinglish_mode` | bool | `false` | When enabled and language is Hindi, agent responds in Hinglish |
+| `dynamic_variables` | object | - | Config with `dynamic_variable_placeholders` containing key-value pairs |
 | `prompt` | object | - | LLM configuration (see prompt section below) |
 
 ### tts (Text-to-Speech)
@@ -179,6 +182,9 @@ conversation_config={
 | `custom_llm` | object | - | Custom LLM endpoint config |
 | `timezone` | string | - | IANA timezone (e.g., `America/New_York`) |
 | `backup_llm_config` | object | - | Fallback LLM configuration |
+| `cascade_timeout_seconds` | number | `8` | Seconds before cascading to backup LLM (2-15) |
+| `mcp_server_ids` | array | - | MCP server IDs to connect |
+| `native_mcp_server_ids` | array | - | Native MCP server IDs |
 | `ignore_default_personality` | bool | - | Skip default personality instructions |
 
 ### LLM Providers
@@ -186,9 +192,9 @@ conversation_config={
 | Provider | Model IDs |
 |----------|-----------|
 | OpenAI | `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-sonnet-4.5`, `claude-sonnet-4`, `claude-haiku-4.5`, `claude-3.7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
+| Anthropic | `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
 | Google | `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
-| ElevenLabs | `glm-4.5-air`, `qwen3-30b-a3b`, `gpt-oss-120b` (hosted, ultra-low latency) |
+| ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
 ### Custom LLM
@@ -204,7 +210,7 @@ conversation_config={
             "custom_llm": {
                 "url": "https://your-llm-endpoint.com/v1/chat/completions",
                 "model_id": "your-model-id",
-                "api_key": "your-api-key",
+                "api_key": {"secret_id": "your-secret-id"},
                 "api_type": "chat_completions"  # or "responses"
             }
         }
@@ -220,12 +226,11 @@ Platform-level configuration for security and limits.
 platform_settings={
     "auth": {
         "enable_auth": True,
-        "allowlist": ["https://example.com"]
+        "allowlist": [{"hostname": "example.com"}]
     },
     "call_limits": {
         "agent_concurrency_limit": 10,
-        "daily_limit": 100,
-        "max_duration_seconds": 600
+        "daily_limit": 100
     }
 }
 ```
@@ -242,10 +247,9 @@ platform_settings={
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `agent_concurrency_limit` | int | Max simultaneous conversations |
-| `daily_limit` | int | Max conversations per day |
-| `max_duration_seconds` | int | Max conversation length in seconds |
-| `bursting_enabled` | bool | Allow exceeding limits at 2x cost |
+| `agent_concurrency_limit` | int | Max simultaneous conversations (default: -1, unlimited) |
+| `daily_limit` | int | Max conversations per day (default: 100000) |
+| `bursting_enabled` | bool | Allow exceeding limits at 2x cost (default: true) |
 
 ### conversation (inside conversation_config)
 
@@ -299,7 +303,7 @@ agent = client.conversational_ai.agents.create(
 elevenlabs agents init
 
 # Create agent from template
-elevenlabs agents add "My Agent" --template default
+elevenlabs agents add "My Agent" --template complete
 elevenlabs agents add "Support Bot" --template customer-service
 
 # List agents
@@ -322,7 +326,8 @@ elevenlabs agents templates list
 elevenlabs agents templates show <template-name>
 
 # Add tools
-elevenlabs agents tools add "API Tool" --type webhook --config-path ./config.json
+elevenlabs tools add-webhook "API Tool"
+elevenlabs tools add-client "UI Tool"
 
 # Generate widget code
 elevenlabs agents widget <agent-id>
@@ -384,7 +389,7 @@ client.conversational_ai.agents.update(agent_id="id", conversation_config={
 
 # Update platform settings
 client.conversational_ai.agents.update(agent_id="id", platform_settings={
-    "auth": {"enable_auth": True, "allowlist": ["https://myapp.com"]}
+    "auth": {"enable_auth": True, "allowlist": [{"hostname": "myapp.com"}]}
 })
 ```
 
@@ -418,7 +423,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
-| `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `max_duration_seconds` |
+| `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
 
 ### SDK: Delete Agent
 

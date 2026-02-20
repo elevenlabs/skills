@@ -30,7 +30,7 @@ ELEVENLABS_API_KEY=<your_api_key_here>
 from dotenv import load_dotenv
 import os
 import asyncio
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 from elevenlabs import RealtimeEvents, RealtimeUrlOptions
 
 load_dotenv()
@@ -117,7 +117,7 @@ import base64
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 from elevenlabs import AudioFormat, CommitStrategy, RealtimeEvents, RealtimeAudioOptions
 from pydub import AudioSegment
 
@@ -292,6 +292,7 @@ wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime
 {
   "message_type": "input_audio_chunk",
   "audio_base_64": "<base64-encoded-audio>",
+  "commit": false,
   "sample_rate": 16000
 }
 ```

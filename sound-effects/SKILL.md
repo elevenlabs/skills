@@ -17,7 +17,7 @@ Generate sound effects from text descriptions — supports looping, custom durat
 ### Python
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 

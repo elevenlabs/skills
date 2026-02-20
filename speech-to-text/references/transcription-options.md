@@ -8,21 +8,27 @@
 | `model_id` | string | Yes | `scribe_v2` (or legacy `scribe_v1`) for batch transcription |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
-| `diarize` | boolean | No | Enable speaker diarization (up to 32 speakers for batch) |
+| `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
 | `num_speakers` | integer | No | Maximum speakers to detect (up to 32 for batch) |
-| `diarization_threshold` | number | No | Tune diarization sensitivity when `diarize=true` |
-| `keyterms` | array | No | Terms to bias transcription (up to 100) |
-| `tag_audio_events` | boolean | No | Detect non-speech sounds (laughter, applause) |
+| `diarization_threshold` | number | No | Tune diarization sensitivity (default: ~0.22; only when `diarize=true` and `num_speakers` is not set) |
+| `keyterms` | array | No | Terms to bias transcription (up to 100 terms; each ≤50 chars, ≤5 words) |
+| `tag_audio_events` | boolean | No | Detect non-speech sounds like laughter, applause (default: `true`) |
 | `entity_detection` | string or array | No | Detect entities (e.g., `pii`, `phi`, `pci`, `offensive_language`) |
-| `use_multi_channel` | boolean | No | Split multichannel audio into separate transcripts |
-| `cloud_storage_url` | string | No | HTTPS URL to transcribe instead of uploading a file |
-| `webhook` | boolean | No | Process async and send result to webhook |
-| `webhook_metadata` | string or object | No | Custom metadata included in webhook responses |
+| `use_multi_channel` | boolean | No | Split multichannel audio into separate transcripts (default: `false`; max 5 channels, max 1 hour) |
+| `cloud_storage_url` | string | No | HTTPS URL to transcribe instead of uploading a file (max 2GB) |
+| `webhook` | boolean | No | Process async and send result to webhook (default: `false`) |
+| `webhook_id` | string | No | Target specific webhook (only when `webhook=true`) |
+| `webhook_metadata` | string or object | No | Custom metadata included in webhook responses (max 16KB) |
+| `temperature` | double | No | Output randomness (0.0-2.0); defaults vary by model |
+| `seed` | integer | No | Deterministic output (0-2147483647); same seed = same result |
+| `additional_formats` | array | No | Export transcript as `docx`, `html`, `pdf`, `srt`, `txt`, or `segmented_json` |
+| `file_format` | string | No | `pcm_s16le_16` (for lower latency) or `other` (default) |
+| `enable_logging` | boolean | No | Set `false` for zero retention mode (enterprise only; default: `true`) |
 
 ## Python Example
 
 ```python
-from elevenlabs.client import ElevenLabs
+from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
@@ -106,6 +112,9 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 | `words[].end` | float | End time in seconds |
 | `words[].type` | string | `word`, `spacing`, or `audio_event` |
 | `words[].speaker_id` | string | Speaker identifier (if diarization enabled) |
+| `transcription_id` | string | Unique identifier for this transcription |
+| `additional_formats` | array | Exported transcript formats (if requested) |
+| `entities` | array | Detected entities with text, type, and character offsets (if entity_detection enabled) |
 
 ## Supported Languages (90+)
 
@@ -131,8 +140,8 @@ Full list: Afrikaans, Amharic, Armenian, Azerbaijani, Belarusian, Bengali, Bosni
 **Video:** MP4, AVI, MKV, MOV, WMV, FLV, WebM, MPEG, 3GPP
 
 **Limits:**
-- Maximum file size: 3GB
-- Maximum duration: 10 hours
+- Maximum file size: 3GB (file upload) or 2GB (cloud storage URL)
+- Maximum duration: 10 hours (standard) or 1 hour (multichannel mode)
 
 ## Use Cases
 
