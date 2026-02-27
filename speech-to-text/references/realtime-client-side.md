@@ -85,6 +85,26 @@ function TranscriptionComponent() {
 
 > **Important:** The default commit strategy is `CommitStrategy.MANUAL`, which requires you to call `scribe.commit()` explicitly. For microphone input, always set `CommitStrategy.VAD` so the server auto-commits when silence is detected. Without this, committed transcripts will never fire and the connection may drop.
 
+### `scribe.status` Values
+
+| Status | Meaning |
+|--------|---------|
+| `"disconnected"` | No active connection |
+| `"connecting"` | Connection is being established |
+| `"connected"` | Connected and ready to receive audio |
+| `"transcribing"` | Actively processing speech (transitions from `"connected"` when audio is detected or VAD commits) |
+| `"error"` | An error occurred |
+
+> **Important:** When checking if the session is active, always check for both `"connected"` and `"transcribing"`. The status transitions to `"transcribing"` during speech processing, so checking only `"connected"` will cause UI elements (buttons, waveforms, indicators) to incorrectly reset mid-session.
+
+```typescript
+// Correct - handles both active states
+const isListening = scribe.status === "connected" || scribe.status === "transcribing";
+
+// Wrong - will flicker/reset when VAD commits
+const isListening = scribe.status === "connected";
+```
+
 ## JavaScript Implementation
 
 ```typescript
