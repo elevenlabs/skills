@@ -1,6 +1,6 @@
 ---
 name: setup-api-key
-description: Guides users through the process of setting up an ElevenLabs API key for use with ElevenLabs MCP tools. Use when the user needs to configure an ElevenLabs API key, when ElevenLabs tools fail due to missing API key, or when the user mentions needing access to ElevenLabs.
+description: Guides users through setting up an ElevenLabs API key for ElevenLabs MCP tools. Use when the user needs to configure an ElevenLabs API key, when ElevenLabs tools fail due to missing API key, or when the user mentions needing access to ElevenLabs. First checks whether ELEVENLABS_API_KEY is already configured and valid, and only runs full setup when needed.
 license: MIT
 compatibility: Requires internet access to elevenlabs.io and api.elevenlabs.io.
 ---
@@ -10,6 +10,25 @@ compatibility: Requires internet access to elevenlabs.io and api.elevenlabs.io.
 Guide the user through obtaining and configuring an ElevenLabs API key.
 
 ## Workflow
+
+### Step 0: Check for an existing API key first
+
+Before asking the user for a key, check for an existing `ELEVENLABS_API_KEY`:
+
+1. Check whether `ELEVENLABS_API_KEY` exists in the current environment.
+2. If it's not in the environment, check `.env` for `ELEVENLABS_API_KEY=<value>`.
+3. If an existing key is found, **validate it**:
+   ```
+   GET https://api.elevenlabs.io/v1/user
+   Header: xi-api-key: <existing-api-key>
+   ```
+4. **If existing key validation succeeds:**
+   - Tell the user ElevenLabs is already configured and working
+   - Skip the setup flow
+   - Ask whether they want to replace/rotate the key; if not, stop
+5. **If existing key validation fails:**
+   - Tell the user the existing key appears invalid or expired
+   - Continue to Step 1
 
 ### Step 1: Request the API key
 
@@ -50,6 +69,8 @@ Once the user provides the API key:
    ```
    ELEVENLABS_API_KEY=<the-api-key>
    ```
+   - If `.env` already has `ELEVENLABS_API_KEY=...`, replace that line
+   - Otherwise add a new line for `ELEVENLABS_API_KEY`
 
 4. **Confirm success:**
    > Done! Your key is stored as an environment variable in .env
