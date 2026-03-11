@@ -63,6 +63,19 @@ curl -X POST "https://api.elevenlabs.io/v1/music" \
 
 See [API Reference](references/api_reference.md) for full parameter details.
 
+## Upload Existing Music (REST API)
+
+Use `POST /v1/music/upload` to upload an audio file for later inpainting workflows. This endpoint is available to enterprise clients with access to the inpainting feature.
+
+```bash
+curl -X POST "https://api.elevenlabs.io/v1/music/upload" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -F "file=@song.mp3" \
+  -F "extract_composition_plan=true"
+```
+
+The upload response includes a `song_id`. When `extract_composition_plan=true`, the response also includes a `composition_plan`.
+
 ## Composition Plans
 
 For granular control, generate a composition plan first, modify it, then compose:

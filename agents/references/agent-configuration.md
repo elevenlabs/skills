@@ -264,8 +264,34 @@ platform_settings={
 | Field | Type | Description |
 |-------|------|-------------|
 | `tags` | array | Classification labels for filtering (e.g., `["production"]`, `["test"]`) |
+| `summary_language` | string | Language for conversation analysis outputs such as summaries, titles, and evaluation notes |
 | `coaching_settings` | object | Configuration for agent coaching and evaluation |
 | `workflow` | object | Conversation flow definition and tool interaction sequences |
+| `widget` | object | Widget appearance and behavior configuration for the hosted conversation UI |
+
+## widget
+
+Top-level widget configuration controls how the hosted conversation widget behaves and renders:
+
+```json
+{
+  "widget": {
+    "dismissible": true,
+    "show_agent_status": true,
+    "show_conversation_id": true,
+    "strip_audio_tags": true,
+    "syntax_highlight_theme": "light"
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `dismissible` | bool | `false` | Whether the widget can be dismissed by the user |
+| `show_agent_status` | bool | `false` | Show working, done, and error status during tool use; enabling it also adds `agent_tool_request` and `agent_tool_response` client events |
+| `show_conversation_id` | bool | `true` | Whether to show the conversation ID after disconnection |
+| `strip_audio_tags` | bool | `true` | Whether to strip audio markup from messages |
+| `syntax_highlight_theme` | string or null | `null` | Code block highlighting theme: `null` (auto), `light`, or `dark` |
 
 ## Knowledge Base / RAG
 
@@ -415,7 +441,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 
 | Section | Fields |
 |---------|--------|
-| Root | `name`, `tags` |
+| Root | `name`, `tags`, `summary_language`, `widget` |
 | `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode` |

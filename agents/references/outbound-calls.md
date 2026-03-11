@@ -20,6 +20,7 @@ See the [main agents skill](../SKILL.md#outbound-calls) for basic Python, JavaSc
 | `agent_phone_number_id` | string | Yes | The ID of the Twilio phone number linked to your agent |
 | `to_number` | string | Yes | The destination phone number (E.164 format) |
 | `conversation_initiation_client_data` | object | No | Override conversation settings for this call |
+| `call_recording_enabled` | boolean | No | Enable Twilio call recording for this outbound call |
 | `telephony_call_config` | object | No | Telephony call settings like ringing timeout |
 
 ## Response
@@ -51,6 +52,7 @@ response = client.conversational_ai.twilio.outbound_call(
     agent_id="your-agent-id",
     agent_phone_number_id="your-phone-number-id",
     to_number="+1234567890",
+    call_recording_enabled=True,
     conversation_initiation_client_data={
         "conversation_config_override": {
             "agent": {
@@ -76,6 +78,7 @@ const response = await client.conversationalAi.twilio.outboundCall({
   agentId: "your-agent-id",
   agentPhoneNumberId: "your-phone-number-id",
   toNumber: "+1234567890",
+  callRecordingEnabled: true,
   conversationInitiationClientData: {
     conversationConfigOverride: {
       agent: {
