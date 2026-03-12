@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements client-side real-time transcription using the ElevenLabs React SDK with proper token-based security, the useScribe hook, correct package selection, and proper handling of partial vs committed transcripts.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses useScribe hook",
+      "description": "React component uses the useScribe hook from @elevenlabs/react for real-time transcription",
+      "max_score": 10
+    },
+    {
+      "name": "Correct React package",
+      "description": "package.json includes '@elevenlabs/react' as a dependency",
+      "max_score": 10
+    },
+    {
+      "name": "Correct server package",
+      "description": "package.json includes '@elevenlabs/elevenlabs-js' (not 'elevenlabs') as a dependency for the backend",
+      "max_score": 10
+    },
+    {
+      "name": "Single-use token generation",
+      "description": "Backend uses tokens.singleUse.create() (or equivalent) to generate a token, not passing the API key directly",
+      "max_score": 10
+    },
+    {
+      "name": "Token fetch from backend",
+      "description": "React component fetches a token from the backend endpoint before connecting, not using an API key directly in browser code",
+      "max_score": 10
+    },
+    {
+      "name": "No API key in frontend",
+      "description": "The React component file does NOT contain any hardcoded API key or direct reference to ELEVENLABS_API_KEY",
+      "max_score": 10
+    },
+    {
+      "name": "Partial transcript handler",
+      "description": "useScribe configuration includes an onPartialTranscript callback for live interim results",
+      "max_score": 8
+    },
+    {
+      "name": "Committed transcript handler",
+      "description": "useScribe configuration includes an onCommittedTranscript callback for finalized text",
+      "max_score": 8
+    },
+    {
+      "name": "Correct realtime model",
+      "description": "Uses modelId 'scribe_v2_realtime' (not 'scribe_v2' or other model names) for the real-time connection",
+      "max_score": 8
+    },
+    {
+      "name": "Microphone options",
+      "description": "Connection config includes at least one microphone option (echoCancellation, noiseSuppression, or autoGainControl)",
+      "max_score": 8
+    },
+    {
+      "name": "Connect with token",
+      "description": "scribe.connect() call passes the token obtained from the backend",
+      "max_score": 8
+    }
+  ]
+}

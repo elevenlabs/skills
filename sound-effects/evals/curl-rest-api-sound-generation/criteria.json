@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct ElevenLabs REST API endpoint, proper authentication header, valid output format identifiers, correct duration parameter constraints, and descriptive prompts when building a shell-based pipeline.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct API endpoint",
+      "description": "cURL requests are made to https://api.elevenlabs.io/v1/sound-generation",
+      "max_score": 10
+    },
+    {
+      "name": "Correct auth header",
+      "description": "Uses the xi-api-key header (not Authorization: Bearer or other schemes) for authentication",
+      "max_score": 10
+    },
+    {
+      "name": "Environment variable for key",
+      "description": "References $ELEVENLABS_API_KEY environment variable for the API key value, does not hardcode a key",
+      "max_score": 10
+    },
+    {
+      "name": "Content-Type header",
+      "description": "Includes Content-Type: application/json header in the cURL request",
+      "max_score": 5
+    },
+    {
+      "name": "Text field in body",
+      "description": "The JSON request body includes a 'text' field with the prompt",
+      "max_score": 5
+    },
+    {
+      "name": "Duration in body",
+      "description": "The JSON request body includes 'duration_seconds' field",
+      "max_score": 10
+    },
+    {
+      "name": "Valid output formats",
+      "description": "Output formats used in config are valid ElevenLabs format strings (e.g., mp3_44100_128, opus_48000_128, pcm_44100, etc.) -- not invented format names",
+      "max_score": 10
+    },
+    {
+      "name": "Output format passed",
+      "description": "The output_format is passed as a query parameter in the URL or in the request body/parameters",
+      "max_score": 10
+    },
+    {
+      "name": "Descriptive prompts",
+      "description": "Sound effect prompts in the config are specific and descriptive (more than 2 words, describing the sound in detail)",
+      "max_score": 10
+    },
+    {
+      "name": "Valid duration range",
+      "description": "All specified durations are between 0.5 and 30 seconds",
+      "max_score": 10
+    },
+    {
+      "name": "POST method",
+      "description": "Uses POST method (not GET or other) for the cURL request",
+      "max_score": 10
+    }
+  ]
+}

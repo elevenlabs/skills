@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent correctly uses the ElevenLabs Python SDK to create a conversational AI agent with proper imports, configuration structure, voice settings, tool definitions, and platform settings.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Python client import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs'), not from 'elevenlabs' directly",
+      "max_score": 10
+    },
+    {
+      "name": "SDK namespace",
+      "description": "Uses client.conversational_ai.agents.create() method path for agent creation",
+      "max_score": 10
+    },
+    {
+      "name": "Config structure",
+      "description": "Agent creation call includes conversation_config as a top-level parameter (not nested inside prompt or tools)",
+      "max_score": 8
+    },
+    {
+      "name": "Flash TTS model",
+      "description": "Uses 'eleven_flash_v2_5' or 'eleven_turbo_v2_5' as the TTS model_id",
+      "max_score": 10
+    },
+    {
+      "name": "Known voice ID",
+      "description": "Uses one of the documented voice IDs: JBFqnCBsd6RMkjVDRZzb, EXAVITQu4vr4xnSDxMaL, onwK4e9ZLuTAKqWW03F9, or XB0fDUnXU5powFXDhCwa",
+      "max_score": 8
+    },
+    {
+      "name": "Server VAD mode",
+      "description": "Sets turn-taking mode to 'server_vad' (not 'turn_based')",
+      "max_score": 8
+    },
+    {
+      "name": "Webhook tool structure",
+      "description": "Webhook tool includes type='webhook', a name, a description, a webhook dict with url and method, and a parameters schema",
+      "max_score": 10
+    },
+    {
+      "name": "System end_call tool",
+      "description": "Includes a system tool with name 'end_call'",
+      "max_score": 8
+    },
+    {
+      "name": "System transfer tool",
+      "description": "Includes a system tool with name 'transfer_to_number' and a phone_number field",
+      "max_score": 8
+    },
+    {
+      "name": "Platform settings",
+      "description": "Includes platform_settings with call_limits containing max_call_duration_secs and/or max_concurrent_calls",
+      "max_score": 8
+    },
+    {
+      "name": "LLM model selection",
+      "description": "Uses a valid model ID from the supported list (e.g., gpt-4o, gpt-4o-mini, gpt-4-turbo, claude-3-5-sonnet, claude-3-5-haiku, gemini-1.5-pro, gemini-1.5-flash)",
+      "max_score": 6
+    },
+    {
+      "name": "Environment variable auth",
+      "description": "Instantiates ElevenLabs client without hardcoding an API key (relies on ELEVENLABS_API_KEY env var) or mentions/uses os.environ for the key",
+      "max_score": 6
+    }
+  ]
+}

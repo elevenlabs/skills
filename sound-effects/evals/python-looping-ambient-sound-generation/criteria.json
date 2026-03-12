@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct Python SDK import, correct API method, loop parameter for seamless looping, proper duration and prompt_influence ranges, chunk-based stream writing, and descriptive prompts for ambient sounds.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs')",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.text_to_sound_effects.convert() (snake_case) to generate sound effects",
+      "max_score": 10
+    },
+    {
+      "name": "Loop parameter used",
+      "description": "Passes loop=True in the convert() call for the ambient/looping soundscapes",
+      "max_score": 10
+    },
+    {
+      "name": "Duration parameter used",
+      "description": "Passes duration_seconds parameter in the convert() call with values between 0.5 and 30",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt influence parameter",
+      "description": "Passes prompt_influence parameter in the convert() call with values between 0 and 1",
+      "max_score": 10
+    },
+    {
+      "name": "Chunk-based writing",
+      "description": "Writes the audio response by iterating over chunks (e.g., 'for chunk in audio: f.write(chunk)') rather than writing all at once",
+      "max_score": 10
+    },
+    {
+      "name": "Binary write mode",
+      "description": "Opens output file in binary write mode ('wb')",
+      "max_score": 5
+    },
+    {
+      "name": "Environment variable auth",
+      "description": "ElevenLabs client is instantiated without hardcoding an API key -- relies on ELEVENLABS_API_KEY environment variable",
+      "max_score": 10
+    },
+    {
+      "name": "Descriptive prompts",
+      "description": "Soundscape prompts are specific and evocative (more than 2 words each, describing setting/mood/detail, not just single-word labels like 'rain')",
+      "max_score": 10
+    },
+    {
+      "name": "At least 4 soundscapes",
+      "description": "Configuration defines at least 4 distinct soundscapes to generate",
+      "max_score": 5
+    },
+    {
+      "name": "Valid duration range",
+      "description": "All specified durations are between 0.5 and 30 seconds",
+      "max_score": 10
+    }
+  ]
+}

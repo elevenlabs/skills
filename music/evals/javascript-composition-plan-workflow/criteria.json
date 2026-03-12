@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct JavaScript package, the two-step composition plan workflow for fine-grained control, proper plan structure knowledge, the respect_sections_durations parameter, and correct stream handling in JavaScript.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct JS package",
+      "description": "Imports from '@elevenlabs/elevenlabs-js', NOT from a package named 'elevenlabs'",
+      "max_score": 10
+    },
+    {
+      "name": "ElevenLabsClient import",
+      "description": "Imports ElevenLabsClient specifically (e.g., import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js')",
+      "max_score": 10
+    },
+    {
+      "name": "Composition plan creation",
+      "description": "Uses client.music.compositionPlan.create() (or equivalent camelCase) to generate a composition plan from the prompt",
+      "max_score": 10
+    },
+    {
+      "name": "Plan inspection",
+      "description": "Accesses positiveGlobalStyles (or equivalent) from the plan object to log or modify it",
+      "max_score": 10
+    },
+    {
+      "name": "Plan modification",
+      "description": "Modifies the plan object before passing it to compose (e.g., appending to positiveGlobalStyles)",
+      "max_score": 5
+    },
+    {
+      "name": "Compose from plan",
+      "description": "Calls client.music.compose() with the composition_plan (or compositionPlan) parameter set to the modified plan",
+      "max_score": 10
+    },
+    {
+      "name": "No dual parameters",
+      "description": "Does NOT pass both prompt and composition_plan/compositionPlan to the same compose() call",
+      "max_score": 10
+    },
+    {
+      "name": "Respect sections durations",
+      "description": "Passes respect_sections_durations (or respectSectionsDurations) set to true in the compose() call",
+      "max_score": 10
+    },
+    {
+      "name": "Stream pipe output",
+      "description": "Uses pipe() or equivalent stream method to write the audio to a file, rather than treating the response as a buffer",
+      "max_score": 10
+    },
+    {
+      "name": "Env var authentication",
+      "description": "Creates the client without hardcoding an API key, relying on the ELEVENLABS_API_KEY environment variable",
+      "max_score": 5
+    },
+    {
+      "name": "Section structure awareness",
+      "description": "Code accesses or logs section properties such as name, duration_ms, or localStyles from the plan's sections array",
+      "max_score": 10
+    }
+  ]
+}

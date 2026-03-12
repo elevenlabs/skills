@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly uses the ElevenLabs Python SDK for batch transcription with speaker diarization, word-level timestamps, and keyterm prompting. Evaluates correct imports, model selection, parameter usage, and response handling.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs client from 'elevenlabs.client' (i.e., 'from elevenlabs.client import ElevenLabs'), not from 'elevenlabs' directly",
+      "max_score": 10
+    },
+    {
+      "name": "Correct model ID",
+      "description": "Uses model_id='scribe_v2' (not 'scribe_v1', 'whisper', or any other model name)",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.speech_to_text.convert() method for batch transcription",
+      "max_score": 10
+    },
+    {
+      "name": "Diarization enabled",
+      "description": "Passes diarize=True parameter to the convert call",
+      "max_score": 10
+    },
+    {
+      "name": "Word timestamps enabled",
+      "description": "Passes timestamps_granularity='word' parameter to the convert call",
+      "max_score": 10
+    },
+    {
+      "name": "Keyterms used",
+      "description": "Passes a keyterms parameter containing a list/array of legal terms to bias transcription",
+      "max_score": 10
+    },
+    {
+      "name": "Speaker ID in output",
+      "description": "The transcript.txt formatting code accesses word.speaker_id (or equivalent) to group or label output by speaker",
+      "max_score": 8
+    },
+    {
+      "name": "Word type filtering",
+      "description": "Code checks or filters on word.type (e.g., filtering for type=='word') when processing the words array",
+      "max_score": 8
+    },
+    {
+      "name": "Timing data used",
+      "description": "Code accesses word.start and word.end fields from the response to include timing in output",
+      "max_score": 8
+    },
+    {
+      "name": "Correct pip package",
+      "description": "requirements.txt includes 'elevenlabs' (the PyPI package), not '@elevenlabs/elevenlabs-js' or other incorrect names",
+      "max_score": 8
+    },
+    {
+      "name": "Error handling present",
+      "description": "Script includes try/except or equivalent error handling around the API call",
+      "max_score": 8
+    }
+  ]
+}

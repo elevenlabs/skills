@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent produces onboarding materials that include the correct ElevenLabs URLs, key creation guidance, permission advice, validation approach, and storage configuration.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "API keys page URL",
+      "description": "The instructions include the URL https://elevenlabs.io/app/settings/api-keys for getting an API key",
+      "max_score": 10
+    },
+    {
+      "name": "Sign-up URL",
+      "description": "The instructions include the URL https://elevenlabs.io/app/sign-up for users who need to create an account",
+      "max_score": 10
+    },
+    {
+      "name": "Key permission guidance",
+      "description": "The instructions mention setting permissions on the key, specifically mentioning 'User' permission or 'Read' permission level",
+      "max_score": 10
+    },
+    {
+      "name": "Copy key warning",
+      "description": "The instructions warn that the key is only shown once and must be copied immediately",
+      "max_score": 10
+    },
+    {
+      "name": "Validation uses xi-api-key",
+      "description": "The script uses 'xi-api-key' as the header name in the curl command for validation (not -u, not Authorization, not x-api-key)",
+      "max_score": 10
+    },
+    {
+      "name": "Validation endpoint /v1/user",
+      "description": "The script validates the key against https://api.elevenlabs.io/v1/user",
+      "max_score": 10
+    },
+    {
+      "name": "Saves to .env file",
+      "description": "The script saves the validated key to a .env file",
+      "max_score": 10
+    },
+    {
+      "name": "ELEVENLABS_API_KEY variable",
+      "description": "The key is saved with the variable name ELEVENLABS_API_KEY",
+      "max_score": 10
+    },
+    {
+      "name": "Retry on failure",
+      "description": "When validation fails, the script allows the user to try entering the key again (at least one retry)",
+      "max_score": 10
+    },
+    {
+      "name": "URL reminder on failure",
+      "description": "When validation fails, the script reminds the user of the API keys page URL (https://elevenlabs.io/app/settings/api-keys)",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct ElevenLabs REST API endpoint, authentication header, request format, and parameter conventions when making direct cURL calls for music generation.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct API endpoint",
+      "description": "Uses POST https://api.elevenlabs.io/v1/music as the endpoint URL",
+      "max_score": 15
+    },
+    {
+      "name": "Correct auth header",
+      "description": "Uses xi-api-key header (not Authorization: Bearer or other auth schemes) for authentication",
+      "max_score": 15
+    },
+    {
+      "name": "API key from env var",
+      "description": "Reads the API key from the ELEVENLABS_API_KEY environment variable, does not hardcode a key",
+      "max_score": 10
+    },
+    {
+      "name": "Content-Type header",
+      "description": "Includes Content-Type: application/json header in the request",
+      "max_score": 10
+    },
+    {
+      "name": "JSON request body",
+      "description": "Sends a JSON body with 'prompt' field as a string",
+      "max_score": 5
+    },
+    {
+      "name": "Duration in milliseconds",
+      "description": "Converts the input seconds to milliseconds for the music_length_ms JSON field (multiplies by 1000)",
+      "max_score": 10
+    },
+    {
+      "name": "Output to file",
+      "description": "Uses --output or -o flag (or redirect) to save the response body to the specified MP3 file",
+      "max_score": 10
+    },
+    {
+      "name": "POST method",
+      "description": "Uses -X POST or equivalent to make a POST request",
+      "max_score": 5
+    },
+    {
+      "name": "Duration bounds awareness",
+      "description": "Script includes validation or a comment about the valid range of 3000-600000 ms for music_length_ms",
+      "max_score": 10
+    },
+    {
+      "name": "Error code handling",
+      "description": "Checks the cURL exit code or HTTP status code and exits with a non-zero code on failure",
+      "max_score": 10
+    }
+  ]
+}

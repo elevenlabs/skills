@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent builds an API key setup script that validates against the correct ElevenLabs endpoint, uses the correct authentication header, stores the key in the correct format, and implements proper retry behavior.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Validation endpoint URL",
+      "description": "The script makes a request to https://api.elevenlabs.io/v1/user for key validation (not some other endpoint)",
+      "max_score": 10
+    },
+    {
+      "name": "Auth header name",
+      "description": "The script uses 'xi-api-key' as the HTTP header name for authentication (not 'Authorization', 'X-Api-Key', or similar)",
+      "max_score": 10
+    },
+    {
+      "name": "Env var name",
+      "description": "The key is stored using the variable name ELEVENLABS_API_KEY (not ELEVEN_LABS_KEY, API_KEY, or similar)",
+      "max_score": 10
+    },
+    {
+      "name": "Stored in .env file",
+      "description": "The key is written to a file named '.env' (not environment variables, config.json, or other storage)",
+      "max_score": 10
+    },
+    {
+      "name": ".env format correct",
+      "description": "The .env file content uses the format ELEVENLABS_API_KEY=<key> (standard dotenv format, no export prefix, no quotes required)",
+      "max_score": 10
+    },
+    {
+      "name": "Retry on first failure",
+      "description": "When validation fails the first time, the script asks the user to try again rather than immediately exiting",
+      "max_score": 10
+    },
+    {
+      "name": "Exit on second failure",
+      "description": "If validation fails a second time, the script displays an error and exits (does not allow unlimited retries)",
+      "max_score": 10
+    },
+    {
+      "name": "Invalid key messaging",
+      "description": "When validation fails, the script tells the user the key appears to be invalid",
+      "max_score": 10
+    },
+    {
+      "name": "API keys page URL in retry",
+      "description": "When validation fails, the script reminds the user of the URL https://elevenlabs.io/app/settings/api-keys",
+      "max_score": 10
+    },
+    {
+      "name": "Success confirmation",
+      "description": "After successful validation and storage, the script outputs a confirmation message indicating the key has been stored",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly uses the ElevenLabs Python SDK for multilingual TTS, including proper imports, model selection for multilingual support, request stitching for seamless multi-chunk audio, and language code enforcement.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Python client import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs'), not from 'elevenlabs' directly",
+      "max_score": 10
+    },
+    {
+      "name": "Correct convert method",
+      "description": "Uses client.text_to_speech.convert() to generate audio",
+      "max_score": 8
+    },
+    {
+      "name": "Multilingual model",
+      "description": "Uses a model that supports multiple languages (eleven_multilingual_v2, eleven_v3, eleven_flash_v2_5, or eleven_turbo_v2_5) -- NOT eleven_flash_v2 which is English-only",
+      "max_score": 10
+    },
+    {
+      "name": "Language code parameter",
+      "description": "Passes language_code parameter with an ISO 639-1 code (e.g. 'fr', 'es') for non-English segments",
+      "max_score": 10
+    },
+    {
+      "name": "Request stitching - previous_text",
+      "description": "Uses previous_text parameter when generating continuation chunks (not the first chunk in a segment)",
+      "max_score": 12
+    },
+    {
+      "name": "Request stitching - next_text",
+      "description": "Uses next_text parameter when generating chunks that have a following chunk (not the last chunk in a segment)",
+      "max_score": 12
+    },
+    {
+      "name": "Valid voice ID",
+      "description": "Uses one of the documented voice IDs: JBFqnCBsd6RMkjVDRZzb, EXAVITQu4vr4xnSDxMaL, onwK4e9ZLuTAKqWW03F9, or XB0fDUnXU5powFXDhCwa",
+      "max_score": 8
+    },
+    {
+      "name": "Iterates audio chunks",
+      "description": "Writes audio output by iterating over the returned chunks (e.g. 'for chunk in audio: f.write(chunk)') rather than writing the response directly",
+      "max_score": 8
+    },
+    {
+      "name": "Error handling",
+      "description": "Wraps API calls in try/except blocks to handle exceptions",
+      "max_score": 7
+    },
+    {
+      "name": "ELEVENLABS_API_KEY env var",
+      "description": "README or script references ELEVENLABS_API_KEY as the environment variable for the API key",
+      "max_score": 7
+    },
+    {
+      "name": "No deprecated package",
+      "description": "Does NOT import from or reference installing the deprecated 'elevenlabs' JS package (if any JS is present, uses @elevenlabs/elevenlabs-js)",
+      "max_score": 8
+    }
+  ]
+}

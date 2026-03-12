@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent implements correct retry behavior, validation logic, proper error messaging, and key storage following the ElevenLabs API key setup workflow.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Max two validation attempts",
+      "description": "The setup_key function allows at most 2 attempts to enter a valid key (exits or fails after 2 invalid keys, does not allow 3 or more tries)",
+      "max_score": 10
+    },
+    {
+      "name": "Error exit on second failure",
+      "description": "After two failed validation attempts, the function displays an error message and exits or raises an exception (does not silently continue)",
+      "max_score": 10
+    },
+    {
+      "name": "Invalid key message",
+      "description": "When validation fails, the output includes a message indicating the key appears to be invalid (not just a generic error)",
+      "max_score": 10
+    },
+    {
+      "name": "Validation endpoint correct",
+      "description": "Uses https://api.elevenlabs.io/v1/user as the validation endpoint",
+      "max_score": 10
+    },
+    {
+      "name": "Header xi-api-key",
+      "description": "Uses 'xi-api-key' as the HTTP header name for the API key",
+      "max_score": 10
+    },
+    {
+      "name": "GET request method",
+      "description": "The validation request uses HTTP GET (not POST or other method)",
+      "max_score": 10
+    },
+    {
+      "name": "Stores in .env file",
+      "description": "The setup_key function persists the validated key in a .env file",
+      "max_score": 10
+    },
+    {
+      "name": "ELEVENLABS_API_KEY name",
+      "description": "The key is stored using the exact variable name ELEVENLABS_API_KEY",
+      "max_score": 10
+    },
+    {
+      "name": "load_key reads .env",
+      "description": "The load_key function reads the key from a .env file (consistent with where setup_key stores it)",
+      "max_score": 10
+    },
+    {
+      "name": "API keys URL on retry",
+      "description": "When validation fails and the user is prompted to retry, the output includes the URL https://elevenlabs.io/app/settings/api-keys",
+      "max_score": 10
+    }
+  ]
+}

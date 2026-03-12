@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct JavaScript SDK packages, import paths, camelCase API namespaces, client-side Conversation class, signed URL authentication flow, and client tool registration pattern.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct server SDK package",
+      "description": "server.js imports from '@elevenlabs/elevenlabs-js', NOT from the deprecated 'elevenlabs' package",
+      "max_score": 10
+    },
+    {
+      "name": "ElevenLabsClient import",
+      "description": "server.js imports ElevenLabsClient (not a different name) from the SDK package",
+      "max_score": 8
+    },
+    {
+      "name": "CamelCase agent namespace",
+      "description": "server.js uses client.conversationalAi.agents (camelCase 'conversationalAi', not snake_case 'conversational_ai') for agent operations",
+      "max_score": 10
+    },
+    {
+      "name": "Conversation import source",
+      "description": "client.js imports Conversation from '@elevenlabs/client' (the browser client package), not from '@elevenlabs/elevenlabs-js'",
+      "max_score": 10
+    },
+    {
+      "name": "Signed URL generation",
+      "description": "server.js uses conversationalAi.conversations.getSignedUrl (or equivalent REST call) to generate a signed URL for the agent",
+      "max_score": 10
+    },
+    {
+      "name": "Client startSession",
+      "description": "client.js calls Conversation.startSession() to initiate the conversation",
+      "max_score": 8
+    },
+    {
+      "name": "SignedUrl in session",
+      "description": "client.js passes signedUrl (or signed_url) parameter to startSession, not just an agentId, reflecting the authenticated flow",
+      "max_score": 8
+    },
+    {
+      "name": "ClientTools registration",
+      "description": "client.js registers client tools via a clientTools object inside Conversation.startSession (with async handler functions)",
+      "max_score": 10
+    },
+    {
+      "name": "Event callbacks",
+      "description": "client.js includes at least two of: onMessage, onUserTranscript, or onError callbacks in the startSession configuration",
+      "max_score": 8
+    },
+    {
+      "name": "Client tool type in agent",
+      "description": "server.js defines the tools with type 'client' (not 'webhook' or 'system') in the agent creation for the browser-side tools",
+      "max_score": 10
+    },
+    {
+      "name": "Tool return values",
+      "description": "At least one client tool handler in client.js returns a value/object (not void/undefined) so the agent can use the result in conversation",
+      "max_score": 8
+    }
+  ]
+}

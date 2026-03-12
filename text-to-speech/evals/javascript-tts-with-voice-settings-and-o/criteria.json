@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct (non-deprecated) JavaScript package, follows the JS SDK calling conventions, applies voice settings using the correct camelCase property names, and selects appropriate output formats.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct JS package",
+      "description": "package.json lists @elevenlabs/elevenlabs-js as a dependency, NOT the deprecated 'elevenlabs' package",
+      "max_score": 12
+    },
+    {
+      "name": "Correct import path",
+      "description": "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js' (not from 'elevenlabs')",
+      "max_score": 10
+    },
+    {
+      "name": "Voice ID as positional arg",
+      "description": "Calls client.textToSpeech.convert(voiceId, { ... }) with voice_id as the first positional argument, not inside the options object",
+      "max_score": 10
+    },
+    {
+      "name": "CamelCase method name",
+      "description": "Uses client.textToSpeech.convert() (camelCase) not client.text_to_speech.convert() (snake_case)",
+      "max_score": 8
+    },
+    {
+      "name": "CamelCase voice settings",
+      "description": "Uses camelCase property names in voiceSettings object (e.g., similarityBoost, useSpeakerBoost) not snake_case",
+      "max_score": 10
+    },
+    {
+      "name": "CamelCase modelId",
+      "description": "Uses 'modelId' (camelCase) as the parameter name, not 'model_id' (snake_case)",
+      "max_score": 8
+    },
+    {
+      "name": "Valid model ID",
+      "description": "Uses a valid ElevenLabs model ID (one of: eleven_v3, eleven_multilingual_v2, eleven_flash_v2_5, eleven_flash_v2, eleven_turbo_v2_5)",
+      "max_score": 8
+    },
+    {
+      "name": "Different voice settings per type",
+      "description": "Configures different stability and/or similarityBoost values for at least two of the notification types",
+      "max_score": 10
+    },
+    {
+      "name": "Valid voice IDs used",
+      "description": "Uses at least one of the documented voice IDs (JBFqnCBsd6RMkjVDRZzb, EXAVITQu4vr4xnSDxMaL, onwK4e9ZLuTAKqWW03F9, XB0fDUnXU5powFXDhCwa)",
+      "max_score": 8
+    },
+    {
+      "name": "Valid output format",
+      "description": "References at least one valid output format string (e.g. mp3_44100_128, pcm_24000, ulaw_8000, mp3_44100_192, pcm_16000, pcm_22050, pcm_44100)",
+      "max_score": 8
+    },
+    {
+      "name": "ELEVENLABS_API_KEY",
+      "description": "Uses ELEVENLABS_API_KEY environment variable for authentication (not hardcoded key)",
+      "max_score": 8
+    }
+  ]
+}

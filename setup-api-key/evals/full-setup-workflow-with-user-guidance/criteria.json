@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent produces a complete setup guide and bootstrap script that covers account creation, key generation steps, permission configuration, validation, storage, and user messaging as specified in the ElevenLabs setup workflow.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "API keys page URL",
+      "description": "The setup guide or script output includes the URL https://elevenlabs.io/app/settings/api-keys",
+      "max_score": 8
+    },
+    {
+      "name": "Sign-up URL",
+      "description": "The setup guide or script output includes the URL https://elevenlabs.io/app/sign-up for account creation",
+      "max_score": 8
+    },
+    {
+      "name": "Create key steps",
+      "description": "The guide includes steps for creating a key: clicking 'Create key', naming the key, and confirming creation",
+      "max_score": 8
+    },
+    {
+      "name": "Permission setting guidance",
+      "description": "The guide mentions setting permissions on the API key, referencing 'User' permission or 'Read' access level",
+      "max_score": 10
+    },
+    {
+      "name": "Copy immediately warning",
+      "description": "The guide warns that the key is only shown once and should be copied immediately",
+      "max_score": 8
+    },
+    {
+      "name": "Validation endpoint",
+      "description": "The script validates the key using https://api.elevenlabs.io/v1/user",
+      "max_score": 10
+    },
+    {
+      "name": "xi-api-key header",
+      "description": "The script uses 'xi-api-key' as the authentication header name",
+      "max_score": 10
+    },
+    {
+      "name": "ELEVENLABS_API_KEY in .env",
+      "description": "The script saves the validated key as ELEVENLABS_API_KEY in a .env file",
+      "max_score": 10
+    },
+    {
+      "name": "Two-step workflow",
+      "description": "The bootstrap follows a two-phase approach: first displaying setup instructions, then collecting and validating the key (not interleaved)",
+      "max_score": 8
+    },
+    {
+      "name": "Success message",
+      "description": "After successful setup, the script displays a confirmation that the key has been stored in .env",
+      "max_score": 8
+    },
+    {
+      "name": "Security reminder",
+      "description": "The script or guide includes a reminder to keep the key safe or not share it",
+      "max_score": 6
+    },
+    {
+      "name": "Retry on invalid key",
+      "description": "The script allows the user to retry if the first key validation fails, but limits to at most 2 total attempts",
+      "max_score": 6
+    }
+  ]
+}

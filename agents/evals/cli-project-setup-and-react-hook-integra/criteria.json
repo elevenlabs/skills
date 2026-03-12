@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses the correct CLI package and commands for project setup, knows the available templates, and correctly uses the React hook from @elevenlabs/react with signed URL authentication for client-side conversation sessions.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "CLI package install",
+      "description": "setup_guide.md includes 'npm install -g @elevenlabs/cli' (or pnpm/yarn equivalent with @elevenlabs/cli) as the CLI installation command",
+      "max_score": 10
+    },
+    {
+      "name": "CLI auth command",
+      "description": "setup_guide.md includes 'elevenlabs auth login' for authentication",
+      "max_score": 8
+    },
+    {
+      "name": "CLI init command",
+      "description": "setup_guide.md includes 'elevenlabs agents init' to initialize the project",
+      "max_score": 8
+    },
+    {
+      "name": "CLI add with template",
+      "description": "setup_guide.md uses 'elevenlabs agents add' with the --template flag to create agents",
+      "max_score": 10
+    },
+    {
+      "name": "Customer-service template",
+      "description": "setup_guide.md uses the 'customer-service' template name (a valid template from: default, minimal, voice-only, text-only, customer-service, assistant)",
+      "max_score": 8
+    },
+    {
+      "name": "CLI push command",
+      "description": "setup_guide.md includes 'elevenlabs agents push' to deploy agents to the platform",
+      "max_score": 8
+    },
+    {
+      "name": "React hook import",
+      "description": "VoiceSupport.jsx imports useConversation from '@elevenlabs/react' (not from '@elevenlabs/client' or '@elevenlabs/elevenlabs-js')",
+      "max_score": 10
+    },
+    {
+      "name": "useConversation usage",
+      "description": "VoiceSupport.jsx calls useConversation() hook to manage the conversation",
+      "max_score": 8
+    },
+    {
+      "name": "Signed URL session start",
+      "description": "VoiceSupport.jsx starts the session using a signedUrl parameter (fetched from backend) rather than a plain agentId",
+      "max_score": 10
+    },
+    {
+      "name": "startSession method",
+      "description": "VoiceSupport.jsx calls conversation.startSession() (the method from the useConversation hook) to begin the voice session",
+      "max_score": 8
+    },
+    {
+      "name": "Language configuration",
+      "description": "The component handles language selection that affects which agent is connected to (e.g., different agent IDs for English and Spanish)",
+      "max_score": 6
+    },
+    {
+      "name": "Conversation callbacks",
+      "description": "VoiceSupport.jsx includes at least one of: onMessage or onUserTranscript callbacks in the useConversation configuration or startSession call",
+      "max_score": 6
+    }
+  ]
+}
