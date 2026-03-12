@@ -50,6 +50,10 @@ This creates a floating button that users can click to start a voice conversatio
 | `server-location` | Server region (`us`, `eu-residency`, `in-residency`, `global`) | `us` |
 | `dismissible` | Allow the user to minimize the widget | `false` |
 | `disable-banner` | Hide "Powered by ElevenLabs" | `false` |
+| `show-agent-status` | Display agent working/done/error status during tool operations | - |
+| `show-conversation-id` | Display conversation ID after disconnection | - |
+| `strip-audio-tags` | Remove audio markup from messages | - |
+| `syntax-highlight-theme` | Code block styling: `light` or `dark` | - |
 
 ## Examples
 
