@@ -1,0 +1,12 @@
+{
+  "name": "elevenlabs/sound-effects",
+  "version": "0.1.0",
+  "private": false,
+  "repository": "https://github.com/elevenlabs/skills",
+  "summary": "Generate sound effects from text descriptions using ElevenLabs. Use when creating sound effects, generating audio textures, producing ambient sounds, cinematic impacts, UI sounds, or any audio that isn't speech. Supports looping, duration control, and prompt influence tuning.",
+  "skills": {
+    "sound-effects": {
+      "path": "SKILL.md"
+    }
+  }
+}

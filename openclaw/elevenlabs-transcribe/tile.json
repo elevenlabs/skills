@@ -1,0 +1,12 @@
+{
+  "name": "elevenlabs/elevenlabs-transcribe",
+  "version": "0.1.0",
+  "private": false,
+  "repository": "https://github.com/elevenlabs/skills",
+  "summary": "Transcribe audio to text using ElevenLabs Scribe. Supports batch transcription, realtime streaming from URLs, microphone input, and local files.",
+  "skills": {
+    "elevenlabs-transcribe": {
+      "path": "SKILL.md"
+    }
+  }
+}
