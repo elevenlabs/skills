@@ -318,8 +318,6 @@ agent = client.conversational_ai.agents.create(
 )
 ```
 
-For RAG indexing, the 2026-02-23 changelog added support for the `qwen3_embedding_4b` embedding model.
-
 ## CRUD Operations
 
 ### Using CLI (Recommended)
