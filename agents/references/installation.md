@@ -41,6 +41,8 @@ elevenlabs agents push
 
 For programmatic access and client-side integration:
 
+> **SDK version note:** Use JavaScript SDK v2.36.0+ and Python SDK v2.36.0+ for agent features added in the 2026-02-23 changelog, including LLM listing, conversation search, conversation file uploads, and MCP auth connection support.
+
 ```bash
 npm install @elevenlabs/elevenlabs-js
 ```

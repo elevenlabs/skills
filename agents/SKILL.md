@@ -31,6 +31,8 @@ elevenlabs agents push
 
 **Available templates:** `complete`, `minimal`, `voice-only`, `text-only`, `customer-service`, `assistant`
 
+> **SDK support:** Use Python SDK v2.36.0+ and JavaScript SDK v2.36.0+ for `llm.list()`, conversation file uploads, conversation search, and MCP auth connection support.
+
 ### Python
 
 ```python
@@ -116,6 +118,17 @@ const conversation = useConversation({ onMessage: (msg) => console.log(msg) });
 await conversation.startSession({ signedUrl: token });
 ```
 
+## Conversation Search and Files
+
+Use the conversations APIs to attach supporting context to a live call and audit past conversations:
+
+| Feature | Endpoint | Notes |
+|---------|----------|-------|
+| Upload conversation file | `POST /v1/convai/conversations/:conversation_id/files` | Uploads an image or PDF as multipart form data and returns a `file_id` |
+| Delete conversation file | `DELETE /v1/convai/conversations/:conversation_id/files/:file_id` | Removes a previously uploaded file from a conversation |
+| Text search | `GET /v1/convai/conversations/messages/text-search` | Full-text and fuzzy search across transcripts with agent, rating, tool, language, and time filters |
+| Smart search | `GET /v1/convai/conversations/messages/smart-search` | Semantic search across transcripts by meaning and intent |
+
 ## Configuration
 
 | Provider | Models |
@@ -125,6 +138,8 @@ await conversation.startSession({ signedUrl: token });
 | Google | `gemini-3.1-flash-lite-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
+
+For live model metadata, call [`GET /v1/convai/llm/list`](https://elevenlabs.io/docs/api-reference/llm/list). The response includes `deprecation_info`, `max_context_limit`, `max_tokens_limit`, and capability flags such as image input, document input, and parallel tool call support.
 
 **Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel), `XB0fDUnXU5powFXDhCwa` (Charlotte)
 

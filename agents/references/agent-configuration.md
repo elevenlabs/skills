@@ -25,7 +25,7 @@ agent = client.conversational_ai.agents.create(
         "vad": {...},             # Voice activity detection config
         "language_presets": {...}  # Language-specific overrides
     },
-    platform_settings={...}       # Auth, call limits
+    platform_settings={...}       # Auth, guardrails, privacy, call limits
 )
 ```
 
@@ -197,6 +197,8 @@ conversation_config={
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
+For live availability and deprecation metadata, call [`GET /v1/convai/llm/list`](https://elevenlabs.io/docs/api-reference/llm/list). The response includes `deprecation_info`, `max_context_limit`, `max_tokens_limit`, and capability flags such as `supports_image_input`, `supports_document_input`, and `supports_parallel_tool_calls`.
+
 ### Custom LLM
 
 The `custom_llm` field is nested inside `conversation_config.agent.prompt`:
@@ -251,6 +253,28 @@ platform_settings={
 | `daily_limit` | int | Max conversations per day (default: 100000) |
 | `bursting_enabled` | bool | Allow exceeding limits at 2x cost (default: true) |
 
+### guardrails
+
+Built-in guardrails available in `platform_settings.guardrails` include:
+
+| Guardrail | Description |
+|-----------|-------------|
+| `focus` | Reinforces the system prompt so the agent stays directed, relevant, and on-topic in longer conversations |
+| `prompt_injection` | Detects user attempts to override instructions or manipulate the system prompt before the agent responds |
+
+The older `alignment` guardrail has been removed.
+
+### privacy
+
+Enterprise workspaces can enable `platform_settings.privacy.conversation_history_redaction` to redact sensitive entities from transcripts, analysis artifacts, audio, and transcript/audio webhooks before conversation history is stored.
+
+#### conversation_history_redaction
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `enabled` | bool | Whether stored conversation history should be redacted |
+| `entities` | array[string] | Entity types to redact, such as `name`, `email_address`, or `financial_id.payment_card.payment_card_number` |
+
 ### conversation (inside conversation_config)
 
 | Field | Type | Default | Description |
@@ -264,7 +288,7 @@ platform_settings={
 | Field | Type | Description |
 |-------|------|-------------|
 | `tags` | array | Classification labels for filtering (e.g., `["production"]`, `["test"]`) |
-| `coaching_settings` | object | Configuration for agent coaching and evaluation |
+| `coaching_settings` | object | Optional configuration for agent coaching and evaluation. The field is available on agent create/update/get flows, but the public API reference does not yet publish its full schema. |
 | `workflow` | object | Conversation flow definition and tool interaction sequences |
 
 ## Knowledge Base / RAG
@@ -293,6 +317,8 @@ agent = client.conversational_ai.agents.create(
     }
 )
 ```
+
+For RAG indexing, the 2026-02-23 changelog added support for the `qwen3_embedding_4b` embedding model.
 
 ## CRUD Operations
 
@@ -415,7 +441,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 
 | Section | Fields |
 |---------|--------|
-| Root | `name`, `tags` |
+| Root | `name`, `tags`, `coaching_settings` |
 | `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode` |

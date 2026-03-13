@@ -27,6 +27,24 @@ conversation_config={
 }
 ```
 
+## MCP Servers
+
+MCP servers are attached to agents with `conversation_config.agent.prompt.mcp_server_ids` (or `native_mcp_server_ids` for native integrations). When you create the workspace MCP server itself, the MCP server `config` object can reference a workspace auth connection:
+
+```json
+{
+  "config": {
+    "url": "https://example.com/mcp",
+    "name": "CRM MCP",
+    "auth_connection": {
+      "auth_connection_id": "auth_connection_id"
+    }
+  }
+}
+```
+
+Use `auth_connection` for workspace-managed OAuth2 Client Credentials, Basic Auth, Bearer Auth, JWT, or custom header authentication when the MCP server requires more than a static secret token or fixed headers.
+
 ## Webhook Tools
 
 Execute server-side logic when the agent needs external data or actions.
