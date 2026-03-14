@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent creates a key validation module that uses the correct ElevenLabs API endpoint, correct authentication header, and stores keys in the correct location with the correct variable name.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Validation endpoint",
+      "description": "The validateKey function makes a request to https://api.elevenlabs.io/v1/user (the /v1/user path specifically)",
+      "max_score": 10
+    },
+    {
+      "name": "Auth header xi-api-key",
+      "description": "The HTTP request uses 'xi-api-key' as the header name (not 'Authorization' with Bearer, not 'x-api-key', not 'apikey')",
+      "max_score": 10
+    },
+    {
+      "name": "GET method",
+      "description": "The validation request uses the HTTP GET method (not POST, PUT, or other)",
+      "max_score": 10
+    },
+    {
+      "name": "Saves to .env file",
+      "description": "The saveKey function writes the key to a file named '.env' (not a JSON config file, not environment variables directly)",
+      "max_score": 10
+    },
+    {
+      "name": "Uses ELEVENLABS_API_KEY",
+      "description": "The key is stored with the variable name ELEVENLABS_API_KEY in the .env file",
+      "max_score": 10
+    },
+    {
+      "name": "Dotenv format",
+      "description": "The .env file uses standard dotenv format: ELEVENLABS_API_KEY=<value> (one variable per line, no JSON, no YAML)",
+      "max_score": 10
+    },
+    {
+      "name": "loadKey reads .env",
+      "description": "The loadKey function reads from the .env file to retrieve a previously stored key",
+      "max_score": 10
+    },
+    {
+      "name": "Returns boolean or status",
+      "description": "The validateKey function returns a boolean indicating success/failure (or a promise resolving to boolean), distinguishing valid from invalid keys",
+      "max_score": 10
+    },
+    {
+      "name": "Handles HTTP errors",
+      "description": "The validateKey function checks the HTTP response status to determine if the key is valid (e.g., 200 = valid, 401 = invalid)",
+      "max_score": 10
+    },
+    {
+      "name": "Module exports all three",
+      "description": "The module exports validateKey, saveKey, and loadKey as named exports (all three functions are accessible from the module)",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the compose_detailed method to obtain both audio and metadata, correctly accesses the response fields (json, filename, audio), and handles the metadata output properly.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses compose_detailed",
+      "description": "Calls client.music.compose_detailed() rather than client.music.compose() to get metadata alongside audio",
+      "max_score": 15
+    },
+    {
+      "name": "Accesses json field",
+      "description": "Accesses result.json (or equivalent) from the compose_detailed response to retrieve the composition plan and metadata",
+      "max_score": 10
+    },
+    {
+      "name": "Accesses filename field",
+      "description": "Accesses result.filename from the compose_detailed response",
+      "max_score": 10
+    },
+    {
+      "name": "Accesses audio field",
+      "description": "Accesses result.audio from the compose_detailed response to get the audio bytes",
+      "max_score": 10
+    },
+    {
+      "name": "Audio write from bytes",
+      "description": "Writes result.audio as bytes to a file (not iterating over chunks as with compose(), since compose_detailed returns bytes directly)",
+      "max_score": 10
+    },
+    {
+      "name": "Metadata saved to JSON",
+      "description": "Saves the metadata/composition plan to a JSON file",
+      "max_score": 10
+    },
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs')",
+      "max_score": 5
+    },
+    {
+      "name": "Env var authentication",
+      "description": "Creates the client without hardcoding an API key, relying on the ELEVENLABS_API_KEY environment variable",
+      "max_score": 5
+    },
+    {
+      "name": "Prompt parameter used",
+      "description": "Passes a prompt string to compose_detailed(), not a composition_plan",
+      "max_score": 5
+    },
+    {
+      "name": "Duration parameter",
+      "description": "Passes music_length_ms parameter to compose_detailed()",
+      "max_score": 5
+    },
+    {
+      "name": "Lyrics awareness",
+      "description": "Code checks for or references lyrics in the metadata (since compose_detailed metadata includes lyrics if applicable)",
+      "max_score": 15
+    }
+  ]
+}

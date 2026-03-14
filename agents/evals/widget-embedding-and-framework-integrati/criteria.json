@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses the correct ElevenLabs widget custom element, script source URL, widget attributes for customization, framework-specific integration patterns for React and Next.js, and CSS positioning techniques.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Custom element tag",
+      "description": "All three files use the <elevenlabs-convai> custom element (not a different tag name or a JavaScript-only approach)",
+      "max_score": 10
+    },
+    {
+      "name": "Widget script URL",
+      "description": "landing.html loads the widget script from 'https://unpkg.com/@elevenlabs/convai-widget-embed'",
+      "max_score": 10
+    },
+    {
+      "name": "Agent ID attribute",
+      "description": "The widget element includes an agent-id attribute set to 'agent_abc123xyz'",
+      "max_score": 6
+    },
+    {
+      "name": "Avatar image attribute",
+      "description": "At least one widget uses the avatar-image-url attribute for the custom logo",
+      "max_score": 8
+    },
+    {
+      "name": "Orb color attributes",
+      "description": "At least one widget uses avatar-orb-color-1 and avatar-orb-color-2 attributes for brand colors",
+      "max_score": 8
+    },
+    {
+      "name": "Text label attributes",
+      "description": "At least one widget uses action-text and/or start-call-text attributes for custom labels",
+      "max_score": 6
+    },
+    {
+      "name": "Expanded variant",
+      "description": "landing.html sets variant='expanded' on the widget element",
+      "max_score": 8
+    },
+    {
+      "name": "React useEffect pattern",
+      "description": "PatientPortal.jsx dynamically loads the widget script inside a useEffect hook and cleans up on unmount (removes the script element)",
+      "max_score": 10
+    },
+    {
+      "name": "Next.js Script component",
+      "description": "BlogPage.jsx uses next/script (the Script component from Next.js) to load the widget script, with strategy set to 'lazyOnload' or 'afterInteractive'",
+      "max_score": 10
+    },
+    {
+      "name": "Custom trigger button",
+      "description": "landing.html hides the default widget (via CSS display:none or similar) and uses a custom button that calls startConversation() on the widget element",
+      "max_score": 8
+    },
+    {
+      "name": "Bottom-left positioning",
+      "description": "CSS positions the widget with left (not right) property, placing it in the bottom-left corner",
+      "max_score": 8
+    },
+    {
+      "name": "Mobile responsive CSS",
+      "description": "Includes a @media query for small screens that adjusts the widget width (e.g., 100% or full-width) or layout for mobile",
+      "max_score": 8
+    }
+  ]
+}

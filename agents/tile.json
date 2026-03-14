@@ -1,0 +1,12 @@
+{
+  "name": "elevenlabs/agents",
+  "version": "0.1.0",
+  "private": false,
+  "repository": "https://github.com/elevenlabs/skills",
+  "summary": "Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience.",
+  "skills": {
+    "agents": {
+      "path": "SKILL.md"
+    }
+  }
+}

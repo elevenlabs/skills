@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct JavaScript SDK, validates parameters against documented ranges, knows the correct model ID, understands the loop parameter's model restriction, uses proper prompt engineering in presets, and handles error cases.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct npm package",
+      "description": "package.json lists @elevenlabs/elevenlabs-js as a dependency (not the deprecated 'elevenlabs' package)",
+      "max_score": 10
+    },
+    {
+      "name": "Correct client import",
+      "description": "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js'",
+      "max_score": 10
+    },
+    {
+      "name": "Duration validation range",
+      "description": "Validates that duration_seconds is between 0.5 and 30 (or null), rejecting values outside this range",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt influence validation",
+      "description": "Validates that prompt_influence is between 0 and 1, rejecting values outside this range",
+      "max_score": 10
+    },
+    {
+      "name": "Correct model ID",
+      "description": "References the model ID 'eleven_text_to_sound_v2' (not an invented model name)",
+      "max_score": 10
+    },
+    {
+      "name": "Loop model restriction",
+      "description": "Code acknowledges or enforces that the loop parameter works only with the v2 model",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.textToSoundEffects.convert() to make the API call",
+      "max_score": 10
+    },
+    {
+      "name": "Descriptive preset prompts",
+      "description": "Preset prompts are specific and detailed (more than 2 words each, describing style/mood/setting as recommended by the prompt tips)",
+      "max_score": 10
+    },
+    {
+      "name": "Ambient preset uses loop",
+      "description": "The ambient/looping preset sets loop to true",
+      "max_score": 10
+    },
+    {
+      "name": "Env var authentication",
+      "description": "Client is instantiated relying on ELEVENLABS_API_KEY environment variable rather than a hardcoded key",
+      "max_score": 10
+    }
+  ]
+}

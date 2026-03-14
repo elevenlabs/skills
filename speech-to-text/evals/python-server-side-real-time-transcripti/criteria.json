@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements Python server-side real-time transcription using the ElevenLabs SDK, including correct async patterns, realtime model selection, event handling for partial vs committed transcripts, and proper connection management.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from 'elevenlabs.client' (i.e., 'from elevenlabs.client import ElevenLabs')",
+      "max_score": 8
+    },
+    {
+      "name": "Realtime connect method",
+      "description": "Uses client.speech_to_text.realtime.connect() for the real-time streaming connection",
+      "max_score": 10
+    },
+    {
+      "name": "Correct realtime model",
+      "description": "Uses model_id='scribe_v2_realtime' (not 'scribe_v2' or other model names)",
+      "max_score": 10
+    },
+    {
+      "name": "Async pattern",
+      "description": "Uses async/await and asyncio for the real-time connection (async with or await on connect)",
+      "max_score": 8
+    },
+    {
+      "name": "Partial transcript handling",
+      "description": "Handles partial_transcript events (via event loop or callback registration with RealtimeEvents.PARTIAL_TRANSCRIPT or event.type == 'partial_transcript')",
+      "max_score": 10
+    },
+    {
+      "name": "Committed transcript handling",
+      "description": "Handles committed_transcript events (via event loop or callback registration with RealtimeEvents.COMMITTED_TRANSCRIPT or event.type == 'committed_transcript')",
+      "max_score": 10
+    },
+    {
+      "name": "Error event handling",
+      "description": "Handles error events (via RealtimeEvents.ERROR or event.type == 'error')",
+      "max_score": 8
+    },
+    {
+      "name": "Stream URL usage",
+      "description": "Passes a URL to the connection (via url parameter, stream_url method, or RealtimeUrlOptions)",
+      "max_score": 10
+    },
+    {
+      "name": "Imports from elevenlabs",
+      "description": "Imports at least one of RealtimeEvents, RealtimeUrlOptions, or RealtimeAudioOptions from the elevenlabs package",
+      "max_score": 10
+    },
+    {
+      "name": "Graceful shutdown",
+      "description": "Includes KeyboardInterrupt handling or signal handling for clean shutdown, and calls connection.close()",
+      "max_score": 8
+    },
+    {
+      "name": "Correct pip package",
+      "description": "requirements.txt includes 'elevenlabs' (the PyPI package name)",
+      "max_score": 8
+    }
+  ]
+}

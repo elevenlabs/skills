@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements error handling for ElevenLabs content restriction errors, including bad_prompt with prompt_suggestion recovery, bad_composition_plan with composition_plan_suggestion recovery, and awareness of common HTTP error codes.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Bad prompt detection",
+      "description": "Code detects or catches the bad_prompt error type specifically (not just a generic exception catch with no distinction)",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt suggestion extraction",
+      "description": "Extracts prompt_suggestion from the bad_prompt error response for use in the retry",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt retry with suggestion",
+      "description": "Retries the compose() call using the extracted prompt_suggestion as the new prompt",
+      "max_score": 10
+    },
+    {
+      "name": "Bad composition plan detection",
+      "description": "Code detects or catches the bad_composition_plan error type specifically",
+      "max_score": 10
+    },
+    {
+      "name": "Plan suggestion extraction",
+      "description": "Extracts composition_plan_suggestion from the bad_composition_plan error response",
+      "max_score": 10
+    },
+    {
+      "name": "Plan retry with suggestion",
+      "description": "Retries compose() using the extracted composition_plan_suggestion instead of the original plan",
+      "max_score": 10
+    },
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs')",
+      "max_score": 5
+    },
+    {
+      "name": "Streaming audio write",
+      "description": "Writes audio output by iterating over chunks (for chunk in audio: f.write(chunk))",
+      "max_score": 10
+    },
+    {
+      "name": "No dual parameters",
+      "description": "Does NOT pass both prompt and composition_plan to the same compose() call",
+      "max_score": 10
+    },
+    {
+      "name": "HTTP error awareness",
+      "description": "Code or comments reference at least two of the common HTTP errors: 401, 422, 429",
+      "max_score": 5
+    },
+    {
+      "name": "Harmful content note",
+      "description": "Code or comments acknowledge that no suggestion is provided for harmful content (only for copyrighted material)",
+      "max_score": 10
+    }
+  ]
+}

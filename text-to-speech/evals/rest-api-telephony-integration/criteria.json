@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent correctly uses the ElevenLabs REST API via cURL, including the xi-api-key header, ELEVENLABS_API_KEY environment variable, telephony output format, text normalization, language code, and valid model/voice selection.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "xi-api-key header",
+      "description": "Uses -H 'xi-api-key: ...' header for authentication in cURL commands, NOT 'Authorization: Bearer ...'",
+      "max_score": 12
+    },
+    {
+      "name": "ELEVENLABS_API_KEY env var",
+      "description": "Reads the API key from the ELEVENLABS_API_KEY environment variable (e.g., $ELEVENLABS_API_KEY), not hardcoded",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API endpoint",
+      "description": "Posts to https://api.elevenlabs.io/v1/text-to-speech/{voice_id} with voice_id in the URL path",
+      "max_score": 8
+    },
+    {
+      "name": "Telephony output format",
+      "description": "Uses ulaw_8000 output format (the format standard for phone systems) -- either in the request body or as a query parameter",
+      "max_score": 12
+    },
+    {
+      "name": "Multilingual model",
+      "description": "Uses a model that supports Spanish (eleven_multilingual_v2, eleven_v3, eleven_flash_v2_5, or eleven_turbo_v2_5), NOT eleven_flash_v2 which is English-only",
+      "max_score": 10
+    },
+    {
+      "name": "Language code for Spanish",
+      "description": "Includes language_code field set to 'es' in the JSON body for the Spanish prompt",
+      "max_score": 10
+    },
+    {
+      "name": "Text normalization",
+      "description": "Includes apply_text_normalization field (set to 'on' or 'auto') in requests that contain numbers, dates, or phone numbers",
+      "max_score": 10
+    },
+    {
+      "name": "Female voice ID",
+      "description": "Uses a female voice ID from the documented list: EXAVITQu4vr4xnSDxMaL (Sarah) or XB0fDUnXU5powFXDhCwa (Charlotte)",
+      "max_score": 8
+    },
+    {
+      "name": "Content-Type header",
+      "description": "Includes Content-Type: application/json header in cURL requests",
+      "max_score": 5
+    },
+    {
+      "name": "Valid JSON body",
+      "description": "Sends request body as JSON with at least 'text' and 'model_id' fields",
+      "max_score": 5
+    },
+    {
+      "name": "Output to files",
+      "description": "Uses cURL --output flag to write audio responses to files",
+      "max_score": 5
+    },
+    {
+      "name": "model_id snake_case",
+      "description": "Uses 'model_id' (snake_case) as the JSON field name in the REST API request body, not 'modelId' (camelCase)",
+      "max_score": 5
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct ElevenLabs JavaScript SDK package and API patterns for batch transcription with timestamps and language detection. Evaluates correct package selection, import paths, API method usage, and response field handling.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct npm package",
+      "description": "package.json lists '@elevenlabs/elevenlabs-js' as a dependency, NOT 'elevenlabs' (the deprecated v1.x package)",
+      "max_score": 12
+    },
+    {
+      "name": "Correct client import",
+      "description": "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js' (not from 'elevenlabs' or other packages)",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.speechToText.convert() method (camelCase JS convention) for batch transcription",
+      "max_score": 10
+    },
+    {
+      "name": "Correct model ID",
+      "description": "Uses modelId: 'scribe_v2' (not whisper, scribe_v1, or other model names)",
+      "max_score": 10
+    },
+    {
+      "name": "Word timestamps requested",
+      "description": "Passes timestampsGranularity: 'word' (or equivalent) parameter to get word-level timing",
+      "max_score": 10
+    },
+    {
+      "name": "Language code parameter",
+      "description": "Passes languageCode parameter using an ISO 639-1 or ISO 639-3 code (e.g., 'eng', 'spa', 'fra', 'en', 'es', 'fr')",
+      "max_score": 8
+    },
+    {
+      "name": "Language detection output",
+      "description": "Accesses result.languageCode and result.languageProbability (or equivalent camelCase/snake_case fields) from the response",
+      "max_score": 8
+    },
+    {
+      "name": "Uses createReadStream",
+      "description": "Uses fs.createReadStream() (or equivalent stream) to read the audio file for the API call, not reading entire file into memory as buffer",
+      "max_score": 8
+    },
+    {
+      "name": "Word timing fields",
+      "description": "Accesses word.start and word.end fields from the response words array to generate SRT timestamps",
+      "max_score": 8
+    },
+    {
+      "name": "Word type awareness",
+      "description": "Code checks or filters on word.type (e.g., filtering for type==='word') when processing the response words",
+      "max_score": 8
+    },
+    {
+      "name": "File read with fs",
+      "description": "Imports from 'fs' or 'node:fs' for file operations",
+      "max_score": 8
+    }
+  ]
+}

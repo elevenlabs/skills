@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly uses the ElevenLabs Python SDK for prompt-based music generation, including correct imports, streaming audio output, the force_instrumental parameter, proper duration handling, and environment-variable-based authentication.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs'), not from some other module path",
+      "max_score": 10
+    },
+    {
+      "name": "Client instantiation",
+      "description": "Creates the client using ElevenLabs() without hardcoding an API key inline, relying on the ELEVENLABS_API_KEY environment variable",
+      "max_score": 10
+    },
+    {
+      "name": "Uses music.compose",
+      "description": "Calls client.music.compose() to generate the audio",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt parameter",
+      "description": "Passes the user-provided prompt string as the 'prompt' parameter to compose()",
+      "max_score": 5
+    },
+    {
+      "name": "Duration in milliseconds",
+      "description": "Converts the user-provided seconds to milliseconds for the music_length_ms parameter (multiplies by 1000)",
+      "max_score": 10
+    },
+    {
+      "name": "Force instrumental",
+      "description": "Sets force_instrumental=True (or equivalent) in the compose() call to ensure instrumental-only output",
+      "max_score": 10
+    },
+    {
+      "name": "Streaming chunk write",
+      "description": "Writes the audio output by iterating over chunks (e.g., 'for chunk in audio: f.write(chunk)'), not attempting to write the response as a single blob",
+      "max_score": 10
+    },
+    {
+      "name": "No dual parameters",
+      "description": "Does NOT pass both prompt and composition_plan to the same compose() call",
+      "max_score": 10
+    },
+    {
+      "name": "Duration bounds awareness",
+      "description": "Code includes validation or a comment acknowledging the 3,000-600,000 ms valid range for music_length_ms",
+      "max_score": 10
+    },
+    {
+      "name": "Error handling for API errors",
+      "description": "Includes try/except (or equivalent) error handling around the API call",
+      "max_score": 5
+    },
+    {
+      "name": "HTTP error awareness",
+      "description": "Error handling or comments reference at least two of: 401 (invalid key), 422 (invalid params), 429 (rate limit)",
+      "max_score": 10
+    }
+  ]
+}

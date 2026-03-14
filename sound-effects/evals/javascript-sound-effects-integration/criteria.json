@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct ElevenLabs JavaScript SDK package, proper imports, correct API method for sound effects, proper stream handling, environment-based authentication, and descriptive prompts.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct npm package",
+      "description": "package.json lists @elevenlabs/elevenlabs-js as a dependency (not the deprecated 'elevenlabs' package)",
+      "max_score": 10
+    },
+    {
+      "name": "No deprecated package",
+      "description": "Neither package.json nor any JS file references the deprecated 'elevenlabs' npm package (v1.x) as a dependency or import",
+      "max_score": 10
+    },
+    {
+      "name": "Correct client import",
+      "description": "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js'",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.textToSoundEffects.convert() (camelCase) to generate sound effects",
+      "max_score": 10
+    },
+    {
+      "name": "Text parameter provided",
+      "description": "Passes a 'text' property in the convert() call for each sound effect",
+      "max_score": 5
+    },
+    {
+      "name": "Stream handling",
+      "description": "Uses .pipe() with a write stream (e.g., createWriteStream) or equivalent streaming approach to save the audio response",
+      "max_score": 10
+    },
+    {
+      "name": "Environment variable auth",
+      "description": "Client is instantiated without hardcoding an API key -- relies on ELEVENLABS_API_KEY environment variable or reads from process.env",
+      "max_score": 10
+    },
+    {
+      "name": "Descriptive prompts",
+      "description": "The sample manifest prompts are specific and descriptive (more than one or two generic words per prompt, e.g., NOT just 'jump' but something like 'bouncy spring jump sound effect')",
+      "max_score": 10
+    },
+    {
+      "name": "MP3 output extension",
+      "description": "Output filenames in the manifest use .mp3 extension (the default format)",
+      "max_score": 5
+    },
+    {
+      "name": "Await on convert",
+      "description": "The convert() call is properly awaited (uses await keyword or .then() pattern)",
+      "max_score": 10
+    },
+    {
+      "name": "Multiple sound effects",
+      "description": "The manifest contains at least 3 distinct sound effect entries",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "elevenlabs/speech-to-text",
+  "version": "0.1.0",
+  "private": false,
+  "repository": "https://github.com/elevenlabs/skills",
+  "summary": "Transcribe audio to text using ElevenLabs Scribe v2. Use when converting audio/video to text, generating subtitles, transcribing meetings, or processing spoken content.",
+  "skills": {
+    "speech-to-text": {
+      "path": "SKILL.md"
+    }
+  }
+}

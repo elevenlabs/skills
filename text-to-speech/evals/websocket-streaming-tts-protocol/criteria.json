@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent correctly implements the ElevenLabs WebSocket streaming protocol, including proper initialization messages, model selection constraints, flush behavior, keepalive handling, and stream closure.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "WebSocket URL format",
+      "description": "Connects to wss://api.elevenlabs.io/v1/text-to-speech/{voiceId}/stream-input with model_id as a query parameter",
+      "max_score": 8
+    },
+    {
+      "name": "No eleven_v3 for WebSocket",
+      "description": "Does NOT use eleven_v3 as the model for WebSocket streaming (uses eleven_flash_v2_5, eleven_flash_v2, or eleven_turbo_v2_5 instead)",
+      "max_score": 10
+    },
+    {
+      "name": "Flash model for streaming",
+      "description": "Uses eleven_flash_v2_5 or eleven_flash_v2 model for low-latency streaming",
+      "max_score": 8
+    },
+    {
+      "name": "Init message has space text",
+      "description": "First WebSocket message includes 'text' field set to a single space ' '",
+      "max_score": 10
+    },
+    {
+      "name": "Init message has voice_settings",
+      "description": "First WebSocket message includes voice_settings with at least stability and similarity_boost",
+      "max_score": 8
+    },
+    {
+      "name": "Init message has chunk_length_schedule",
+      "description": "First WebSocket message includes generation_config with chunk_length_schedule array",
+      "max_score": 10
+    },
+    {
+      "name": "Init message has API key",
+      "description": "First WebSocket message includes xi_api_key field (sourced from ELEVENLABS_API_KEY environment variable)",
+      "max_score": 8
+    },
+    {
+      "name": "Flush at turn end",
+      "description": "Sends a message with flush:true at the end of a conversation turn to force buffered audio to be generated",
+      "max_score": 10
+    },
+    {
+      "name": "Close with empty text",
+      "description": "Closes the stream by sending a message with empty text string (e.g., {\"text\": \"\"})",
+      "max_score": 10
+    },
+    {
+      "name": "Keepalive mechanism",
+      "description": "Implements a keepalive by sending a space ' ' during inactivity periods to prevent the 20-second timeout",
+      "max_score": 10
+    },
+    {
+      "name": "Audio base64 decoding",
+      "description": "Decodes received audio chunks from base64 (data['audio'] is base64-encoded)",
+      "max_score": 4
+    },
+    {
+      "name": "Check isFinal",
+      "description": "Checks for isFinal field in received messages to know when the stream is complete",
+      "max_score": 4
+    }
+  ]
+}

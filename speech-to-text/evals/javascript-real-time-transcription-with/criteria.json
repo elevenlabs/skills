@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements JavaScript server-side real-time transcription with manual audio chunking, including correct package usage, manual commit strategy for file-based audio, proper PCM format specification, chunk sizing, and event handling via RealtimeEvents.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct npm package",
+      "description": "package.json lists '@elevenlabs/elevenlabs-js' as a dependency, NOT 'elevenlabs'",
+      "max_score": 10
+    },
+    {
+      "name": "Correct client import",
+      "description": "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js'",
+      "max_score": 8
+    },
+    {
+      "name": "Realtime connect method",
+      "description": "Uses client.speechToText.realtime.connect() for the streaming connection",
+      "max_score": 10
+    },
+    {
+      "name": "Correct realtime model",
+      "description": "Uses modelId: 'scribe_v2_realtime' (not 'scribe_v2' or other model names)",
+      "max_score": 10
+    },
+    {
+      "name": "Manual commit used",
+      "description": "Calls connection.commit() explicitly after sending audio (manual commit strategy, appropriate for file processing), does NOT configure VAD",
+      "max_score": 10
+    },
+    {
+      "name": "PCM audio format",
+      "description": "Specifies PCM audio format (e.g., AudioFormat.PCM_16000 or equivalent) in the connection configuration",
+      "max_score": 8
+    },
+    {
+      "name": "Sample rate 16kHz",
+      "description": "Uses sampleRate of 16000 in connection config or audio chunk messages",
+      "max_score": 8
+    },
+    {
+      "name": "Chunk size ~32000",
+      "description": "Uses a chunk size of approximately 32000 bytes (32000 or 32768) when splitting audio data",
+      "max_score": 8
+    },
+    {
+      "name": "RealtimeEvents import",
+      "description": "Imports RealtimeEvents from '@elevenlabs/elevenlabs-js' and uses it for event registration (e.g., connection.on(RealtimeEvents.COMMITTED_TRANSCRIPT, ...))",
+      "max_score": 8
+    },
+    {
+      "name": "Timestamps requested",
+      "description": "Passes includeTimestamps: true in the connection configuration",
+      "max_score": 10
+    },
+    {
+      "name": "Base64 encoding",
+      "description": "Encodes audio chunks to base64 before sending (e.g., chunk.toString('base64') or Buffer.from().toString('base64'))",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses correct Python SDK imports, proper API method, valid output format strings from the ElevenLabs format list, proper error handling for documented error codes, correct parameter ranges, and chunk-based stream writing.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct Python import",
+      "description": "Imports ElevenLabs from elevenlabs.client (i.e., 'from elevenlabs.client import ElevenLabs')",
+      "max_score": 10
+    },
+    {
+      "name": "Correct API method",
+      "description": "Uses client.text_to_sound_effects.convert() to generate sound effects",
+      "max_score": 10
+    },
+    {
+      "name": "Output format parameter",
+      "description": "Passes output_format as an SDK parameter in the convert() call",
+      "max_score": 10
+    },
+    {
+      "name": "Valid format strings",
+      "description": "All output formats used in the config are valid ElevenLabs format identifiers (from the documented list such as mp3_44100_128, pcm_44100, opus_48000_128, ulaw_8000, etc.)",
+      "max_score": 10
+    },
+    {
+      "name": "Telephony format",
+      "description": "At least one config entry uses ulaw_8000 or alaw_8000 for the telephony use case",
+      "max_score": 5
+    },
+    {
+      "name": "Error handling present",
+      "description": "Code includes try/except blocks around API calls to catch and handle errors",
+      "max_score": 10
+    },
+    {
+      "name": "Documented error codes",
+      "description": "Error handling or comments reference at least two of the documented error codes: 401 (invalid key), 422 (invalid params), 429 (rate limit)",
+      "max_score": 10
+    },
+    {
+      "name": "Chunk-based writing",
+      "description": "Writes audio response by iterating over chunks rather than writing the whole response at once",
+      "max_score": 10
+    },
+    {
+      "name": "Prompt influence range",
+      "description": "All prompt_influence values in the config are between 0 and 1",
+      "max_score": 5
+    },
+    {
+      "name": "Duration range valid",
+      "description": "All duration values in the config are between 0.5 and 30 seconds (or null/omitted for auto)",
+      "max_score": 5
+    },
+    {
+      "name": "Env var authentication",
+      "description": "ElevenLabs client is created without a hardcoded API key, relying on ELEVENLABS_API_KEY environment variable",
+      "max_score": 5
+    },
+    {
+      "name": "Descriptive prompts",
+      "description": "Sound effect prompts are specific and descriptive (more than 2 generic words each)",
+      "max_score": 10
+    }
+  ]
+}

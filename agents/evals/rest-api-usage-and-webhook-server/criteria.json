@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses correct REST API endpoints, authentication headers, HTTP methods for create vs update, valid LLM model IDs, proper webhook request/response format, and environment variable authentication patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "API key header",
+      "description": "Shell scripts use the 'xi-api-key' header (not 'Authorization: Bearer' or 'x-api-key') for authentication",
+      "max_score": 10
+    },
+    {
+      "name": "Env var for API key",
+      "description": "Scripts reference $ELEVENLABS_API_KEY environment variable for the API key value, not a hardcoded key",
+      "max_score": 8
+    },
+    {
+      "name": "Create endpoint",
+      "description": "create_agent.sh sends a POST request to a URL containing '/v1/convai/agents/create' (the correct create endpoint)",
+      "max_score": 8
+    },
+    {
+      "name": "PATCH for update",
+      "description": "update_agent.sh uses the PATCH HTTP method (not POST or PUT) for updating the agent",
+      "max_score": 10
+    },
+    {
+      "name": "Partial update",
+      "description": "update_agent.sh only sends the prompt/temperature fields in the request body, not the entire agent configuration (demonstrating partial update)",
+      "max_score": 8
+    },
+    {
+      "name": "Anthropic model ID",
+      "description": "create_agent.sh uses a valid Anthropic model ID: 'claude-3-5-sonnet' or 'claude-3-5-haiku'",
+      "max_score": 10
+    },
+    {
+      "name": "Known male voice ID",
+      "description": "Uses one of the documented male voice IDs: JBFqnCBsd6RMkjVDRZzb (George) or onwK4e9ZLuTAKqWW03F9 (Daniel)",
+      "max_score": 8
+    },
+    {
+      "name": "Webhook tool in create",
+      "description": "create_agent.sh includes a tool with type 'webhook' containing a webhook object with url and method fields",
+      "max_score": 8
+    },
+    {
+      "name": "Webhook response format",
+      "description": "webhook_server.py returns a JSON response with a 'result' key (not 'response', 'data', 'message', etc.)",
+      "max_score": 10
+    },
+    {
+      "name": "Webhook request parsing",
+      "description": "webhook_server.py extracts parameters from the request body's 'parameters' field (matching the ElevenLabs webhook request format)",
+      "max_score": 10
+    },
+    {
+      "name": "Content-Type header",
+      "description": "Shell scripts include 'Content-Type: application/json' header in the cURL requests",
+      "max_score": 5
+    },
+    {
+      "name": "API base URL",
+      "description": "Scripts use 'https://api.elevenlabs.io' as the API base URL",
+      "max_score": 5
+    }
+  ]
+}
