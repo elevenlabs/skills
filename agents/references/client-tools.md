@@ -317,10 +317,11 @@ Built-in tools provided by ElevenLabs. These are configured in `conversation_con
     "language_detection": {},
     "skip_turn": {},
     "voicemail_detection": {...},
-    "play_keypad_touch_tone": {},
-    "search_documentation": {...}
+    "play_keypad_touch_tone": {}
 }
 ```
+
+Current API schemas also expose `agent_prompt_change`, `memory_entry_create`, `memory_entry_delete`, `memory_entry_search`, and `memory_entry_update` in `built_in_tools`.
 
 ### end_call
 

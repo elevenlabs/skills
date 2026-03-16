@@ -290,7 +290,6 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | Field | Type | Description |
 |-------|------|-------------|
 | `tags` | array | Classification labels for filtering (e.g., `["production"]`, `["test"]`) |
-| `coaching_settings` | object | Configuration for agent coaching and evaluation |
 | `workflow` | object | Conversation flow definition and tool interaction sequences |
 
 ## Knowledge Base / RAG
