@@ -126,6 +126,8 @@ await conversation.startSession({ signedUrl: token });
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
 
+Use `GET /v1/convai/llm/list` to inspect the current model catalog, including deprecation state, token/context limits, and capability flags such as image-input support.
+
 **Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel), `XB0fDUnXU5powFXDhCwa` (Charlotte)
 
 **Turn eagerness:** `patient` (waits longer for user to finish), `normal`, or `eager` (responds quickly)

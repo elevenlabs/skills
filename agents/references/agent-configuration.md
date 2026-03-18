@@ -197,6 +197,8 @@ conversation_config={
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
+Use `GET /v1/convai/llm/list` to inspect the current model catalog, including deprecation state, token/context limits, and capability flags such as image-input support.
+
 ### Custom LLM
 
 The `custom_llm` field is nested inside `conversation_config.agent.prompt`:
@@ -248,6 +250,8 @@ platform_settings={
 | `widget` | object | Hosted widget and shareable page configuration. See the widget table below for selected options. |
 | `auth` | object | Authentication and origin restrictions for agent access |
 | `call_limits` | object | Concurrency and daily usage limits |
+| `guardrails` | object | Built-in safety and policy controls for agent interactions |
+| `privacy` | object | Recording, retention, and conversation history redaction settings |
 
 ### auth
 
@@ -264,6 +268,37 @@ platform_settings={
 | `agent_concurrency_limit` | int | Max simultaneous conversations (default: -1, unlimited) |
 | `daily_limit` | int | Max conversations per day (default: 100000) |
 | `bursting_enabled` | bool | Allow exceeding limits at 2x cost (default: true) |
+
+### guardrails
+
+Use `platform_settings.guardrails` to configure built-in safety controls for user input and agent behavior. The fields below cover the current schema additions that are most relevant in agent configs.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | string | Guardrail config version. Use `"1"` for the current schema. |
+| `focus` | object | Keeps the agent on-topic and aligned with the configured task. |
+| `prompt_injection` | object | Detects prompt injection and instruction override attempts. |
+
+**focus / prompt_injection:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `is_enabled` | bool | Enables the guardrail. |
+
+### privacy
+
+Use `platform_settings.privacy` to control recording, retention, and redaction behavior. The redaction-specific field is:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `conversation_history_redaction` | object | Redacts configured entity types from stored transcripts, audio, and analysis. |
+
+**conversation_history_redaction:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | bool | `false` | Whether conversation history redaction is enabled |
+| `entities` | array | - | Entity types to redact. Use parent types such as `name` or specific values such as `name.name_given`, `email_address`, `contact_number`, `dob`, and `age`. |
 
 ### widget
 
@@ -290,7 +325,6 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | Field | Type | Description |
 |-------|------|-------------|
 | `tags` | array | Classification labels for filtering (e.g., `["production"]`, `["test"]`) |
-| `coaching_settings` | object | Configuration for agent coaching and evaluation |
 | `workflow` | object | Conversation flow definition and tool interaction sequences |
 
 ## Knowledge Base / RAG
@@ -310,6 +344,7 @@ agent = client.conversational_ai.agents.create(
                 ],
                 "rag": {
                     "enabled": True,
+                    "embedding_model": "qwen3_embedding_4b",
                     "max_documents_length": 50000,
                     "max_retrieved_rag_chunks_count": 20
                 }
@@ -319,6 +354,8 @@ agent = client.conversational_ai.agents.create(
     }
 )
 ```
+
+`rag.embedding_model` supports `e5_mistral_7b_instruct`, `multilingual_e5_large_instruct`, and `qwen3_embedding_4b`.
 
 ## CRUD Operations
 
@@ -448,7 +485,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |
-| `platform_settings` | `summary_language` |
+| `platform_settings` | `summary_language`, `guardrails`, `privacy` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
