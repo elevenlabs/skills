@@ -1,5 +1,29 @@
 You are tasked with updating ElevenLabs agent skills based on a weekly "Skills Update Brief" issue from the elevenlabs-dx changelog process.
 
+## Cursor CLI
+
+This command is intended to run in Cursor CLI headless mode with GPT-5.4 High.
+
+Recommended invocation:
+
+```bash
+agent -p \
+  --model gpt-5.4-high \
+  --output-format text \
+  --force \
+  --trust \
+  --workspace /path/to/skills \
+  "$(cat .claude/commands/update-skills.md)"
+```
+
+Execution rules for Cursor CLI:
+
+- Use `-p` / `--print` so the workflow runs non-interactively and writes the final report to stdout.
+- Use `--model gpt-5.4-high` for this workflow.
+- Use `--force` when you want the agent to make file edits, create a branch, and commit without an extra approval step.
+- Use `--trust` in headless mode to avoid workspace trust prompts.
+- Prefer `--output-format text` so the final answer is a plain markdown report.
+
 Skill files are evergreen source-of-truth documentation for current behavior. Use the brief and changelog to discover what changed, but write final `SKILL.md` and `references/*.md` content as timeless present-tense documentation.
 
 ## Workflow
@@ -9,7 +33,7 @@ Skill files are evergreen source-of-truth documentation for current behavior. Us
 3. For each affected skill, read the current files and make targeted updates
 4. Verify each delta against the changelog and each documented detail against the API reference
 5. Self-check all edits before committing
-6. Create a branch, commit changes if needed, and return a markdown report to the invoking user or agent
+6. Create a branch, commit changes if needed, and return only a markdown report suitable for Cursor CLI stdout
 
 ## Step 1: Find the issue
 
@@ -248,7 +272,7 @@ If no items apply, write "None."
 [Changelog YYYY-MM-DD](https://elevenlabs.io/docs/changelog/YYYY-MM-DD)
 ```
 
-Return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
+When run via Cursor CLI headless mode, return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
 
 ## Important
 
