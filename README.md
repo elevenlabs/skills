@@ -43,6 +43,31 @@ Most skills include examples for:
 
 See the installation guide in any skill's `references/` folder for complete setup instructions including migration from deprecated packages.
 
+## Evaluations
+
+The `evals/` directory contains trigger and functional evaluations for all skills.
+
+```bash
+# Run all evaluations (trigger + functional)
+python3 evals/run_all.py -v
+
+# Trigger evals only — tests if skills fire for the right queries (~3 min)
+python3 evals/run_all.py --trigger-only -v
+
+# Functional evals only — tests if skills produce correct output (~10 min)
+python3 evals/run_all.py --functional-only -v
+
+# Specific skills
+python3 evals/run_all.py --skills text-to-speech agents -v
+
+# Custom model
+python3 evals/run_all.py --model claude-sonnet-4-6 -v
+```
+
+Results are saved to `evals/results/<timestamp>/` with a `report.md` summary and `results.json` for programmatic access.
+
+Requires the [Claude CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude` command) to be installed and configured.
+
 ## License
 
 MIT
