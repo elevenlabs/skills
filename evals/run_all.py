@@ -44,7 +44,7 @@ EVALS_DIR = Path(__file__).parent
 # Cursor Agent CLI (https://cursor.com/docs/cli/using); override with CURSOR_AGENT if needed.
 CURSOR_AGENT_BIN = os.environ.get("CURSOR_AGENT", "cursor-agent")
 # Default GPT-5.4 tier (see `cursor-agent --list-models`).
-DEFAULT_CURSOR_MODEL = "composer-2-fast"
+DEFAULT_CURSOR_MODEL = "gpt-5.4-medium"
 
 ALL_SKILLS = [
     "text-to-speech",
@@ -441,11 +441,12 @@ def run_functional_eval_for_skill(
             grades = [{"text": e, "passed": False, "evidence": "Timed out"} for e in expectations]
             passed = 0
             total = len(expectations)
-        except Exception as e:
+        except Exception as exc:
             elapsed = time.time() - t0
             success = False
-            response_text = "[ERROR: %s]" % str(e)
-            grades = [{"text": e, "passed": False, "evidence": str(e)} for e in expectations]
+            err_msg = str(exc)
+            response_text = "[ERROR: %s]" % err_msg
+            grades = [{"text": exp, "passed": False, "evidence": err_msg} for exp in expectations]
             passed = 0
             total = len(expectations)
 
