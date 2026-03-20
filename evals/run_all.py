@@ -28,6 +28,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import select
 import shutil
 import subprocess
@@ -516,6 +517,30 @@ def grade_expectations(response_text, expectations):
     return grades
 
 
+def extract_negative_terms(expectation: str) -> list[str]:
+    """Extract quoted terms from generic NOT clauses like ``(NOT 'elevenlabs')``."""
+    return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
+
+
+def find_forbidden_reference(response_text: str, term: str) -> str | None:
+    """Detect an exact forbidden package/import reference in code-like contexts."""
+    escaped = re.escape(term)
+    patterns = [
+        rf"(?i)\bfrom\s+{escaped}\s+import\b",
+        rf"(?im)^\s*import\s+{escaped}(?:\s+as\s+\w+)?(?:\s*,\s*\w+)*\s*$",
+        rf"(?i)\bfrom\s+[\"']{escaped}[\"']",
+        rf"(?i)\brequire\(\s*[\"']{escaped}[\"']\s*\)",
+        rf"(?i)\bimport\(\s*[\"']{escaped}[\"']\s*\)",
+        rf"(?i)\b(?:npm\s+install|pnpm\s+add|yarn\s+add|bun\s+add)\s+{escaped}(?:\s|$)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, response_text)
+        if match:
+            return match.group(0)
+    return None
+
+
 def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
@@ -533,6 +558,12 @@ def check_expectation(response_lower, response_text, expectation):
         if found_deprecated:
             return False, "Found deprecated pattern: %s" % found_deprecated[0]
         return True, "No deprecated patterns found"
+
+    negative_terms = extract_negative_terms(expectation)
+    for term in negative_terms:
+        forbidden_match = find_forbidden_reference(response_text, term)
+        if forbidden_match:
+            return False, "Found forbidden reference: %s" % forbidden_match
 
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
@@ -636,10 +667,13 @@ def check_expectation(response_lower, response_text, expectation):
             missing = [t for t in key_terms if t not in response_lower]
             return False, "Missing key terms: %s" % ", ".join(missing[:5])
 
+    if negative_terms:
+        return True, "Forbidden references absent: %s" % ", ".join(negative_terms)
+
     return False, "Could not verify expectation"
 
 
-def generate_report(trigger_results, functional_results, output_dir):
+def generate_report(trigger_results, functional_results, output_dir, skills):
     """Generate a markdown summary report."""
     lines = ["# Skills Evaluation Report", ""]
     lines.append(f"**Date:** {time.strftime('%Y-%m-%d %H:%M')}")
@@ -655,7 +689,7 @@ def generate_report(trigger_results, functional_results, output_dir):
     trigger_by_skill = {r["skill"]: r for r in trigger_results}
     func_by_skill = {r["skill"]: r for r in functional_results}
 
-    for skill in ALL_SKILLS:
+    for skill in skills:
         tr = trigger_by_skill.get(skill, {})
         fr = func_by_skill.get(skill, {})
 
@@ -805,7 +839,7 @@ def main():
             functional_results.append(result)
 
     # Generate report
-    report = generate_report(trigger_results, functional_results, output_dir)
+    report = generate_report(trigger_results, functional_results, output_dir, args.skills)
     report_path = output_dir / "report.md"
     report_path.write_text(report)
 
