@@ -90,6 +90,10 @@ def parse_skill_md(skill_path: Path) -> tuple:
             else:
                 description = value.strip('"').strip("'")
         i += 1
+    if not name:
+        raise ValueError("SKILL.md missing 'name' in frontmatter")
+    if not description:
+        raise ValueError("SKILL.md missing 'description' in frontmatter")
     return name, description, content
 
 
