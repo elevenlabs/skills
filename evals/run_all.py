@@ -540,8 +540,8 @@ def check_expectation(response_lower, response_text, expectation):
 
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
-        # SDK imports
-        ("from elevenlabs import", "from elevenlabs import", "elevenlabs import"),
+        # SDK imports (specifically `from elevenlabs import ElevenLabs`)
+        ("from elevenlabs import elevenlabs", "from elevenlabs import elevenlabs", "elevenlabs import"),
         ("elevenlabs()", "elevenlabs()", "client constructor"),
         ("elevenlabsclient", "elevenlabsclient", "JS client constructor"),
         # API methods
