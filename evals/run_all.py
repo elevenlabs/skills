@@ -91,6 +91,10 @@ def parse_skill_md(skill_path: Path) -> tuple:
             else:
                 description = value.strip('"').strip("'")
         i += 1
+    if not name:
+        raise ValueError("SKILL.md missing 'name' in frontmatter")
+    if not description:
+        raise ValueError("SKILL.md missing 'description' in frontmatter")
     return name, description, content
 
 
@@ -567,8 +571,8 @@ def check_expectation(response_lower, response_text, expectation):
 
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
-        # SDK imports
-        ("from elevenlabs import", "from elevenlabs import", "elevenlabs import"),
+        # SDK imports (specifically `from elevenlabs import ElevenLabs`)
+        ("from elevenlabs import elevenlabs", "from elevenlabs import elevenlabs", "elevenlabs import"),
         ("elevenlabs()", "elevenlabs()", "client constructor"),
         ("elevenlabsclient", "elevenlabsclient", "JS client constructor"),
         # API methods
@@ -797,8 +801,25 @@ def main():
 
     # Set up output directory
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_dir = Path(args.output_dir) if args.output_dir else EVALS_DIR / "results" / timestamp
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if args.output_dir:
+        # Honor user-specified directory and allow reuse
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        # Create a unique default directory to avoid mixing results from concurrent runs
+        base_results_dir = EVALS_DIR / "results"
+        for _ in range(5):
+            unique_suffix = uuid.uuid4().hex[:8]
+            output_dir = base_results_dir / f"{timestamp}_{unique_suffix}"
+            try:
+                output_dir.mkdir(parents=True, exist_ok=False)
+                break
+            except FileExistsError:
+                # Extremely unlikely; retry with a new suffix
+                continue
+        else:
+            # If we somehow failed repeatedly, let the exception surface
+            output_dir.mkdir(parents=True, exist_ok=False)
 
     print(f"Skills Evaluation", file=sys.stderr)
     print(f"  Skills: {', '.join(args.skills)}", file=sys.stderr)
