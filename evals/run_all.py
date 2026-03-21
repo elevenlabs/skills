@@ -619,69 +619,85 @@ def check_expectation(response_lower, response_text, expectation):
     ]
 
     matched_pattern_checks = []
-    seen_pattern_searches = set()
+    seen_pattern_labels = set()
     for trigger, search, label in pattern_checks:
-        if trigger in exp_lower and search not in seen_pattern_searches:
+        if trigger in exp_lower and label not in seen_pattern_labels:
             matched_pattern_checks.append((search, label))
-            seen_pattern_searches.add(search)
+            seen_pattern_labels.add(label)
+
+    pattern_check_passed = None
+    pattern_check_evidence = ""
     if matched_pattern_checks:
-        missing = [label for search, label in matched_pattern_checks if search not in response_lower]
-        if missing:
-            return False, "%s not found" % missing[0]
-        labels = [label for _, label in matched_pattern_checks]
-        return True, "Pattern match: %s" % ", ".join(labels[:4])
+        missing_patterns = [label for search, label in matched_pattern_checks if search not in response_lower]
+        if missing_patterns:
+            pattern_check_passed = False
+            pattern_check_evidence = "Missing pattern(s): %s" % ", ".join(missing_patterns)
+        else:
+            pattern_check_passed = True
+            pattern_check_evidence = "Found pattern(s): %s" % ", ".join(label for _, label in matched_pattern_checks)
 
     # Semantic checks for natural language expectations
     semantic_checks = [
         # Streaming
-        (["streaming", "stream"], ["stream", "chunk", "generator", "yield", "async", "iter"]),
+        (["streaming", "stream"], ["stream", "chunk", "generator", "yield", "async", "iter"], {"generator", "yield", "async", "iter"}),
         # File operations
-        (["saves", "output", "file", "writes"], ["open(", "write", "save", ".mp3", ".wav", ".mp4"]),
+        (["saves", "output", "file", "writes"], ["open(", "write", "save", ".mp3", ".wav", ".mp4"], {"open(", "save", ".mp3", ".wav", ".mp4"}),
         # Audio processing
-        (["audio", "chunk"], ["chunk", "audio", "byte", "stream", "iter"]),
+        (["audio", "chunk"], ["chunk", "audio", "byte", "stream", "iter"], {"chunk", "byte", "iter"}),
         # Real-time / playback
-        (["play", "real-time", "realtime"], ["play", "stream", "chunk", "audio", "realtime", "real-time"]),
+        (["play", "real-time", "realtime"], ["play", "stream", "chunk", "audio", "realtime", "real-time"], {"realtime", "real-time"}),
         # Dashboard / instructions
-        (["dashboard", "instructions"], ["dashboard", "elevenlabs.io", "settings", "profile", "api key", "navigate"]),
+        (["dashboard", "instructions"], ["dashboard", "elevenlabs.io", "settings", "profile", "api key", "navigate"], {"elevenlabs.io", "api key"}),
         # Validation / test API
-        (["validate", "test", "api call"], ["validate", "verify", "test", "curl", "request", "/v1/user", "api.elevenlabs"]),
+        (["validate", "test", "api call"], ["validate", "verify", "test", "curl", "request", "/v1/user", "api.elevenlabs"], {"curl", "/v1/user", "api.elevenlabs"}),
         # Causes / suggestions / debugging
-        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common"]),
+        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common"], {"expired", "invalid", "regenerate", "troubleshoot"}),
         # Steps / getting new key
-        (["steps", "new key", "get a new"], ["step", "new key", "generate", "create", "regenerate", "dashboard", "replace"]),
+        (["steps", "new key", "get a new"], ["step", "new key", "generate", "create", "regenerate", "dashboard", "replace"], {"new key", "regenerate", "replace"}),
         # System prompt
-        (["system prompt"], ["system", "prompt", "instruction", "persona", "role"]),
+        (["system prompt"], ["system", "prompt", "instruction", "persona", "role"], {"persona", "role"}),
         # Tool / booking / availability
-        (["tool", "checking", "booking", "availability"], ["tool", "function", "action", "book", "reserv", "avail", "check"]),
+        (["tool", "checking", "booking", "availability"], ["tool", "function", "action", "book", "reserv", "avail", "check"], {"reserv", "avail"}),
+        # Speaker labels / diarization
+        (["speaker", "speaker label", "who said what", "diariz"], ["speaker", "speaker_id", "speaker:", "speaker label", "speaker_label", "diariz", "segment", "utterance"], {"speaker", "speaker_id", "speaker:", "speaker label", "speaker_label", "diariz"}),
         # Instruments / musical
-        (["instrument", "musical"], ["instrument", "piano", "guitar", "drum", "bass", "string", "synth", "musical"]),
+        (["instrument", "musical"], ["instrument", "piano", "guitar", "drum", "bass", "string", "synth", "musical"], {"piano", "guitar", "drum", "bass", "string", "synth"}),
         # Timestamps / processing
-        (["timestamp", "processes", "displays"], ["timestamp", "word", "time", "start", "end", "display", "print", "output", "format"]),
+        (["timestamp", "timestamped", "word-level"], ["timestamp", "word", "time", "start", "end", "display", "print", "output", "format"], {"timestamp", "start", "end", "format"}),
         # Lyrics / composition
-        (["lyrics", "coding", "programming"], ["lyrics", "lyric", "coding", "code", "program", "develop", "debug"]),
+        (["lyrics", "coding", "programming"], ["lyrics", "lyric", "coding", "code", "program", "develop", "debug"], {"lyrics", "lyric", "coding", "program", "develop", "debug"}),
     ]
 
-    weak_single_indicators = {
-        "audio",
-        "check",
-        "code",
-        "output",
-        "play",
-        "print",
-        "prompt",
-        "system",
-        "time",
-    }
-
-    for triggers, indicators in semantic_checks:
+    semantic_check_applied = False
+    semantic_check_evidence = ""
+    semantic_check_passed = False
+    for triggers, indicators, strong_indicators in semantic_checks:
         if any(t in exp_lower for t in triggers):
+            semantic_check_applied = True
             found = [ind for ind in indicators if ind in response_lower]
             if len(found) >= 2:
-                return True, "Semantic match: %s" % ", ".join(found[:4])
-            elif len(found) == 1:
-                # Single match — check if it's a strong one
-                if found[0] not in weak_single_indicators:
-                    return True, "Strong semantic match: %s" % found[0]
+                semantic_check_passed = True
+                semantic_check_evidence = "Semantic match: %s" % ", ".join(found[:4])
+                break
+            if len(found) == 1 and found[0] in strong_indicators:
+                semantic_check_passed = True
+                semantic_check_evidence = "Strong semantic match: %s" % found[0]
+                break
+            if not semantic_check_evidence:
+                semantic_check_evidence = "Missing semantic indicators: %s" % ", ".join(indicators[:4])
+
+    if matched_pattern_checks and semantic_check_applied:
+        if not pattern_check_passed:
+            return False, pattern_check_evidence
+        if not semantic_check_passed:
+            return False, semantic_check_evidence
+        return True, "%s; %s" % (pattern_check_evidence, semantic_check_evidence)
+
+    if matched_pattern_checks:
+        return pattern_check_passed, pattern_check_evidence
+
+    if semantic_check_applied:
+        return semantic_check_passed, semantic_check_evidence
 
     # Fallback: extract key terms and check presence (relaxed threshold)
     stop_words = {
@@ -833,7 +849,7 @@ def main():
     args = parser.parse_args()
 
     if args.trigger_only and args.functional_only:
-        parser.error("--trigger-only and --functional-only are mutually exclusive")
+        parser.error("cannot combine --trigger-only and --functional-only")
 
     run_trigger = not args.functional_only
     run_functional = not args.trigger_only
