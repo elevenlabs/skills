@@ -29,12 +29,13 @@ Usage:
 import argparse
 import json
 import os
+import queue
 import re
-import select
 import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -171,10 +172,11 @@ def run_single_trigger_query(
             cwd=workspace_dir,
             env=env,
         )
+        assert process.stdout is not None
 
         triggered = False
         start_time = time.time()
-        buffer = ""
+        line_queue: queue.Queue[str | None] = queue.Queue()
 
         def _process_stream_line(raw_line: str) -> bool:
             """Parse one stream-json line. Returns True if processing should stop."""
@@ -213,43 +215,38 @@ def run_single_trigger_query(
 
             return triggered
 
-        def _flush_complete_lines() -> bool:
-            """Drain newline-terminated JSON objects from buffer. Returns True to stop."""
-            nonlocal buffer
-            while "\n" in buffer:
-                raw_line, buffer = buffer.split("\n", 1)
-                if _process_stream_line(raw_line):
-                    return True
-            return False
+        def _read_stdout_lines() -> None:
+            """Stream newline-delimited JSON from the child process on all platforms."""
+            try:
+                for raw_line in process.stdout:
+                    line_queue.put(raw_line.decode("utf-8", errors="replace"))
+            finally:
+                line_queue.put(None)
+
+        stdout_reader = threading.Thread(target=_read_stdout_lines, daemon=True)
+        stdout_reader.start()
 
         try:
             while time.time() - start_time < timeout:
-                if process.poll() is not None:
-                    remaining = process.stdout.read()
-                    if remaining:
-                        buffer += remaining.decode("utf-8", errors="replace")
-                    break
-
-                ready, _, _ = select.select([process.stdout], [], [], 1.0)
-                if not ready:
+                try:
+                    raw_line = line_queue.get(timeout=1.0)
+                except queue.Empty:
+                    if process.poll() is not None:
+                        break
                     continue
 
-                chunk = os.read(process.stdout.fileno(), 8192)
-                if not chunk:
-                    break
-                buffer += chunk.decode("utf-8", errors="replace")
-
-                if _flush_complete_lines():
+                if raw_line is None:
                     break
 
-            # Process data read on process exit, EOF, or timeout — was skipped when the inner
-            # loop only ran after non-empty read chunks.
-            _flush_complete_lines()
+                if _process_stream_line(raw_line):
+                    break
 
         finally:
             if process.poll() is None:
                 process.kill()
                 process.wait()
+            process.stdout.close()
+            stdout_reader.join(timeout=1.0)
 
         return triggered
     finally:
@@ -542,12 +539,10 @@ def extract_negative_terms(expectation: str) -> list[str]:
 
 
 def find_forbidden_reference(response_text: str, term: str) -> str | None:
-    """Detect an exact forbidden package/import reference in code-like contexts."""
+    """Detect an exact forbidden package reference in JS/package-manager contexts."""
     escaped = re.escape(term)
     patterns = [
-        rf"(?i)\bfrom\s+{escaped}\s+import\b",
-        rf"(?im)^\s*import\s+{escaped}(?:\s+as\s+\w+)?(?:\s*,\s*\w+)*\s*$",
-        rf"(?i)\bfrom\s+[\"']{escaped}[\"']",
+        rf"(?im)^\s*import\s+(?:[\w*\s{{}},$]+\s+from\s+)?[\"']{escaped}[\"']\s*;?\s*$",
         rf"(?i)\brequire\(\s*[\"']{escaped}[\"']\s*\)",
         rf"(?i)\bimport\(\s*[\"']{escaped}[\"']\s*\)",
         rf"(?i)\b(?:npm\s+install|pnpm\s+add|yarn\s+add|bun\s+add)\s+{escaped}(?:\s|$)",
