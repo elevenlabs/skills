@@ -48,6 +48,20 @@ CURSOR_AGENT_BIN = os.environ.get("CURSOR_AGENT", "cursor-agent")
 # Default GPT-5.4 tier (see `cursor-agent --list-models`).
 DEFAULT_CURSOR_MODEL = "gpt-5.4-medium"
 
+
+def _ensure_cursor_agent_available() -> None:
+    """Fail fast if the configured cursor-agent binary is not available on PATH."""
+    if shutil.which(CURSOR_AGENT_BIN) is None:
+        print(
+            f"Error: cursor-agent binary '{CURSOR_AGENT_BIN}' not found on PATH.\n"
+            "Install the cursor-agent CLI and/or set the CURSOR_AGENT environment "
+            "variable to the correct binary name or path.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+_ensure_cursor_agent_available()
 ALL_SKILLS = [
     "text-to-speech",
     "speech-to-text",
