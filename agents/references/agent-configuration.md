@@ -395,6 +395,9 @@ agent = client.conversational_ai.agents.create(
 
 `rag.embedding_model` supports `e5_mistral_7b_instruct`, `multilingual_e5_large_instruct`, and `qwen3_embedding_4b`.
 
+Use `POST /v1/convai/knowledge-base/{documentation_id}/refresh` to re-fetch a URL-backed knowledge
+base document after the source content changes.
+
 ## CRUD Operations
 
 ### Using CLI (Recommended)
@@ -437,17 +440,17 @@ elevenlabs agents widget <agent-id>
 ### SDK: List Agents
 
 ```python
-agents = client.conversational_ai.agents.list()
+agents = client.conversational_ai.agents.list(created_by_user_id="@me")
 for agent in agents.agents:
     print(f"{agent.name}: {agent.agent_id}")
 ```
 
 ```javascript
-const agents = await client.conversationalAi.agents.list();
+const agents = await client.conversationalAi.agents.list({ createdByUserId: "@me" });
 ```
 
 ```bash
-curl -X GET "https://api.elevenlabs.io/v1/convai/agents" -H "xi-api-key: $ELEVENLABS_API_KEY"
+curl -X GET "https://api.elevenlabs.io/v1/convai/agents?created_by_user_id=@me" -H "xi-api-key: $ELEVENLABS_API_KEY"
 ```
 
 ### SDK: Get Agent
