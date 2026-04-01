@@ -5,6 +5,7 @@
 - [compose](#compose)
 - [composition_plan.create](#composition_plancreate)
 - [compose_detailed](#compose_detailed)
+- [video_to_music](#video_to_music)
 - [upload](#upload)
 - [Error Handling](#error-handling)
 
@@ -135,6 +136,50 @@ print(result.json)
 # Save the audio
 with open(result.filename, "wb") as f:
     f.write(result.audio)
+```
+
+## video_to_music
+
+Generate background music from one or more uploaded video files. Videos are combined in order and
+the response is an audio file whose format depends on `output_format`.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `videos` | array of files | Yes | One or more video files sent as multipart form data. Up to 10 videos, 200MB combined size, and 600 seconds total duration. |
+| `description` | string | No | Optional text prompt describing the music to generate (max 1000 characters). |
+| `tags` | array | No | Optional list of style tags such as `upbeat` or `cinematic` (max 10 tags). |
+| `sign_with_c2pa` | boolean | No | Sign the generated song with C2PA when producing MP3 output (default: `false`). |
+| `output_format` | string | No | Query parameter controlling the returned audio format. Supports MP3, PCM, u-law, A-law, and Opus variants. |
+
+### Python
+
+```python
+from elevenlabs import ElevenLabs
+
+client = ElevenLabs()
+
+audio = client.music.video_to_music(
+    videos=["trailer.mp4"],
+    description="Cinematic background music with a steady build",
+    tags=["cinematic", "uplifting"],
+)
+```
+
+### JavaScript
+
+```javascript
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import fs from "fs";
+
+const client = new ElevenLabsClient();
+
+const audio = await client.music.videoToMusic({
+  videos: [fs.createReadStream("trailer.mp4")],
+  description: "Cinematic background music with a steady build",
+  tags: ["cinematic", "uplifting"],
+});
 ```
 
 ## upload

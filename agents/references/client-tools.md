@@ -163,7 +163,7 @@ server connections.
 ```
 
 Workspace auth connections support OAuth2 client credentials, OAuth2 JWT, private key JWT,
-basic auth, bearer auth, and custom header auth.
+basic auth, bearer auth, custom header auth, and mTLS.
 
 System dynamic variables are also available in tool parameters and headers. Use
 `{{system__conversation_history}}` when a webhook or sub-agent needs the full conversation
@@ -250,6 +250,34 @@ const conversation = await Conversation.startSession({
     },
   },
 });
+```
+
+In React apps, register client tools either through `ConversationProvider`/`useConversation`
+options or dynamically with `useConversationClientTool()` when the handler depends on component
+state or props.
+
+```tsx
+import {
+  ConversationProvider,
+  useConversationClientTool,
+} from "@elevenlabs/react";
+
+function App() {
+  return (
+    <ConversationProvider>
+      <ShoppingUI />
+    </ConversationProvider>
+  );
+}
+
+function ShoppingUI() {
+  useConversationClientTool("show_product", async ({ productId }) => {
+    document.getElementById("product").src = `/products/${productId}`;
+    return { success: true };
+  });
+
+  return null;
+}
 ```
 
 ### Registering Client Tools with Agent

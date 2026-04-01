@@ -57,6 +57,7 @@ conversation_config={
 | `disable_first_message_interruptions` | bool | `false` | Prevent user from interrupting the first message |
 | `hinglish_mode` | bool | `false` | When enabled and language is Hindi, agent responds in Hinglish |
 | `dynamic_variables` | object | - | Config with `dynamic_variable_placeholders` containing key-value pairs |
+| `max_conversation_duration_message` | string | - | Message the agent sends when the max conversation duration is reached |
 | `prompt` | object | - | LLM configuration (see prompt section below) |
 
 ### tts (Text-to-Speech)
@@ -356,7 +357,17 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 |-------|------|---------|-------------|
 | `max_duration_seconds` | int | `600` | Max conversation duration |
 | `text_only` | bool | `false` | Text-only mode (avoids audio pricing) |
+| `client_events` | array | - | Client event types sent to the connected client |
+| `file_input` | object | - | Enables chat file uploads for multimodal conversations |
 | `monitoring_enabled` | bool | `false` | Enable real-time WebSocket monitoring |
+| `monitoring_events` | array | - | Monitoring event types sent to monitoring connections |
+
+**file_input:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | bool | `true` | Allows users to attach images or PDFs in chat when the selected LLM supports multimodal input |
+| `max_files_per_conversation` | int | `10` | Maximum number of uploaded files allowed per conversation |
 
 ## Additional Top-Level Fields
 
@@ -517,12 +528,12 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | Section | Fields |
 |---------|--------|
 | Root | `name`, `tags` |
-| `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables` |
+| `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables`, `max_conversation_duration_message` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `soft_timeout_config` |
-| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |
+| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `client_events`, `file_input`, `monitoring_enabled`, `monitoring_events` |
 | `platform_settings` | `summary_language`, `guardrails`, `privacy` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |

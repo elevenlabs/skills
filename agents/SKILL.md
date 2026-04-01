@@ -94,9 +94,12 @@ curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create?enable_versionin
 ```python
 signed_url = client.conversational_ai.conversations.get_signed_url(
     agent_id="your-agent-id",
+    branch_id="your-branch-id",
     environment="staging",
 )
 ```
+
+Signed URLs can target a specific agent branch and environment when you need to route conversations outside the default deployment.
 
 **Client-side (JavaScript):**
 ```javascript
@@ -104,20 +107,46 @@ import { Conversation } from "@elevenlabs/client";
 
 const conversation = await Conversation.startSession({
   agentId: "your-agent-id",
-  environment: "staging",
   onMessage: (msg) => console.log("Agent:", msg.message),
   onUserTranscript: (t) => console.log("User:", t.message),
   onError: (e) => console.error(e)
 });
 ```
 
+Use branch-aware or environment-aware routing when generating signed URLs or conversation tokens on your backend.
+
 **React Hook:**
 ```typescript
-import { useConversation } from "@elevenlabs/react";
+import {
+  ConversationProvider,
+  useConversationControls,
+  useConversationStatus,
+} from "@elevenlabs/react";
 
-const conversation = useConversation({ onMessage: (msg) => console.log(msg) });
-// Get a signed URL for the target environment from your backend, then:
-await conversation.startSession({ signedUrl: token });
+function App() {
+  return (
+    <ConversationProvider>
+      <AgentConversation />
+    </ConversationProvider>
+  );
+}
+
+function AgentConversation() {
+  const { startSession, endSession } = useConversationControls();
+  const { status } = useConversationStatus();
+
+  const handleStart = async () => {
+    const response = await fetch("/api/elevenlabs/signed-url");
+    const { signedUrl } = await response.json();
+    await startSession({ signedUrl });
+  };
+
+  return (
+    <button onClick={status === "connected" ? endSession : handleStart}>
+      {status === "connected" ? "End" : "Start"}
+    </button>
+  );
+}
 ```
 
 ## Configuration
