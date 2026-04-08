@@ -33,25 +33,27 @@ from elevenlabs import ElevenLabs
 
 client = ElevenLabs()
 
-result = client.speech_to_text.convert(
-    cloud_storage_url="https://storage.example.com/audio.mp3?signature=abc123",
-    model_id="scribe_v2",
-    language_code="eng",
-    timestamps_granularity="word",
-    diarize=True,
-    keyterms=["ElevenLabs", "Scribe"]
-)
+with open("audio.mp3", "rb") as audio_file:
+    result = client.speech_to_text.convert(
+        file=audio_file,
+        model_id="scribe_v2",
+        language_code="eng",
+        timestamps_granularity="word",
+        diarize=True,
+        keyterms=["ElevenLabs", "Scribe"]
+    )
 ```
 
 ## JavaScript Example
 
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { createReadStream } from "fs";
 
 const client = new ElevenLabsClient();
 
 const result = await client.speechToText.convert({
-  cloudStorageUrl: "https://storage.example.com/audio.mp3?signature=abc123",
+  file: createReadStream("audio.mp3"),
   modelId: "scribe_v2",
   languageCode: "eng",
   timestampsGranularity: "word",
@@ -65,11 +67,23 @@ const result = await client.speechToText.convert({
 ```bash
 curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "cloud_storage_url=https://storage.example.com/audio.mp3?signature=abc123" \
+  -F "file=@audio.mp3" \
   -F "model_id=scribe_v2" \
   -F "language_code=eng" \
   -F "timestamps_granularity=word" \
   -F "diarize=true"
+```
+
+## Cloud Storage URL
+
+If your media is already stored remotely and accessible over HTTPS, use `cloud_storage_url`
+instead of uploading a local file:
+
+```python
+result = client.speech_to_text.convert(
+    cloud_storage_url="https://storage.example.com/audio.mp3?signature=abc123",
+    model_id="scribe_v2"
+)
 ```
 
 ## Response Structure

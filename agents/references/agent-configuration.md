@@ -365,11 +365,6 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `tags` | array | Classification labels for filtering (e.g., `["production"]`, `["test"]`) |
 | `workflow` | object | Conversation flow definition and tool interaction sequences |
 
-Workflow subagent node overrides can narrow the prompt-level resources available at a specific node.
-When a workflow override targets `conversation_config.agent.prompt`, it can set `tool_ids` to limit
-which pre-configured tools remain available and `knowledge_base` to swap in a node-specific list of
-knowledge base locators for that branch of the conversation.
-
 ## Knowledge Base / RAG
 
 Knowledge base is configured inside `conversation_config.agent.prompt`:
