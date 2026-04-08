@@ -75,6 +75,18 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
   -F "diarize=true"
 ```
 
+## Cloud Storage URL
+
+If your media is already stored remotely and accessible over HTTPS, use `cloud_storage_url`
+instead of uploading a local file:
+
+```python
+result = client.speech_to_text.convert(
+    cloud_storage_url="https://storage.example.com/audio.mp3?signature=abc123",
+    model_id="scribe_v2"
+)
+```
+
 ## Transcribing from a URL
 
 Use `source_url` when the media is already hosted online and you do not want to upload a file directly.
@@ -113,6 +125,7 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
   "text": "The complete transcribed text from the audio file.",
   "language_code": "eng",
   "language_probability": 0.98,
+  "audio_duration_secs": 12.4,
   "words": [
     {
       "text": "The",
@@ -139,6 +152,7 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 | `text` | string | Full transcription text |
 | `language_code` | string | Detected language (ISO 639-1 or ISO 639-3) |
 | `language_probability` | float | Confidence in detection (0-1) |
+| `audio_duration_secs` | float | Duration of the transcribed audio in seconds |
 | `words` | array | Word-level timestamps (if requested) |
 | `words[].text` | string | The transcribed word or spacing |
 | `words[].start` | float | Start time in seconds |
