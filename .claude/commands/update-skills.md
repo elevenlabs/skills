@@ -26,6 +26,8 @@ Execution rules for Cursor CLI:
 
 Skill files are evergreen source-of-truth documentation for current behavior. Use the brief and changelog to discover what changed, but write final `SKILL.md` and `references/*.md` content as timeless present-tense documentation.
 
+Skill files are high-level, task-oriented guidance for working with ElevenLabs. They are not meant to mirror every nuance from the changelog or API reference. Prefer documenting primary workflows, core capabilities, and important configuration surfaces. Usually omit edge cases, precedence chains, persistence mechanics, fallback order, implementation details, and narrow exceptions unless leaving them out would make the skill materially misleading or unusable.
+
 ## Workflow
 
 1. Find the latest open `skills-update` issue
@@ -105,16 +107,21 @@ Do NOT proceed to editing until you have read the actual API reference for every
 Not every changelog bullet requires a skill-file edit. Before editing, run this decision gate for each bullet:
 
 1. **Map to a natural home first.** Try to place the change in an existing section/table/list/example in `SKILL.md` or `references/*.md`.
-2. **Edit only when fit is clear.** If a natural home exists, make the smallest useful update there.
-3. **Prefer no-op over forced structure.** If no natural home exists, do not add a one-off sentence or heading just to "cover" the bullet.
-4. **Record no-op in report.** Put skipped bullets under `No Skill Change Needed` in the final report with a one-line reason and source link.
-5. **Only add a new section when all are true:** the feature is substantial, user-facing, reusable, and clearly missing from current structure.
+2. **Pass the abstraction filter.** Only document the change if it reflects a primary capability, common workflow, or important top-level configuration concept that helps users work with ElevenLabs at a high level.
+3. **Skip secondary nuances.** If the bullet is mostly an edge case, precedence rule, persistence detail, fallback order, implementation nuance, or narrow exception, do not add it to skill files even if it is verified and even if it could fit somewhere.
+4. **Edit only when fit is clear.** If a natural home exists and the change passes the abstraction filter, make the smallest useful update there.
+5. **Prefer no-op over forced structure.** If no natural home exists, or the change is too low-level for skill docs, do not add a one-off sentence or heading just to "cover" the bullet.
+6. **Record no-op in report.** Put skipped bullets under `No Skill Change Needed` in the final report with a one-line reason and source link.
+7. **Only add a new section when all are true:** the feature is substantial, user-facing, reusable, high-level enough for skill docs, and clearly missing from current structure.
 
 ### Fit examples
 
 - Good: update an existing model table with a new supported model row.
+- Good: add a new top-level parameter to an existing configuration table when it changes how users commonly set up the product.
 - Good: changelog item has no natural section in current skills; leave skill files unchanged and note it in `No Skill Change Needed`.
+- Good: verified change is real but too low-level for skill docs; leave skill files unchanged and note it in `No Skill Change Needed`.
 - Bad: insert a standalone sentence between unrelated sections just to mention a changelog item.
+- Bad: add a sentence documenting internal precedence, local persistence behavior, fallback language resolution, or a one-off override nuance unless that behavior is central to successful usage.
 
 ## Step 4: Make targeted updates
 
@@ -143,6 +150,7 @@ For each bullet that passes Step 3.6, identify the **affected area** (bolded in 
 - **Never invent field names, types, or schemas.** Every field you document must be verified against API reference documentation, not inferred from the brief. If the brief says "new `sanitize` field" but you cannot find its exact type and parent object in the API reference, do not document it.
 - **Never write code examples for new features without verifying the exact API shape.** If you cannot fetch or find the API reference for a new feature, add a stub like `<!-- TODO: Add code example — verify schema against API reference -->` instead of guessing.
 - **Treat the brief and changelog as discovery inputs, not skill-file prose.** They tell you *which* things changed; API/reference docs tell you the current behavior to document. Never use brief/changelog phrasing directly in skill content.
+- **Do not treat verified details as automatically skill-worthy.** A detail being true and documented in the API reference is necessary but not sufficient for inclusion in `SKILL.md` or `references/*.md`.
 - **Skill files must be evergreen.** Never mention changelog, brief, issue, PR, release date, or temporal phrases like "added in", "introduced in", "as of YYYY-MM-DD", or "now supports" inside `SKILL.md` or `references/*.md`.
 - **Rewrite release-note phrasing into timeless docs.** Example:
   - Bad: `For RAG indexing, the 2026-02-23 changelog added support for the qwen3_embedding_4b embedding model.`
@@ -151,9 +159,11 @@ For each bullet that passes Step 3.6, identify the **affected area** (bolded in 
   - Good: `Agents support X.`
 - **Never fabricate example values.** If you're adding a code example, use values from source docs and present them as current behavior. Do not invent model IDs, field names, or configuration values that "seem right."
 - **Not every changelog bullet requires a skill edit.** If an item has no natural home in existing docs, choose no-op and document that in the final report.
+- **Prefer high-signal docs over exhaustive docs.** Skill files should explain the main way to use ElevenLabs features, not catalog every caveat or exception from the platform docs.
 - **Do not create a new section solely because a changelog bullet exists.**
 - **Do not insert orphan content.** Never add standalone lines or mini-sections that do not belong to surrounding structure.
 - **New sections require justification.** Create a new section only when the concept is substantial, reusable, user-facing, and cannot be documented cleanly by extending existing sections.
+- **Default to omission for edge-case behavior.** If the detail mainly describes fallback behavior, precedence between multiple config sources, persistence internals, or a rare branch-specific exception, leave it out of skill docs unless users routinely need it to succeed.
 
 ### Risk tiers for changes
 
@@ -178,11 +188,13 @@ For high-risk changes where you cannot verify the exact schema, do not add place
 - Make minimal, targeted changes. Do not rewrite sections that aren't mentioned in the brief.
 - Match the existing style exactly — same heading levels, table formats, code block languages, indentation.
 - Keep code examples internally consistent. If a Python example uses `client = ElevenLabs()`, keep that pattern.
+- Keep the docs focused on "how to use this capability" rather than "every rule the platform follows in edge conditions."
 - When adding a new model to a table, place it in a logical position (e.g., by quality tier or alphabetically, matching the existing order).
 - When adding new parameters to code examples, only add them if they're significant enough to demonstrate. Not every optional field needs a code example.
 - If the brief mentions an SDK version bump but no method signature changes, update any version-specific comments but don't change code examples.
 - Prefer extending existing headings over creating new headings.
 - If a bullet has no natural documentation home, leave skill files unchanged and capture that decision in the final report.
+- If a bullet is accurate but too narrow or exception-oriented for the skills, leave skill files unchanged and capture that decision in the final report.
 
 ## Step 4.5: Self-check before committing
 
@@ -197,7 +209,8 @@ Review every change you made and verify:
 7. Any historical/provenance notes are kept in the final report only, not in skill files.
 8. Every new heading/section is justified by Step 3.6 and is not a placeholder for a single changelog bullet.
 9. No orphan insertions remain (standalone one-off sentences that do not fit the section).
-10. Every brief bullet is accounted for via one of: (a) natural-home docs update, (b) justified new section, (c) "No Skill Change Needed", or (d) "Needs Manual Authoring" in the final report.
+10. No edited skill content exists solely to capture an edge case, precedence rule, persistence detail, fallback chain, or narrow exception that would be better left to API docs.
+11. Every brief bullet is accounted for via one of: (a) natural-home docs update, (b) justified new section, (c) "No Skill Change Needed", or (d) "Needs Manual Authoring" in the final report.
 
 If any change fails this check, revert it. Move it to "Needs Manual Authoring" or "No Skill Change Needed" in the final report, as appropriate.
 
