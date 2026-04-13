@@ -256,13 +256,16 @@ const conversation = await Conversation.startSession({
 
 When you use the React SDK, wrap your component tree in `ConversationProvider` and register
 client tools from components with `useConversationClientTool`. Handlers are cleaned up
-automatically on unmount.
+automatically on unmount and always use the latest closure value. Prefer granular hooks such as
+`useConversationControls` and `useConversationStatus` for the session UI; `useConversation`
+remains available when you want the full conversation object in one hook.
 
 ```typescript
 import {
   ConversationProvider,
-  useConversation,
   useConversationClientTool,
+  useConversationControls,
+  useConversationStatus,
 } from "@elevenlabs/react";
 
 function Storefront() {
@@ -273,10 +276,15 @@ function Storefront() {
     return { success: true };
   });
 
-  const conversation = useConversation();
+  const { startSession, endSession } = useConversationControls();
+  const { status } = useConversationStatus();
+
+  if (status === "connected") {
+    return <button onClick={endSession}>End</button>;
+  }
 
   return (
-    <button onClick={() => conversation.startSession({ agentId: "your-agent-id" })}>
+    <button onClick={() => startSession({ agentId: "your-agent-id" })}>
       Start
     </button>
   );
