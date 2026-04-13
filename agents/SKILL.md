@@ -111,17 +111,27 @@ const conversation = await Conversation.startSession({
 });
 ```
 
-**React Hook:** `useConversation` requires a `ConversationProvider` ancestor.
-Pass provider-level callbacks such as `onError` when you want React to handle
-conversation errors in one place.
+**React Hook:** Wrap hook consumers in `ConversationProvider`. Prefer granular hooks such as
+`useConversationControls` and `useConversationStatus` for session controls and UI state;
+`useConversation` remains available as the convenience all-in-one hook. Pass provider-level
+callbacks such as `onError` when you want React to handle conversation errors in one place.
 ```typescript
-import { ConversationProvider, useConversation } from "@elevenlabs/react";
+import {
+  ConversationProvider,
+  useConversationControls,
+  useConversationStatus,
+} from "@elevenlabs/react";
 
 function Agent({ signedUrl }: { signedUrl: string }) {
-  const conversation = useConversation({ onMessage: (msg) => console.log(msg) });
+  const { startSession, endSession } = useConversationControls();
+  const { status } = useConversationStatus();
+
+  if (status === "connected") {
+    return <button onClick={endSession}>End conversation</button>;
+  }
 
   return (
-    <button onClick={() => conversation.startSession({ signedUrl })}>
+    <button onClick={() => startSession({ signedUrl })}>
       Start conversation
     </button>
   );

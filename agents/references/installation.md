@@ -69,20 +69,29 @@ npm uninstall elevenlabs
 # Install the current packages
 npm install @elevenlabs/elevenlabs-js
 
-# For client-side/browser usage, also install:
-npm install @elevenlabs/client  # Browser client
-npm install @elevenlabs/react   # React hooks
+# For browser apps, install the package that matches your UI layer:
+npm install @elevenlabs/client  # Vanilla JavaScript in the browser
+npm install @elevenlabs/react   # React on the web
 ```
 
 **Import changes:**
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { Conversation } from "@elevenlabs/client";
-import { ConversationProvider, useConversation } from "@elevenlabs/react";
+import {
+  ConversationProvider,
+  useConversationControls,
+  useConversationStatus,
+} from "@elevenlabs/react";
 ```
 
-Wrap React components that call `useConversation` in `ConversationProvider`. Use
-`@elevenlabs/react-native` for React Native projects with the same provider-and-hooks pattern.
+`@elevenlabs/react` re-exports `@elevenlabs/client`, so React apps usually only need
+`@elevenlabs/react`. Wrap hook consumers in `ConversationProvider` and prefer granular hooks
+such as `useConversationControls` and `useConversationStatus`; `useConversation` remains
+available as the convenience all-in-one hook.
+
+Use `@elevenlabs/react-native` for React Native projects with the same provider-and-hooks API;
+only the import path changes.
 
 ## Python
 
