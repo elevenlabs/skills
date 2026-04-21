@@ -19,6 +19,7 @@ npx skills add elevenlabs/skills
 | [agents](./agents) | Build conversational voice AI agents |
 | [sound-effects](./sound-effects) | Generate sound effects from text descriptions |
 | [music](./music) | Generate music tracks using AI composition |
+| [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
 | [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
 
 ## Configuration

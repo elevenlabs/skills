@@ -69,6 +69,7 @@ ALL_SKILLS = [
     "agents",
     "sound-effects",
     "music",
+    "voice-isolator",
     "setup-api-key",
 ]
 
@@ -444,7 +445,8 @@ def run_functional_eval_for_skill(
             if outputs_dir.is_dir():
                 for out_file in sorted(outputs_dir.iterdir()):
                     if out_file.is_file() and out_file.suffix in (
-                        ".py", ".js", ".ts", ".jsx", ".tsx", ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
+                        ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
+                        ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
@@ -592,6 +594,8 @@ def check_expectation(response_lower, response_text, expectation):
         ("speechtotext.convert", "speechtotext.convert", "JS STT convert"),
         ("text_to_sound_effects.convert", "text_to_sound_effects.convert", "SFX convert"),
         ("music.compose", "music.compose", "music compose"),
+        ("audio_isolation.convert", "audio_isolation.convert", "audio isolation convert"),
+        ("audioisolation.convert", "audioisolation.convert", "JS audio isolation convert"),
         # Parameters
         ("model_id", "model_id", "model_id param"),
         ("modelid", "modelid", "JS modelId param"),

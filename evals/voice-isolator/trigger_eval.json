@@ -1,0 +1,20 @@
+[
+  {"query": "I recorded a podcast in a coffee shop and there's tons of background chatter and espresso machine noise, how do I clean up just my voice with elevenlabs?", "should_trigger": true},
+  {"query": "I have a field interview mp3 with HVAC hum and traffic in the background, write me a python script that isolates just the speaker's voice", "should_trigger": true},
+  {"query": "remove background music from this vocal track so I'm left with just the singer's voice", "should_trigger": true},
+  {"query": "denoise this noisy zoom recording before I send it to transcription, using the elevenlabs sdk", "should_trigger": true},
+  {"query": "extract vocals from a mixed audio file using audio isolation", "should_trigger": true},
+  {"query": "pull the dialogue out of this clip that has music and sfx layered over it", "should_trigger": true},
+  {"query": "my interview.wav has wind noise and i need a clean voice-only version for editing", "should_trigger": true},
+  {"query": "write me a node script that cleans up audio noise using the elevenlabs audio isolation api", "should_trigger": true},
+  {"query": "clean up background ambience from this recording so only the narrator is audible", "should_trigger": true},
+  {"query": "convert this script into speech using a natural-sounding narrator voice", "should_trigger": false},
+  {"query": "transcribe this meeting recording to text with speaker labels", "should_trigger": false},
+  {"query": "generate a thunder and rain sound effect for my game's intro scene", "should_trigger": false},
+  {"query": "compose a lo-fi hip hop track with chill vibes for my study playlist", "should_trigger": false},
+  {"query": "build a voice AI agent that answers customer support questions over the phone", "should_trigger": false},
+  {"query": "how do I set up my ELEVENLABS_API_KEY environment variable on macOS?", "should_trigger": false},
+  {"query": "trim the first 10 seconds off this mp3 and export it with ffmpeg", "should_trigger": false},
+  {"query": "change the pitch of my vocal recording up by 3 semitones", "should_trigger": false},
+  {"query": "normalize the loudness of this audio file to -16 LUFS for streaming", "should_trigger": false}
+]

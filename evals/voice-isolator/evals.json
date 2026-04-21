@@ -1,0 +1,31 @@
+{
+  "skill_name": "voice-isolator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script using the ElevenLabs SDK that removes background noise from a local audio file called noisy_interview.mp3 and saves the cleaned result as clean_interview.mp3.",
+      "expected_output": "Python script calling audio_isolation.convert on a local file and streaming the result to disk",
+      "files": [],
+      "expectations": [
+        "Uses 'from elevenlabs import ElevenLabs' for the import",
+        "Creates a client with ElevenLabs()",
+        "Calls client.audio_isolation.convert() with an audio file argument",
+        "Opens noisy_interview.mp3 as the input audio",
+        "Writes the streamed output chunks to clean_interview.mp3"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Using the ElevenLabs JavaScript SDK, write code that downloads an MP3 from a URL, isolates the voice using the audio isolation API, and saves the cleaned audio as isolated.mp3. Use @elevenlabs/elevenlabs-js (NOT 'elevenlabs').",
+      "expected_output": "JS/TS script using audioIsolation.convert and saving output",
+      "files": [],
+      "expectations": [
+        "Imports ElevenLabsClient from @elevenlabs/elevenlabs-js (NOT 'elevenlabs')",
+        "Creates a client with ElevenLabsClient",
+        "Calls audioIsolation.convert with an audio input",
+        "Saves the returned audio stream to isolated.mp3",
+        "Does not use the deprecated 'elevenlabs' npm package"
+      ]
+    }
+  ]
+}
