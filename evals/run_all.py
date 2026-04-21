@@ -62,7 +62,6 @@ def _ensure_cursor_agent_available() -> None:
         sys.exit(1)
 
 
-_ensure_cursor_agent_available()
 ALL_SKILLS = [
     "text-to-speech",
     "speech-to-text",
@@ -555,6 +554,121 @@ def find_forbidden_reference(response_text: str, term: str) -> str | None:
     return None
 
 
+def _contains_regex(response_text: str, pattern: str) -> bool:
+    """Case-insensitive regex search helper."""
+    return re.search(pattern, response_text, flags=re.IGNORECASE) is not None
+
+
+def has_python_elevenlabs_import(response_text: str) -> bool:
+    """Accept direct SDK imports from either supported Python module path."""
+    return any(
+        _contains_regex(response_text, pattern)
+        for pattern in (
+            r"\bfrom\s+elevenlabs\s+import\s+ElevenLabs\b",
+            r"\bfrom\s+elevenlabs\.client\s+import\s+ElevenLabs\b",
+        )
+    )
+
+
+def has_python_elevenlabs_constructor(response_text: str) -> bool:
+    """Accept ElevenLabs() with or without constructor arguments."""
+    return _contains_regex(response_text, r"\bElevenLabs\s*\(")
+
+
+def has_js_elevenlabs_client_constructor(response_text: str) -> bool:
+    """Accept JS SDK client construction with normal syntax."""
+    return _contains_regex(response_text, r"\bnew\s+ElevenLabsClient\s*\(")
+
+
+def has_dotted_call(response_text: str, dotted_name: str) -> bool:
+    """Accept dotted method calls with optional whitespace before the call."""
+    return _contains_regex(response_text, rf"\b{re.escape(dotted_name)}\s*\(")
+
+
+def has_high_prompt_influence(response_text: str) -> tuple[bool, str]:
+    """Detect a high prompt_influence value even when prose omits 'high adherence'."""
+    values = [
+        float(match)
+        for match in re.findall(
+            r"prompt_influence\s*[:=]\s*['\"]?([01](?:\.\d+)?)",
+            response_text,
+            flags=re.IGNORECASE,
+        )
+    ]
+    if not values:
+        return False, ""
+    highest = max(values)
+    if highest >= 0.7:
+        return True, f"Found prompt_influence={highest:g}"
+    return False, f"Found prompt_influence={highest:g}, below high-adherence threshold"
+
+
+def mentions_sixty_second_duration(response_text: str) -> tuple[bool, str]:
+    """Detect equivalent 60-second duration references."""
+    patterns = {
+        r"\b60000\b": "60000 ms",
+        r"\b60(?:\.0+)?\s*seconds?\b": "60 seconds",
+        r"\b60-?second\b": "60-second",
+        r"\bone\s+minute\b": "one minute",
+    }
+    for pattern, label in patterns.items():
+        if _contains_regex(response_text, pattern):
+            return True, f"Found duration reference: {label}"
+    return False, ""
+
+
+def has_successful_agent_cli_setup(response_text: str) -> bool:
+    """Accept successful CLI project creation/push wording without literal commands."""
+    checks = [
+        _contains_regex(response_text, r"\b(created|initialized)\b.*\b(cli project|agent project)\b"),
+        _contains_regex(response_text, r"\b(create|created|used it to create)\b.*\bvoice agent\b"),
+        _contains_regex(response_text, r"\b(push|pushed|deploy|deployed)\b.*\b(agent|tool|tools)\b"),
+    ]
+    return sum(checks) >= 2
+
+
+def has_verified_api_key_wording(response_text: str) -> bool:
+    """Accept prose that clearly says the API key was validated against ElevenLabs."""
+    return (
+        _contains_regex(response_text, r"\b(verif(?:y|ied)|validat(?:e|ed)|checked)\b")
+        and _contains_regex(response_text, r"\b(api key|elevenlabs_api_key|key)\b")
+        and (
+            _contains_regex(response_text, r"\b(api\.elevenlabs|/v1/user)\b")
+            or _contains_regex(response_text, r"\bagainst\s+elevenlabs\b")
+            or _contains_regex(response_text, r"\breturned\s+200\b")
+        )
+    )
+
+
+def build_grading_text(response_text: str, outputs_dir: Path) -> str:
+    """Append generated output files recursively for grading context."""
+    grading_text = response_text
+    if not outputs_dir.is_dir():
+        return grading_text
+
+    allowed_suffixes = {
+        ".py", ".js", ".mjs", ".cjs", ".ts", ".jsx", ".tsx", ".sh",
+        ".json", ".yaml", ".yml", ".md", ".txt",
+    }
+    for out_file in sorted(p for p in outputs_dir.rglob("*") if p.is_file()):
+        if out_file.suffix not in allowed_suffixes:
+            continue
+        try:
+            content = out_file.read_text(errors="replace")
+            rel_path = out_file.relative_to(outputs_dir)
+            grading_text += f"\n\n--- {rel_path} ---\n{content}"
+        except Exception:
+            pass
+    return grading_text
+
+
+def _pattern_present(matcher, response_text: str, response_lower: str) -> bool:
+    """Evaluate a string or callable matcher against the grading text."""
+    if callable(matcher):
+        return matcher(response_text)
+    return matcher in response_lower
+
+
 def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
@@ -582,16 +696,16 @@ def check_expectation(response_lower, response_text, expectation):
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
         # SDK imports (specifically `from elevenlabs import ElevenLabs`)
-        ("from elevenlabs import elevenlabs", "from elevenlabs import elevenlabs", "elevenlabs import"),
-        ("elevenlabs()", "elevenlabs()", "client constructor"),
-        ("elevenlabsclient", "elevenlabsclient", "JS client constructor"),
+        ("from elevenlabs import elevenlabs", has_python_elevenlabs_import, "elevenlabs import"),
+        ("elevenlabs()", has_python_elevenlabs_constructor, "client constructor"),
+        ("elevenlabsclient", has_js_elevenlabs_client_constructor, "JS client constructor"),
         # API methods
-        ("text_to_speech.convert", "text_to_speech.convert", "TTS convert"),
-        ("texttospeech.convert", "texttospeech.convert", "JS TTS convert"),
-        ("speech_to_text.convert", "speech_to_text.convert", "STT convert"),
-        ("speechtotext.convert", "speechtotext.convert", "JS STT convert"),
-        ("text_to_sound_effects.convert", "text_to_sound_effects.convert", "SFX convert"),
-        ("music.compose", "music.compose", "music compose"),
+        ("text_to_speech.convert", lambda text: has_dotted_call(text, "text_to_speech.convert"), "TTS convert"),
+        ("texttospeech.convert", lambda text: has_dotted_call(text, "textToSpeech.convert"), "JS TTS convert"),
+        ("speech_to_text.convert", lambda text: has_dotted_call(text, "speech_to_text.convert"), "STT convert"),
+        ("speechtotext.convert", lambda text: has_dotted_call(text, "speechToText.convert"), "JS STT convert"),
+        ("text_to_sound_effects.convert", lambda text: has_dotted_call(text, "text_to_sound_effects.convert"), "SFX convert"),
+        ("music.compose", lambda text: has_dotted_call(text, "music.compose"), "music compose"),
         # Parameters
         ("model_id", "model_id", "model_id param"),
         ("modelid", "modelid", "JS modelId param"),
@@ -604,7 +718,7 @@ def check_expectation(response_lower, response_text, expectation):
         ("@elevenlabs/elevenlabs-js", "@elevenlabs/elevenlabs-js", "JS SDK package"),
         ("@elevenlabs/", "@elevenlabs/", "JS SDK package"),
         # Agents
-        ("elevenlabs agents", "elevenlabs agents", "CLI agents command"),
+        ("elevenlabs agents", lambda text: "elevenlabs agents" in text.lower() or has_successful_agent_cli_setup(text), "CLI agents command"),
         ("convai", "convai", "ConvAI widget"),
         ("agent-id", "agent-id", "agent-id attribute"),
         ("agent_id", "agent_id", "agent_id attribute"),
@@ -623,13 +737,30 @@ def check_expectation(response_lower, response_text, expectation):
     pattern_check_passed = None
     pattern_check_evidence = ""
     if matched_pattern_checks:
-        missing_patterns = [label for search, label in matched_pattern_checks if search not in response_lower]
+        missing_patterns = [
+            label for matcher, label in matched_pattern_checks
+            if not _pattern_present(matcher, response_text, response_lower)
+        ]
         if missing_patterns:
             pattern_check_passed = False
             pattern_check_evidence = "Missing pattern(s): %s" % ", ".join(missing_patterns)
         else:
             pattern_check_passed = True
             pattern_check_evidence = "Found pattern(s): %s" % ", ".join(label for _, label in matched_pattern_checks)
+
+    if "prompt_influence" in exp_lower and "high adherence" in exp_lower:
+        prompt_match, prompt_evidence = has_high_prompt_influence(response_text)
+        return prompt_match, prompt_evidence or "Missing prompt_influence evidence"
+
+    if "60000ms" in exp_lower or "60 seconds" in exp_lower:
+        duration_match, duration_evidence = mentions_sixty_second_duration(response_text)
+        if duration_match:
+            return True, duration_evidence
+
+    if "/v1/user" in exp_lower or ("validate" in exp_lower and "user endpoint" in exp_lower):
+        validation_match = has_verified_api_key_wording(response_text)
+        if validation_match:
+            return True, "Found explicit API-key validation wording"
 
     # Semantic checks for natural language expectations
     semantic_checks = [
@@ -826,6 +957,7 @@ def generate_report(trigger_results, functional_results, output_dir, skills):
 
 
 def main():
+    _ensure_cursor_agent_available()
     parser = argparse.ArgumentParser(description="Run evaluations across all ElevenLabs skills")
     parser.add_argument("--skills", nargs="*", default=ALL_SKILLS, help="Skills to evaluate (default: all)")
     parser.add_argument("--trigger-only", action="store_true", help="Run trigger evals only")
