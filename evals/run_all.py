@@ -640,6 +640,23 @@ def has_verified_api_key_wording(response_text: str) -> bool:
     )
 
 
+def has_cli_agent_project_artifacts(response_text: str) -> bool:
+    """Detect nested CLI project artifacts captured from outputs/."""
+    has_agent_config = _contains_regex(
+        response_text,
+        r"(?:(?:^|\n)---\s+(?:.*/)?(?:agent_configs?/.*\.json|agents?\.json)\s+---|outputs?/.*(?:agent_configs?/.*\.json|agents?\.json))",
+    )
+    has_tool_config = _contains_regex(
+        response_text,
+        r"(?:(?:^|\n)---\s+(?:.*/)?(?:tool_configs?/.*\.json|tools?\.json)\s+---|outputs?/.*(?:tool_configs?/.*\.json|tools?\.json))",
+    )
+    has_readme = _contains_regex(
+        response_text,
+        r"(?:(?:^|\n)---\s+(?:.*/)?readme\.md\s+---|outputs?/.*readme\.md)",
+    )
+    return has_agent_config and has_tool_config and has_readme
+
+
 def build_grading_text(response_text: str, outputs_dir: Path) -> str:
     """Append generated output files recursively for grading context."""
     grading_text = response_text
@@ -756,6 +773,38 @@ def check_expectation(response_lower, response_text, expectation):
         duration_match, duration_evidence = mentions_sixty_second_duration(response_text)
         if duration_match:
             return True, duration_evidence
+
+    if (
+        "agent configuration" in exp_lower
+        and "tool configuration" in exp_lower
+        and "outputs" in exp_lower
+    ):
+        artifact_match = has_cli_agent_project_artifacts(response_text)
+        if artifact_match:
+            return True, "Found nested CLI agent project artifacts in outputs/"
+        return False, "Missing CLI agent project artifacts in outputs/"
+
+    if "agent project under outputs" in exp_lower:
+        artifact_match = has_cli_agent_project_artifacts(response_text)
+        if artifact_match:
+            return True, "Found CLI-ready agent project artifacts in outputs/"
+        return False, "Missing CLI-ready agent project artifacts in outputs/"
+
+    if "init/add/push" in exp_lower and "readme" in exp_lower:
+        has_commands = (
+            _contains_regex(response_text, r"\belevenlabs\s+agents\s+init\b")
+            and _contains_regex(response_text, r"\belevenlabs\s+agents\s+add\b")
+            and _contains_regex(response_text, r"\belevenlabs\s+agents\s+push\b")
+        )
+        if has_commands:
+            return True, "Found README-style init/add/push command sequence"
+        return False, "Missing README-style init/add/push command sequence"
+
+    if "readme" in exp_lower and "elevenlabs agents push" in exp_lower:
+        command_match = _contains_regex(response_text, r"\belevenlabs\s+agents\s+push\b")
+        if command_match:
+            return True, "Found CLI push command in generated instructions"
+        return False, "Missing CLI push command in generated instructions"
 
     if "/v1/user" in exp_lower or ("validate" in exp_lower and "user endpoint" in exp_lower):
         validation_match = has_verified_api_key_wording(response_text)

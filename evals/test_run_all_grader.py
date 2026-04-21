@@ -1,4 +1,5 @@
 import importlib.util
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -87,5 +88,48 @@ class RunAllGraderTests(unittest.TestCase):
             response.lower(),
             response,
             "Writes output to a file named hello.mp3",
+        )
+        self.assertTrue(passed, evidence)
+
+    def test_build_grading_text_includes_nested_outputs_and_mjs_files(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            outputs_dir = Path(tmpdir)
+            nested = outputs_dir / "restaurant-reservation-agent" / "agent_configs"
+            nested.mkdir(parents=True)
+            (outputs_dir / "README.md").write_text("Run `elevenlabs agents init` then `elevenlabs agents push`.")
+            (nested / "assistant.json").write_text('{"prompt": "Book reservations"}')
+            (outputs_dir / "bonjour.mjs").write_text('import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";')
+
+            grading_text = run_all.build_grading_text("base response", outputs_dir)
+
+        self.assertIn("--- README.md ---", grading_text)
+        self.assertIn("--- restaurant-reservation-agent/agent_configs/assistant.json ---", grading_text)
+        self.assertIn("--- bonjour.mjs ---", grading_text)
+
+    def test_agent_eval_accepts_cli_ready_project_artifacts(self):
+        response = """
+        Created a CLI-ready project under outputs/restaurant-reservation-agent with:
+        - outputs/restaurant-reservation-agent/README.md
+        - outputs/restaurant-reservation-agent/agent_configs/assistant.json
+        - outputs/restaurant-reservation-agent/tool_configs/check_availability.json
+        """
+        passed, evidence = run_all.check_expectation(
+            response.lower(),
+            response,
+            "Creates a CLI-style agent project under outputs",
+        )
+        self.assertTrue(passed, evidence)
+
+    def test_agent_eval_accepts_readme_with_push_commands(self):
+        response = """
+        README includes:
+        elevenlabs agents init
+        elevenlabs agents add "Bella Vista Reservation Assistant"
+        elevenlabs agents push
+        """
+        passed, evidence = run_all.check_expectation(
+            response.lower(),
+            response,
+            "README shows the CLI commands a user would run to init/add/push the project later",
         )
         self.assertTrue(passed, evidence)
