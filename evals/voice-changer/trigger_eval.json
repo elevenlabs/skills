@@ -1,0 +1,20 @@
+[
+  {"query": "I recorded a rough narration myself and want to make it sound like a professional female narrator — how do I swap my voice for a different one in the mp3 using elevenlabs?", "should_trigger": true},
+  {"query": "write me a python script that takes scratch_take.wav and converts it into the voice JBFqnCBsd6RMkjVDRZzb while keeping my original pacing and emotion", "should_trigger": true},
+  {"query": "I want to anonymize a whistleblower interview — keep what they said and how they said it, but change who it sounds like. use the elevenlabs sdk", "should_trigger": true},
+  {"query": "dub this voice-over in the same speaker's cloned voice but in spanish using speech-to-speech", "should_trigger": true},
+  {"query": "node script to transform the voice in source.mp3 using elevenlabs voice changer and save as converted.mp3", "should_trigger": true},
+  {"query": "i acted out all the lines for my indie game's goblin character myself; i need a script that runs each take through elevenlabs and re-voices them into a gravelly goblin voice id, one file at a time", "should_trigger": true},
+  {"query": "change the narrator's voice in this audiobook chapter to a different pre-made elevenlabs voice without re-recording", "should_trigger": true},
+  {"query": "how do i use elevenlabs speech to speech to convert my recording to sound like a specific voice id", "should_trigger": true},
+  {"query": "use voice conversion to swap speaker A's voice in this clip for a cloned target voice", "should_trigger": true},
+  {"query": "convert this written script into speech using a natural male narrator voice", "should_trigger": false},
+  {"query": "transcribe this meeting recording into text with speaker labels", "should_trigger": false},
+  {"query": "remove the background music from this vocal track so I'm left with just the singer", "should_trigger": false},
+  {"query": "generate a thunder and rain sound effect for my game intro", "should_trigger": false},
+  {"query": "compose a 30 second lo-fi instrumental for my podcast intro", "should_trigger": false},
+  {"query": "build a conversational voice agent that can take customer support calls", "should_trigger": false},
+  {"query": "how do I set up my ELEVENLABS_API_KEY environment variable on macOS?", "should_trigger": false},
+  {"query": "pitch-shift my vocal recording up by 3 semitones using ffmpeg", "should_trigger": false},
+  {"query": "clone a new voice from this 30 second sample of my grandma speaking", "should_trigger": false}
+]

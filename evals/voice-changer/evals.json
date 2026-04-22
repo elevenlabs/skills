@@ -1,0 +1,33 @@
+{
+  "skill_name": "voice-changer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script using the ElevenLabs SDK that converts my local narration file scratch_take.mp3 into the voice with ID JBFqnCBsd6RMkjVDRZzb and saves the result as converted.mp3. Use the multilingual speech-to-speech model.",
+      "expected_output": "Python script calling speech_to_speech.convert on a local file with a target voice_id and streaming the result to disk",
+      "files": [],
+      "expectations": [
+        "Uses 'from elevenlabs import ElevenLabs' for the import",
+        "Creates a client with ElevenLabs()",
+        "Calls client.speech_to_speech.convert() with voice_id and audio arguments",
+        "Passes model_id='eleven_multilingual_sts_v2'",
+        "Opens scratch_take.mp3 as the input audio",
+        "Writes the chunks to a file named converted.mp3"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a single Node.js ES module source file (convert.mjs) that uses the ElevenLabs JavaScript SDK (@elevenlabs/elevenlabs-js) to transform the voice in a local file source.mp3 into the voice JBFqnCBsd6RMkjVDRZzb using the speech-to-speech / voice changer API with the eleven_multilingual_sts_v2 model, and writes the result to converted.mp3. Just write the .mjs file — assume dependencies are already installed. Do not use the deprecated 'elevenlabs' npm package.",
+      "expected_output": "Single-file JS/TS script using speechToSpeech.convert with a target voiceId and saving the output",
+      "files": [],
+      "expectations": [
+        "Imports ElevenLabsClient from @elevenlabs/elevenlabs-js (NOT 'elevenlabs')",
+        "Creates a client with ElevenLabsClient",
+        "Calls speechToSpeech.convert with a voiceId and audio input",
+        "Passes modelId 'eleven_multilingual_sts_v2'",
+        "Writes output to a file named converted.mp3",
+        "Does not use the deprecated 'elevenlabs' npm package"
+      ]
+    }
+  ]
+}

@@ -69,6 +69,7 @@ ALL_SKILLS = [
     "agents",
     "sound-effects",
     "music",
+    "voice-changer",
     "setup-api-key",
 ]
 
@@ -444,7 +445,8 @@ def run_functional_eval_for_skill(
             if outputs_dir.is_dir():
                 for out_file in sorted(outputs_dir.iterdir()):
                     if out_file.is_file() and out_file.suffix in (
-                        ".py", ".js", ".ts", ".jsx", ".tsx", ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
+                        ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
+                        ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
@@ -592,6 +594,9 @@ def check_expectation(response_lower, response_text, expectation):
         ("speechtotext.convert", "speechtotext.convert", "JS STT convert"),
         ("text_to_sound_effects.convert", "text_to_sound_effects.convert", "SFX convert"),
         ("music.compose", "music.compose", "music compose"),
+        ("speech_to_speech.convert", "speech_to_speech.convert", "voice changer convert"),
+        ("speechtospeech.convert", "speechtospeech.convert", "JS voice changer convert"),
+        ("eleven_multilingual_sts_v2", "eleven_multilingual_sts_v2", "multilingual STS model"),
         # Parameters
         ("model_id", "model_id", "model_id param"),
         ("modelid", "modelid", "JS modelId param"),
