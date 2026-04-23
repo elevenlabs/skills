@@ -160,6 +160,23 @@ class RunAllGraderTests(unittest.TestCase):
         )
         self.assertTrue(passed, evidence)
 
+    def test_agent_eval_accepts_explicit_system_prompt_snippet(self):
+        response = """
+        README.md includes this system prompt snippet:
+
+        "You are Bella Vista's restaurant reservation assistant. Help guests check availability,
+        book tables, and confirm reservations."
+
+        Later-use commands:
+        elevenlabs agents push
+        """
+        passed, evidence = run_all.check_expectation(
+            response.lower(),
+            response,
+            "Includes an explicit system prompt snippet for a restaurant reservation assistant in the README or final response",
+        )
+        self.assertTrue(passed, evidence)
+
         passed, evidence = run_all.check_expectation(
             response.lower(),
             response,

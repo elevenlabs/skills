@@ -685,6 +685,19 @@ def has_cli_readme_command(response_text: str, command_kind: str) -> bool:
     return False
 
 
+def has_explicit_restaurant_prompt_snippet(response_text: str) -> bool:
+    """Detect when the response surfaces an actual assistant prompt snippet."""
+    has_prompt_label = _contains_regex(
+        response_text,
+        r"\b(system prompt|prompt snippet|prompt:|instructions?:)\b",
+    )
+    has_restaurant_role = _contains_regex(
+        response_text,
+        r"\b(restaurant reservation assistant|restaurant assistant|check availability|book tables?|confirm reservations?)\b",
+    )
+    return has_prompt_label and has_restaurant_role
+
+
 def build_grading_text(response_text: str, outputs_dir: Path) -> str:
     """Append generated output files recursively for grading context."""
     grading_text = response_text
@@ -817,6 +830,12 @@ def check_expectation(response_lower, response_text, expectation):
         if artifact_match:
             return True, "Found CLI-ready agent project artifacts in outputs/"
         return False, "Missing CLI-ready agent project artifacts in outputs/"
+
+    if "prompt snippet" in exp_lower and "restaurant reservation assistant" in exp_lower:
+        prompt_match = has_explicit_restaurant_prompt_snippet(response_text)
+        if prompt_match:
+            return True, "Found explicit restaurant-assistant prompt snippet"
+        return False, "Missing explicit restaurant-assistant prompt snippet"
 
     if "init/add/push" in exp_lower and "readme" in exp_lower:
         has_commands = (

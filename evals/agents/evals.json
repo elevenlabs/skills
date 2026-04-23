@@ -3,14 +3,14 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Create an ElevenLabs CLI-ready project under ./outputs/ for a restaurant reservation assistant. Include the agent configuration, any required tool configurations, and a short README with the exact CLI commands a user would run to initialize and push it later. The assistant should be able to check availability, book tables, and confirm reservations. Do not actually deploy it.",
+      "prompt": "Create an ElevenLabs CLI-ready project under ./outputs/ for a restaurant reservation assistant. Include the agent configuration, any required tool configurations, and a short README with the exact CLI commands a user would run to initialize and push it later. Also include the actual system prompt text snippet for the restaurant reservation assistant in the README or in your final response. The assistant should be able to check availability, book tables, and confirm reservations. Do not actually deploy it.",
       "expected_output": "CLI-ready project artifacts for a restaurant reservation voice agent",
       "files": [],
       "expectations": [
         "Creates a CLI-style agent project under outputs",
         "Includes README with 'elevenlabs agents init' or equivalent CLI setup command",
         "Includes README with 'elevenlabs agents push' or equivalent deploy command",
-        "Defines a system prompt appropriate for a restaurant reservation assistant",
+        "Includes the system prompt text for the restaurant reservation assistant in the README or final response",
         "Configures at least one tool for checking availability or booking"
       ]
     },
