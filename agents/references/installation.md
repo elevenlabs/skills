@@ -42,7 +42,7 @@ elevenlabs agents push
 For programmatic access and client-side integration:
 
 ```bash
-npm install @elevenlabs/elevenlabs-js
+npm install @elevenlabs/elevenlabs-js@latest
 ```
 
 > **Important:** Always use `@elevenlabs/elevenlabs-js`. The old `elevenlabs` npm package (v1.x) is deprecated and should not be used.
@@ -67,11 +67,11 @@ If you have old packages installed, remove them:
 npm uninstall elevenlabs
 
 # Install the current packages
-npm install @elevenlabs/elevenlabs-js
+npm install @elevenlabs/elevenlabs-js@latest
 
 # For browser apps, install the package that matches your UI layer:
-npm install @elevenlabs/client  # Vanilla JavaScript in the browser
-npm install @elevenlabs/react   # React on the web
+npm install @elevenlabs/client@latest  # Vanilla JavaScript in the browser
+npm install @elevenlabs/react@latest   # React on the web
 ```
 
 **Import changes:**

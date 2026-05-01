@@ -3,7 +3,7 @@
 ## JavaScript / TypeScript
 
 ```bash
-npm install @elevenlabs/elevenlabs-js
+npm install @elevenlabs/elevenlabs-js@latest
 ```
 
 > **Important:** Always use `@elevenlabs/elevenlabs-js`. The old `elevenlabs` npm package (v1.x) is deprecated and should not be used.
@@ -28,11 +28,11 @@ If you have old packages installed, remove them:
 npm uninstall elevenlabs
 
 # Install the current packages
-npm install @elevenlabs/elevenlabs-js
+npm install @elevenlabs/elevenlabs-js@latest
 
 # For client-side/browser usage, also install:
-npm install @elevenlabs/client  # Browser client
-npm install @elevenlabs/react   # React hooks
+npm install @elevenlabs/client@latest  # Browser client
+npm install @elevenlabs/react@latest   # React hooks
 ```
 
 **Import changes:**
@@ -45,7 +45,7 @@ import { useScribe } from "@elevenlabs/react";
 ## Python
 
 ```bash
-pip install elevenlabs
+pip install --upgrade elevenlabs
 ```
 
 ```python
