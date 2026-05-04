@@ -177,8 +177,12 @@ context as a lazily evaluated JSON history object with user, agent, and tool ent
 | `disable_interruptions` | bool | `false` | Prevent user interruptions during tool execution |
 | `execution_mode` | string | `"immediate"` | `immediate`, `post_tool_speech`, or `async` |
 | `tool_call_sound` | string | - | Sound during execution: `typing`, `elevator1`-`elevator4` |
-| `force_pre_tool_speech` | bool | `false` | Force agent to speak before executing tool |
+| `pre_tool_speech` | string | `"auto"` | Controls whether the agent speaks before execution: `auto`, `force`, or `off` |
 | `tool_error_handling_mode` | string | `"auto"` | `auto`, `summarized`, `passthrough`, or `hide` |
+
+MCP server configuration supports the same `pre_tool_speech`, `execution_mode`, and
+`response_timeout_secs` controls at the server level, with per-tool overrides in
+`tool_config_overrides`. MCP timeouts default to 30 seconds and must be 5-120 seconds.
 
 **Note:** The default `api_schema.method` is `GET`. Always set `"method": "POST"` explicitly for webhook tools that send request bodies.
 
@@ -507,7 +511,7 @@ app.post("/webhook/lookup_order", async (req, res) => {
 
 ### Timeouts
 
-Set reasonable timeouts for webhooks using `response_timeout_secs` (5-120 seconds, default 20):
+Set reasonable timeouts for webhooks using `response_timeout_secs` (5-120 seconds, default 20). MCP server tool calls use the same field with a 30-second default:
 
 ```python
 {

@@ -244,7 +244,8 @@ platform_settings={
     "call_limits": {
         "agent_concurrency_limit": 10,
         "daily_limit": 100
-    }
+    },
+    "trust_context": "low"
 }
 ```
 
@@ -258,6 +259,7 @@ platform_settings={
 | `call_limits` | object | Concurrency and daily usage limits |
 | `guardrails` | object | Built-in safety and policy controls for agent interactions |
 | `privacy` | object | Recording, retention, and conversation history redaction settings |
+| `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
 
 ### auth
 
@@ -361,6 +363,10 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `monitoring_enabled` | bool | `false` | Enable real-time WebSocket monitoring |
 | `client_events` | array | - | Client events forwarded to the connected application |
 | `monitoring_events` | array | - | Events forwarded to monitoring WebSocket connections |
+| `source_attribution` | bool | `false` | Instructs the LLM to report sources used when knowledge base content is present |
+
+Common client events include `agent_response_complete`, which fires when the agent is done
+responding and must be enabled in `client_events`.
 
 **file_input:**
 
@@ -405,6 +411,9 @@ agent = client.conversational_ai.agents.create(
 ```
 
 `rag.embedding_model` supports `e5_mistral_7b_instruct`, `multilingual_e5_large_instruct`, and `qwen3_embedding_4b`.
+
+Set `conversation_config.conversation.source_attribution` to `true` when you want the agent to
+report which knowledge base sources it used in responses.
 
 ## CRUD Operations
 

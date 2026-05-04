@@ -6,10 +6,10 @@ Stream audio from the browser directly to ElevenLabs for real-time transcription
 
 ```bash
 # React
-npm install @elevenlabs/react @elevenlabs/elevenlabs-js
+npm install @elevenlabs/react@latest @elevenlabs/elevenlabs-js@latest
 
 # JavaScript
-npm install @elevenlabs/client @elevenlabs/elevenlabs-js
+npm install @elevenlabs/client@latest @elevenlabs/elevenlabs-js@latest
 ```
 
 > **Warning:** Always use the `@elevenlabs/*` namespace for client-side packages.
@@ -118,6 +118,8 @@ async function startTranscription() {
     token,
     modelId: "scribe_v2_realtime",
     includeTimestamps: true,
+    keyterms: ["ElevenLabs", "Scribe"],
+    noVerbatim: true,
     microphone: {
       echoCancellation: true,
       noiseSuppression: true,
@@ -154,6 +156,8 @@ async function startTranscription() {
   return connection;
 }
 ```
+
+`keyterms` biases realtime recognition toward important terms. `noVerbatim` removes filler words, false starts, and disfluencies from committed transcripts.
 
 ## Manual Audio Chunking
 

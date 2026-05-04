@@ -6,10 +6,10 @@ Transcribe audio streams in real-time from your server with ultra-low latency.
 
 ```bash
 # Python
-pip install elevenlabs python-dotenv pydub
+pip install --upgrade elevenlabs python-dotenv pydub
 
 # JavaScript
-npm install @elevenlabs/elevenlabs-js dotenv
+npm install @elevenlabs/elevenlabs-js@latest dotenv
 ```
 
 > **Warning:** Do not use `npm install elevenlabs` - that's an outdated v1.x package. Always use `@elevenlabs/elevenlabs-js`.
@@ -43,6 +43,8 @@ async def main():
         model_id="scribe_v2_realtime",
         url="https://npr-ice.streamguys1.com/live.mp3",
         include_timestamps=True,
+        keyterms=["ElevenLabs", "Scribe"],
+        no_verbatim=True,
     ))
 
     def on_partial_transcript(data):
@@ -86,6 +88,8 @@ const connection = await elevenlabs.speechToText.realtime.connect({
   modelId: "scribe_v2_realtime",
   url: "https://npr-ice.streamguys1.com/live.mp3",
   includeTimestamps: true,
+  keyterms: ["ElevenLabs", "Scribe"],
+  noVerbatim: true,
 });
 
 connection.on(RealtimeEvents.PARTIAL_TRANSCRIPT, (transcript) => {
@@ -284,6 +288,13 @@ For cases where the SDK cannot be used:
 
 ```
 wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime
+```
+
+Add repeated `keyterms` query parameters to bias recognition toward specific terms, and set
+`no_verbatim=true` to remove filler words, false starts, and disfluencies:
+
+```
+wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&keyterms=ElevenLabs&keyterms=Scribe&no_verbatim=true
 ```
 
 ### Message Format
