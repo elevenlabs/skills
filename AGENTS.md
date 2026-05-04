@@ -43,5 +43,23 @@ print('All files valid')
 ### Gotchas
 
 - `evals/run_all.py` calls `_ensure_cursor_agent_available()` at module import time and exits immediately if `cursor-agent` is not found. This is intentional — the full eval suite cannot run without it.
+- **CURSOR_AGENT env var conflict**: The environment may have `CURSOR_AGENT=1` set as a boolean flag. The eval script interprets this as the binary path. You must override it: `export CURSOR_AGENT="cursor-agent"` before running evals.
+- The `cursor-agent` CLI is installed at `~/.local/bin/cursor-agent`. Ensure `~/.local/bin` is on PATH.
 - The eval script uses only Python stdlib (no third-party packages). Do not add a `requirements.txt` for the core project.
 - The `openclaw/` directory is community-maintained and has its own `requirements.txt` and venv-bootstrapping script.
+
+### Running evals (quick reference)
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+export CURSOR_AGENT="cursor-agent"
+
+# Single skill trigger eval (fastest smoke test, ~90s)
+python3 evals/run_all.py --trigger-only --skills setup-api-key --runs-per-query 1 -v
+
+# Full trigger evals (~3 min)
+python3 evals/run_all.py --trigger-only -v
+
+# Full suite (trigger + functional, ~15 min)
+python3 evals/run_all.py -v
+```
