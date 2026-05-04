@@ -166,6 +166,19 @@ Use `GET /v1/convai/llm/list` to inspect the current model catalog, including de
 
 See [Agent Configuration](references/agent-configuration.md) for all options.
 
+## System Prompt Structure
+
+Section the prompt with markdown headings — the model prioritizes and interprets instructions more reliably ([prompting guide](https://elevenlabs.io/docs/eleven-agents/best-practices/prompting-guide)):
+
+```
+# Personality   – named character, 2-3 traits
+# Environment   – where they work, who they talk to
+# Tone          – vocal style as 4-5 bullets
+# Goal          – what success looks like (numbered for multi-step flows)
+```
+
+Keep instructions short and action-based. Mark critical steps with "This step is important." Configure refusal/safety rules via `platform_settings.guardrails` rather than embedding them in the prompt (see [Guardrails](#guardrails)).
+
 ## Tools
 
 Extend agents with webhook, client, or built-in system tools. Tools are defined inside `conversation_config.agent.prompt`:
@@ -203,6 +216,131 @@ clientTools: {
 ```
 
 See [Client Tools Reference](references/client-tools.md) for complete documentation.
+
+### Built-in System Tools
+
+Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaults; provide `description` to customize; omit to disable.
+
+| Tool | Enable for |
+|------|------------|
+| `end_call` | All agents |
+| `language_detection` | Multilingual agents |
+| `transfer_to_number` | Phone-based human escalation |
+| `transfer_to_agent` | Multi-agent workflows |
+| `skip_turn` | Tutoring / coaching (silent listening) |
+| `voicemail_detection` | Outbound calling |
+| `play_keypad_touch_tone` | IVR navigation |
+
+### Integration Tools
+
+Pre-built connectors managed by the platform. Create a connection with credentials, then attach via `tool_ids`:
+
+| Integration | Use case |
+|-------------|----------|
+| `calcom` | Scheduling appointments |
+| `salesforce` | CRM lookups, case creation |
+| `hubspot` | CRM, marketing, contacts |
+| `zendesk` | Support ticketing |
+
+Three-step flow: `POST /v1/convai/api-integrations/{id}/connections` → `GET /v1/convai/api-integrations/{id}/tools` → `POST /v1/convai/tools` with `api_integration_id` and `api_integration_connection_id`. Attach to the agent with `"prompt": {"tool_ids": ["tool_xxxx"]}`. Inline `tools` and `tool_ids` can coexist — prefer an integration over a duplicate custom webhook.
+
+### Public-API Webhook Examples
+
+No-auth APIs useful for prototypes (URLs must be HTTPS):
+
+| Tool | URL | Purpose |
+|------|-----|---------|
+| `get_weather` | `https://wttr.in/{location}?format=j1` | Current weather |
+| `search_wikipedia` | `https://en.wikipedia.org/api/rest_v1/page/summary/{topic}` | Topic summary |
+| `get_exchange_rate` | `https://open.er-api.com/v6/latest/{base_currency}` | FX rates |
+
+## Workflows
+
+Route conversations through discrete steps with branching logic. Define under the agent's top-level `workflow` field. Reference: [Agent Workflows](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows).
+
+**Node types:** `start` (ID must be `"start_node"`), `end`, `override_agent` (subagent step with `label` + `additional_prompt`), `dispatch_tool` (executes a tool with success/failure routing), `agent_transfer`, `transfer_to_number`.
+
+**Edge types:** `unconditional`, `llm` (natural-language condition), `expression` (deterministic data check). Tool nodes have separate success/failure edges.
+
+**Scope tools per step** with `additional_tool_ids` on a node — prevents the wrong tool firing at the wrong step (use `[]` to disable all tools at that step):
+
+```json
+{
+  "type": "override_agent",
+  "label": "Book Appointment",
+  "additional_prompt": "Discuss preferred dates and doctors. Show the booking form once agreed.",
+  "additional_tool_ids": ["show_booking_form", "display_appointment_card"],
+  "position": {"x": 0, "y": 400}
+}
+```
+
+Include `position` (`{x, y}`) on every node so the editor renders cleanly. Suggested spacing: 200px vertical between levels, 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
+
+## Guardrails
+
+Layered safety enforcement that runs independently of the LLM — configured under `platform_settings.guardrails`, not in the system prompt. Reference: [Guardrails](https://elevenlabs.io/docs/eleven-agents/best-practices/guardrails).
+
+```json
+"platform_settings": {
+  "guardrails": {
+    "version": "1",
+    "focus": {"is_enabled": true},
+    "prompt_injection": {"is_enabled": true},
+    "content": {"config": {"harassment": {"is_enabled": true, "threshold": 0.5}}},
+    "custom": {
+      "config": {
+        "configs": [{
+          "is_enabled": true,
+          "name": "No medical diagnoses",
+          "prompt": "Block the agent from providing medical diagnoses or treatment advice.",
+          "execution_mode": "blocking",
+          "trigger_action": {"type": "retry", "feedback": "Reason: {{trigger_reason}}"}
+        }]
+      }
+    }
+  }
+}
+```
+
+**Types:** `focus` (on-topic), `prompt_injection` (manipulation defense), `content` (category filters), `custom` (LLM-evaluated domain rules). Content categories include `harassment`, `profanity`, `sexual`, `violence`, `self_harm`, and `medical_and_legal_information` — threshold range `0.0`–`1.0` (default `0.3`). Custom rules use `execution_mode: "blocking"` with a `trigger_action` (e.g., `retry` with feedback). Custom guardrails evaluate in parallel and fail-open.
+
+**Per vertical:** healthcare/finance/legal → enable `medical_and_legal_information`; education/youth → `sexual`/`violence`/`self_harm`/`profanity`; support/sales → `harassment`/`profanity`. All agents benefit from `focus` + `prompt_injection` + 2-4 custom rules.
+
+## Testing Agents
+
+Three test types via `POST /v1/convai/agent-testing/create`, then attached with PATCH on the agent. Reference: [Agent Testing](https://elevenlabs.io/docs/eleven-agents/customization/agent-testing).
+
+| Type | Purpose |
+|------|---------|
+| `llm` | Scenario test — does the agent respond appropriately to a message? |
+| `tool` | Tool-call test — right tool, right parameters? |
+| `simulation` | Multi-turn flow with a simulated user persona |
+
+```json
+// Tool-call test (snake_case throughout; chat_history role is "user" or "agent")
+{
+  "name": "Books with correct doctor and date",
+  "type": "tool",
+  "chat_history": [
+    {"role": "user", "message": "Dr. Smith on March 5 at 2pm", "time_in_call_secs": 10}
+  ],
+  "tool_call_parameters": {
+    "referenced_tool": {"id": "show_booking_form", "type": "client"},
+    "parameters": [
+      {"path": "doctor_name", "eval": {"type": "llm", "description": "Should reference Dr. Smith"}},
+      {"path": "date", "eval": {"type": "regex", "pattern": "2025-03-05|March 5"}}
+    ]
+  }
+}
+```
+
+Eval strategies: `exact`, `regex`, `llm`. Attach via PATCH:
+
+```bash
+curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"platform_settings": {"testing": {"attached_tests": [{"test_id": "test_xxxx"}]}}}'
+```
 
 ## Widget Embedding
 
