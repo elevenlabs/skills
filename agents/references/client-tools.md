@@ -178,7 +178,6 @@ context as a lazily evaluated JSON history object with user, agent, and tool ent
 | `execution_mode` | string | `"immediate"` | `immediate`, `post_tool_speech`, or `async` |
 | `tool_call_sound` | string | - | Sound during execution: `typing`, `elevator1`-`elevator4` |
 | `pre_tool_speech` | string | `"auto"` | Controls whether the agent speaks before execution: `auto`, `force`, or `off` |
-| `force_pre_tool_speech` | bool | `false` | Deprecated; use `pre_tool_speech` instead |
 | `tool_error_handling_mode` | string | `"auto"` | `auto`, `summarized`, `passthrough`, or `hide` |
 
 MCP server configuration supports the same `pre_tool_speech`, `execution_mode`, and
