@@ -262,7 +262,7 @@ Route conversations through discrete steps with branching logic. Define under th
 
 **Edge types:** `unconditional`, `llm` (natural-language condition), `expression` (deterministic data check). Tool nodes have separate success/failure edges.
 
-**Scope tools per step** with `additional_tool_ids` on a node — prevents the wrong tool firing at the wrong step (use `[]` to disable all tools at that step):
+**Scope tools per step** with `additional_tool_ids` on a node — prevents the wrong tool firing at the wrong step. Set `additional_tool_ids: []` on conversational routing nodes such as greeting and `classify_intent` so they only converse:
 
 ```json
 {
@@ -274,7 +274,7 @@ Route conversations through discrete steps with branching logic. Define under th
 }
 ```
 
-Include `position` (`{x, y}`) on every node so the editor renders cleanly. Suggested spacing: 200px vertical between levels, 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
+Include `position` (`{x, y}`) on every node so the editor renders cleanly. Start at `y=0`, put `end` at the bottom, and space branches horizontally at `x=-150` and `x=150`; suggested spacing is 200px vertical between levels and 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
 
 ## Guardrails
 
