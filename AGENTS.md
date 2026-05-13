@@ -40,4 +40,12 @@ To verify the codebase integrity without `cursor-agent`:
 - Python 3.12+ is available system-wide
 - `python3.12-venv` must be installed for the transcribe tool's venv to work (`sudo apt-get install -y python3.12-venv`)
 - `ffmpeg` is pre-installed
-- No `node`, `npm`, or JS runtime is needed for development (only for end-user skill installation via `npx skills add`)
+- No `node`, `npm`, or JS runtime is needed for the skills repo itself (only for end-user skill installation via `npx skills add`)
+
+### elevenlabs/examples companion repo
+
+The `elevenlabs/examples` repo is cloned at `/workspace/elevenlabs-examples/`. It contains prompt-driven example projects for ElevenLabs APIs.
+
+- **Linters**: `npx prettier . --check` (JS/TS formatting) and `ruff check .` (Python). CI runs both on PRs.
+- **Dependencies**: `npm ci` in the repo root installs prettier. `ruff` is installed globally via pip.
+- **Push access**: The cloud agent's GitHub token is scoped to `elevenlabs/skills`. To open PRs on `elevenlabs/examples`, the Cursor GitHub App must be granted access to that repo in GitHub org settings, or a cloud agent session must be launched directly from that repo.
