@@ -13,7 +13,7 @@ For local development, expose the server publicly before creating the Speech Eng
 
 ```bash
 ngrok http 3001
-export PUBLIC_WS_URL="https://your-ngrok-domain.ngrok.app/ws"
+export PUBLIC_WS_URL="wss://your-ngrok-domain.ngrok.app/ws"
 ```
 
 The browser token endpoint uses the same `ELEVENLABS_SPEECH_ENGINE_ID`.
@@ -82,15 +82,17 @@ client = AsyncElevenLabs()
 ## Local Development Checklist
 
 - `ngrok http 3001` is running and points to the Speech Engine server port.
-- The Speech Engine resource was created with `ws_url` / `wsUrl` ending in `/ws`.
+- The Speech Engine resource was created with a `wss://.../ws` `ws_url` / `wsUrl`.
 - The server is listening on the same path, usually `/ws`.
 - The token endpoint runs server-side and returns a short-lived conversation token.
 - The browser asks for microphone permission before `startSession(...)`.
+- First-message client overrides are enabled on the Speech Engine resource before passing `overrides.agent.firstMessage`.
+- Server callbacks include `on_disconnect` / `onDisconnect` if unexpected WebSocket drops need handling.
 - `debug: true` is enabled while developing so transcript and lifecycle issues are visible.
 
 ## Production Notes
 
-- Replace ngrok with your public HTTPS host.
+- Replace ngrok with your public HTTPS host and use its `wss://` WebSocket URL.
 - Keep the WebSocket path stable; updating the host requires updating or recreating the Speech Engine resource.
 - Store API keys in managed secrets.
 - Add shutdown handling so `SpeechEngineAttachment.close()` or the Python server process stops cleanly.

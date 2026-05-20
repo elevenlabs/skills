@@ -12,16 +12,19 @@ const elevenlabs = new ElevenLabsClient();
 
 ### Create
 
-Only `speechEngine.wsUrl` is required. Add optional config blocks when the Speech Engine needs custom voice, speech recognition, turn-taking, request headers, or privacy behavior.
+Only `speechEngine.wsUrl` is required. Use a secure WebSocket URL such as `wss://example.com/ws`. Add optional config blocks when the Speech Engine needs custom voice, speech recognition, turn-taking, request headers, client-side first-message overrides, or privacy behavior.
 
 ```typescript
 const engine = await elevenlabs.speechEngine.create({
   name: "My Speech Engine",
   speechEngine: {
-    wsUrl: "https://example.com/ws",
+    wsUrl: "wss://example.com/ws",
     requestHeaders: {
       "x-agent-runtime": "openclaw",
     },
+  },
+  overrides: {
+    firstMessage: true,
   },
   tts: {
     modelId: "eleven_flash_v2_5",
@@ -44,6 +47,8 @@ const engine = await elevenlabs.speechEngine.create({
 console.log(engine.engineId);
 ```
 
+Enable `overrides.firstMessage` before using `overrides.agent.firstMessage` when starting a browser session.
+
 ### Get
 
 ```typescript
@@ -62,6 +67,8 @@ engine.attach(httpServer, "/ws", { debug: true, ...validatedCallbacks });
 ```
 
 Call `await attachment.close()` to stop accepting Speech Engine connections without shutting down the HTTP server.
+
+Callback options include `onInit`, `onTranscript`, `onClose`, `onDisconnect`, `onError`, and `debug`. Use `onClose` for clean disconnects from ElevenLabs and `onDisconnect` when the WebSocket drops unexpectedly.
 
 ### verifyRequest
 

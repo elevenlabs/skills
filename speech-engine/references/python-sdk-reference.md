@@ -12,16 +12,19 @@ elevenlabs = AsyncElevenLabs()
 
 ### Create
 
-Only `speech_engine.ws_url` is required. Add optional config blocks when the Speech Engine needs custom voice, speech recognition, turn-taking, request headers, or privacy behavior.
+Only `speech_engine.ws_url` is required. Use a secure WebSocket URL such as `wss://example.com/ws`. Add optional config blocks when the Speech Engine needs custom voice, speech recognition, turn-taking, request headers, client-side first-message overrides, or privacy behavior.
 
 ```python
 engine = await elevenlabs.speech_engine.create(
     name="My Speech Engine",
     speech_engine={
-        "ws_url": "https://example.com/ws",
+        "ws_url": "wss://example.com/ws",
         "request_headers": {
             "x-agent-runtime": "openclaw",
         },
+    },
+    overrides={
+        "first_message": True,
     },
     tts={
         "model_id": "eleven_flash_v2_5",
@@ -43,6 +46,8 @@ engine = await elevenlabs.speech_engine.create(
 
 print(engine.engine_id)
 ```
+
+Enable `overrides.first_message` before using `overrides.agent.firstMessage` when starting a browser session.
 
 ### Get
 
@@ -68,6 +73,8 @@ Key parameters:
 | `port` | `3001` | Port to listen on |
 | `path` | `None` | Restrict WebSocket connections to one path |
 | `debug` | `False` | Log protocol details while developing |
+
+Common callback keys include `on_init`, `on_transcript`, `on_close`, `on_disconnect`, and `on_error`. Use `on_close` for clean disconnects from ElevenLabs and `on_disconnect` when the WebSocket drops unexpectedly.
 
 ### verify_request
 
