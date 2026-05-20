@@ -43,11 +43,11 @@ Treat speech-recognition text as untrusted user input. Do not map raw speech tex
 
 1. Install server dependencies and configure `ELEVENLABS_API_KEY`.
 2. Expose your Speech Engine server through a public HTTPS URL for local development, for example with `ngrok http 3001`.
-3. Create a Speech Engine resource with `ws_url` / `wsUrl` pointing at the public URL plus `/ws`.
+3. Create a Speech Engine resource with `ws_url` / `wsUrl` pointing at the public WebSocket URL, usually `wss://.../ws`.
 4. Store the returned Speech Engine ID, for example in `ELEVENLABS_SPEECH_ENGINE_ID`.
 5. Start a Speech Engine server with `engine.serve(...)` in Python or `speechEngine.attach(...)` in TypeScript.
 6. Issue browser conversation tokens from a server endpoint. Never put `ELEVENLABS_API_KEY` in browser code.
-7. Start the client session with `conversationToken`; optionally set `overrides.agent.firstMessage` if the agent should greet first.
+7. Start the client session with `conversationToken`; if the agent should greet first, enable the first-message override on the Speech Engine resource, then set `overrides.agent.firstMessage` in the client.
 
 ## Create a Speech Engine
 
@@ -68,6 +68,7 @@ async def main():
     engine = await elevenlabs.speech_engine.create(
         name="My Speech Engine",
         speech_engine={"ws_url": os.environ["PUBLIC_WS_URL"]},
+        overrides={"first_message": True},
     )
     print(engine.engine_id)
 
@@ -87,14 +88,15 @@ const elevenlabs = new ElevenLabsClient({
 const engine = await elevenlabs.speechEngine.create({
   name: "My Speech Engine",
   speechEngine: { wsUrl: process.env.PUBLIC_WS_URL! },
+  overrides: { firstMessage: true },
 });
 
 console.log(engine.engineId);
 ```
 
-`PUBLIC_WS_URL` should look like `https://example.ngrok.app/ws` locally or your production WebSocket route in deployment.
+`PUBLIC_WS_URL` should look like `wss://example.ngrok.app/ws` locally or your production WebSocket route in deployment.
 
-The create request can also configure `tts`, `asr`, `turn`, `speech_engine.request_headers` / `speechEngine.requestHeaders`, and `privacy` for custom voices, transcription keywords, turn-taking, server auth headers, and recording behavior. See the SDK reference files for expanded examples.
+The create request can also configure `tts`, `asr`, `turn`, `speech_engine.request_headers` / `speechEngine.requestHeaders`, `overrides`, and `privacy` for custom voices, transcription keywords, turn-taking, server auth headers, client-provided first messages, and recording behavior. See the SDK reference files for expanded examples.
 
 ## Server Pattern
 
@@ -116,11 +118,13 @@ engine.attach(httpServer, "/ws", { debug: true, ...validatedCallbacks });
 
 In TypeScript, pass interruption signals to downstream async work when it supports cancellation so interrupted responses stop quickly. In Python, the SDK cancels the previous turn handler when a newer turn arrives.
 
+Server callbacks can distinguish clean closes from dropped connections: use `onClose` / `on_close` for clean disconnects and `onDisconnect` / `on_disconnect` for unexpected WebSocket drops.
+
 Security note: speech-recognition text can contain prompt-injection attempts from user speech or played audio. Treat it as untrusted input. Convert it into trusted application state before invoking response generation, tools, or privileged workflows.
 
 ## Browser Client
 
-Create a server-side token endpoint and have the browser request a token before starting the microphone session. Keep the Speech Engine ID and API key on the server.
+Create a server-side token endpoint and have the browser request a token before starting the microphone session. Keep the Speech Engine ID and API key on the server. If the client passes `overrides.agent.firstMessage`, the Speech Engine resource must have the first-message override enabled.
 
 ```typescript
 import express from "express";
