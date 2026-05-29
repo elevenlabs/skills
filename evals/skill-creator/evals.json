@@ -1,0 +1,42 @@
+{
+  "skill_name": "skill-creator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a skill that helps me deploy our Next.js app to Vercel. It should run tests first, then deploy, and notify on Slack when done.",
+      "expected_output": "A complete SKILL.md file with proper frontmatter and deployment instructions",
+      "files": [],
+      "expectations": [
+        "Creates a SKILL.md file with valid YAML frontmatter",
+        "Includes a clear description that mentions deployment, Vercel, and Next.js",
+        "Sets disable-model-invocation: true since deployment has side effects",
+        "Includes step-by-step instructions for the deployment workflow",
+        "Uses allowed-tools for necessary commands or explains tool permissions"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want a skill that shows me the current git status and recent commits whenever I ask about changes. It should run automatically when I mention 'what changed' or 'recent commits'.",
+      "expected_output": "A SKILL.md using dynamic context injection with git commands",
+      "files": [],
+      "expectations": [
+        "Uses !`git status` or !`git diff` syntax for dynamic context injection",
+        "Does NOT set disable-model-invocation since it should auto-trigger",
+        "Description includes trigger phrases like 'what changed', 'recent commits'",
+        "Instructions tell Claude how to summarize or present the git information"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Help me understand why my skill description isn't triggering Claude to use it. The description just says 'helps with database stuff'.",
+      "expected_output": "Guidance on writing better skill descriptions with specific examples",
+      "files": [],
+      "expectations": [
+        "Explains that descriptions need to be specific and 'pushy'",
+        "Provides concrete examples of good vs bad descriptions",
+        "Suggests adding trigger phrases via when_to_use field",
+        "Mentions the 1,536 character limit for combined description + when_to_use"
+      ]
+    }
+  ]
+}

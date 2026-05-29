@@ -3,6 +3,8 @@ name: skill-creator
 description: Create, test, and optimize Claude Code skills. Use when building new skills, improving skill descriptions, evaluating skill effectiveness, or helping users understand the SKILL.md format.
 when_to_use: When user asks to create a skill, write a SKILL.md, build a custom command, or wants help with skill development.
 disable-model-invocation: true
+license: MIT
+compatibility: Works with Claude Code CLI, web, and IDE extensions. No external dependencies.
 ---
 
 # Skill Creator
