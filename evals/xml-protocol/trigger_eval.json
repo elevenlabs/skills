@@ -1,0 +1,18 @@
+[
+  {"query": "help me structure this prompt better using XML tags", "should_trigger": true},
+  {"query": "convert this messy prompt into proper XML format", "should_trigger": true},
+  {"query": "I need to write an agent instruction with cognitive boundaries", "should_trigger": true},
+  {"query": "make this prompt more structured and consistent", "should_trigger": true},
+  {"query": "write a well-structured prompt for code review", "should_trigger": true},
+  {"query": "how do I use XML tags to improve my prompts", "should_trigger": true},
+  {"query": "create a prompt template with role, context, and task sections", "should_trigger": true},
+  {"query": "my AI outputs are inconsistent, help me fix the prompt structure", "should_trigger": true},
+  {"query": "write a Python function to parse XML", "should_trigger": false},
+  {"query": "explain what this code does", "should_trigger": false},
+  {"query": "deploy my application", "should_trigger": false},
+  {"query": "run the test suite", "should_trigger": false},
+  {"query": "fix this bug in the login flow", "should_trigger": false},
+  {"query": "create a REST API endpoint", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "what's the best database for this use case", "should_trigger": false}
+]

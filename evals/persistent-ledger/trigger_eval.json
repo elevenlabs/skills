@@ -1,0 +1,18 @@
+[
+  {"query": "I need to track my work across sessions", "should_trigger": true},
+  {"query": "set up persistent memory for this project", "should_trigger": true},
+  {"query": "create a ledger to track deployments", "should_trigger": true},
+  {"query": "I want state that survives session restarts", "should_trigger": true},
+  {"query": "initialize a SQLite database to track agent work", "should_trigger": true},
+  {"query": "log this task completion to persistent storage", "should_trigger": true},
+  {"query": "what was I working on in my last session", "should_trigger": true},
+  {"query": "create an audit trail for my changes", "should_trigger": true},
+  {"query": "run the test suite", "should_trigger": false},
+  {"query": "deploy to production", "should_trigger": false},
+  {"query": "fix this bug", "should_trigger": false},
+  {"query": "create a new React component", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "explain what this function does", "should_trigger": false},
+  {"query": "set up a PostgreSQL database for the app", "should_trigger": false},
+  {"query": "write a database migration", "should_trigger": false}
+]

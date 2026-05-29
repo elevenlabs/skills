@@ -1,0 +1,18 @@
+[
+  {"query": "audit this codebase for security issues", "should_trigger": true},
+  {"query": "do a thorough code quality review of the src folder", "should_trigger": true},
+  {"query": "run multiple passes to find all the problems", "should_trigger": true},
+  {"query": "review this PR thoroughly, don't miss anything", "should_trigger": true},
+  {"query": "check compliance against our security policy iteratively", "should_trigger": true},
+  {"query": "I need a deep audit of the API endpoints", "should_trigger": true},
+  {"query": "keep auditing until you find everything", "should_trigger": true},
+  {"query": "multi-pass review of the authentication module", "should_trigger": true},
+  {"query": "run the linter on this file", "should_trigger": false},
+  {"query": "fix this bug", "should_trigger": false},
+  {"query": "explain what this code does", "should_trigger": false},
+  {"query": "create a new endpoint for users", "should_trigger": false},
+  {"query": "deploy to staging", "should_trigger": false},
+  {"query": "write unit tests for the service", "should_trigger": false},
+  {"query": "refactor this function to be cleaner", "should_trigger": false},
+  {"query": "what's wrong with this error message", "should_trigger": false}
+]

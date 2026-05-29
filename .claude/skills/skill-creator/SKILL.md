@@ -1,7 +1,7 @@
 ---
 name: skill-creator
-description: Create, test, and optimize Claude Code skills. Use when building new skills, improving skill descriptions, evaluating skill effectiveness, or helping users understand the SKILL.md format.
-when_to_use: When user asks to create a skill, write a SKILL.md, build a custom command, or wants help with skill development.
+description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+when_to_use: When user asks to create a skill, write a SKILL.md, build a custom command, wants help with skill development, needs to run evals, or wants to benchmark performance.
 disable-model-invocation: true
 license: MIT
 compatibility: Works with Claude Code CLI, web, and IDE extensions. No external dependencies.
@@ -9,7 +9,14 @@ compatibility: Works with Claude Code CLI, web, and IDE extensions. No external 
 
 # Skill Creator
 
-Guide skill development from intent capture through testing and iteration.
+Facilitates creation, modification, optimization, and evaluation of skills.
+
+## Overview
+
+- Use for new skill creation, edits, optimizations, or performance measurement
+- Support evals, benchmarking with variance analysis, and trigger accuracy improvements
+- Follow init, validate, and iteration processes for robust skill development
+- Ensure skills are concise, trigger-accurate, and add real value
 
 ## Skill Structure
 

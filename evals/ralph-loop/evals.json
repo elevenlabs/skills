@@ -1,0 +1,29 @@
+{
+  "skill_name": "ralph-loop",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Keep trying to fix the failing test in auth.test.ts until it passes. The test is flaky due to a race condition.",
+      "expected_output": "Autonomous loop that identifies and fixes the race condition, verifying test passes",
+      "files": [],
+      "expectations": [
+        "Defines clear success condition (test passes)",
+        "Defines failure condition (same error 3+ times, or unfixable)",
+        "Runs multiple iterations analyzing failure patterns",
+        "Reports final outcome with evidence of success or honest failure"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Babysit this PR's CI until it's green. The URL is https://github.com/org/repo/pull/123",
+      "expected_output": "Monitors CI status, pushes fixes for failures, loops until green",
+      "files": [],
+      "expectations": [
+        "Checks CI status periodically",
+        "Analyzes failures and pushes targeted fixes",
+        "Knows when to stop (green, or stuck on unfixable issue)",
+        "Provides summary of actions taken"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "skill_name": "xml-protocol",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have this prompt: 'You are an expert. Review the code and find bugs. Be thorough.' - make it better with XML structure",
+      "expected_output": "Properly structured XML prompt with role, context, task, and output_format tags",
+      "files": [],
+      "expectations": [
+        "Adds <role> tag with specific expertise",
+        "Adds <context> with what information model needs",
+        "Adds <task> with clear objective",
+        "Adds <output_format> with expected structure",
+        "Result is more specific than original"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a prompt template for an autonomous agent that needs to deploy code safely",
+      "expected_output": "XML-structured agent prompt with goal, stop conditions, and constraints",
+      "files": [],
+      "expectations": [
+        "Uses <role> for agent identity",
+        "Uses <goal> with clear objective",
+        "Uses <stop_conditions> with success AND failure criteria",
+        "Uses <constraints> for safety boundaries",
+        "Uses <allowed_actions> for permitted tools"
+      ]
+    }
+  ]
+}
