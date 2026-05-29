@@ -90,6 +90,20 @@ curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create?enable_versionin
 
 ## Starting Conversations
 
+### Temporary LiveKit WebSocket Pin
+
+Until the ElevenLabs LiveKit server supports `/rtc/v1`, browser clients using WebRTC can fail or stall during the underlying LiveKit WebSocket handshake with `livekit-client` versions newer than `2.16.1`. For React, Next.js, Electron, or other `@elevenlabs/client` / `@elevenlabs/react` integrations that use `connectionType: "webrtc"` or hit `wss://livekit.rtc.elevenlabs.io/rtc/v1`, add this temporary pin to `package.json`:
+
+```json
+{
+  "overrides": {
+    "livekit-client": "2.16.1"
+  }
+}
+```
+
+Use the pin when the app logs `/rtc/v1` 404s, `v1 RTC path not found`, or `could not establish pc connection` during session startup. This is a LiveKit server compatibility workaround for WebRTC sessions, not the ElevenLabs `connectionType: "websocket"` transport. Remove it after the upstream LiveKit server or SDK issue is fixed.
+
 **Server-side (Python):** Get signed URL for client connection:
 ```python
 signed_url = client.conversational_ai.conversations.get_signed_url(
@@ -152,10 +166,10 @@ function App({ signedUrl }: { signedUrl: string }) {
 
 | Provider | Models |
 |----------|--------|
-| OpenAI | `gpt-5.4`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
+| OpenAI | `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
+| Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
 | Google | `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
-| ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` |
+| ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
 
 Use `GET /v1/convai/llm/list` to inspect the current model catalog, including deprecation state, token/context limits, capability flags such as image-input support, and model-specific reasoning effort support.
@@ -165,6 +179,19 @@ Use `GET /v1/convai/llm/list` to inspect the current model catalog, including de
 **Turn eagerness:** `patient` (waits longer for user to finish), `normal`, or `eager` (responds quickly)
 
 See [Agent Configuration](references/agent-configuration.md) for all options.
+
+## System Prompt Structure
+
+Section the prompt with markdown headings — the model prioritizes and interprets instructions more reliably ([prompting guide](https://elevenlabs.io/docs/eleven-agents/best-practices/prompting-guide)):
+
+```
+# Personality   – named character, 2-3 traits
+# Environment   – where they work, who they talk to
+# Tone          – vocal style as 4-5 bullets
+# Goal          – what success looks like (numbered for multi-step flows)
+```
+
+Keep instructions short and action-based. Mark critical steps with "This step is important." For critical refusal/safety rules, include concise instructions in the prompt and also configure independent custom Guardrails via `platform_settings.guardrails` (see [Guardrails](#guardrails)).
 
 ## Tools
 
@@ -203,6 +230,131 @@ clientTools: {
 ```
 
 See [Client Tools Reference](references/client-tools.md) for complete documentation.
+
+### Built-in System Tools
+
+Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaults; provide `description` to customize; omit to disable.
+
+| Tool | Enable for |
+|------|------------|
+| `end_call` | All agents |
+| `language_detection` | Multilingual agents |
+| `transfer_to_number` | Phone-based human escalation |
+| `transfer_to_agent` | Multi-agent workflows |
+| `skip_turn` | Tutoring / coaching (silent listening) |
+| `voicemail_detection` | Outbound calling |
+| `play_keypad_touch_tone` | IVR navigation |
+
+### Integration Tools
+
+Pre-built connectors managed by the platform. Create a connection with credentials, then attach via `tool_ids`:
+
+| Integration | Use case |
+|-------------|----------|
+| `calcom` | Scheduling appointments |
+| `salesforce` | CRM lookups, case creation |
+| `hubspot` | CRM, marketing, contacts |
+| `zendesk` | Support ticketing |
+
+Three-step flow: `POST /v1/convai/api-integrations/{id}/connections` → `GET /v1/convai/api-integrations/{id}/tools` → `POST /v1/convai/tools` with `api_integration_id` and `api_integration_connection_id`. Attach to the agent with `"prompt": {"tool_ids": ["tool_xxxx"]}`. Inline `tools` and `tool_ids` can coexist — prefer an integration over a duplicate custom webhook.
+
+### Public-API Webhook Examples
+
+No-auth APIs useful for prototypes (URLs must be HTTPS):
+
+| Tool | URL | Purpose |
+|------|-----|---------|
+| `get_weather` | `https://wttr.in/{location}?format=j1` | Current weather |
+| `search_wikipedia` | `https://en.wikipedia.org/api/rest_v1/page/summary/{topic}` | Topic summary |
+| `get_exchange_rate` | `https://open.er-api.com/v6/latest/{base_currency}` | FX rates |
+
+## Workflows
+
+Route conversations through discrete steps with branching logic. Define under the agent's top-level `workflow` field. Reference: [Agent Workflows](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows).
+
+**Node types:** `start` (ID must be `"start_node"`), `end`, `override_agent` (subagent step with `label` + `additional_prompt`), `dispatch_tool` (executes a tool with success/failure routing), `agent_transfer`, `transfer_to_number`.
+
+**Edge types:** `unconditional`, `llm` (natural-language condition), `expression` (deterministic data check). Tool nodes have separate success/failure edges.
+
+**Scope tools per step** with `additional_tool_ids` on a node — prevents the wrong tool firing at the wrong step. Set `additional_tool_ids: []` on conversational routing nodes such as greeting and `classify_intent` so they only converse:
+
+```json
+{
+  "type": "override_agent",
+  "label": "Book Appointment",
+  "additional_prompt": "Discuss preferred dates and doctors. Show the booking form once agreed.",
+  "additional_tool_ids": ["show_booking_form", "display_appointment_card"],
+  "position": {"x": 0, "y": 400}
+}
+```
+
+Include `position` (`{x, y}`) on every node so the editor renders cleanly. Start at `y=0`, put `end` at the bottom, and space branches horizontally at `x=-150` and `x=150`; suggested spacing is 200px vertical between levels and 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
+
+## Guardrails
+
+Layered safety enforcement that runs independently of the LLM — configured under `platform_settings.guardrails`, not in the system prompt. Reference: [Guardrails](https://elevenlabs.io/docs/eleven-agents/best-practices/guardrails).
+
+```json
+"platform_settings": {
+  "guardrails": {
+    "version": "1",
+    "focus": {"is_enabled": true},
+    "prompt_injection": {"is_enabled": true},
+    "content": {"config": {"harassment": {"is_enabled": true, "threshold": 0.5}}},
+    "custom": {
+      "config": {
+        "configs": [{
+          "is_enabled": true,
+          "name": "No medical diagnoses",
+          "prompt": "Block the agent from providing medical diagnoses or treatment advice.",
+          "execution_mode": "blocking",
+          "trigger_action": {"type": "retry", "feedback": "Reason: {{trigger_reason}}"}
+        }]
+      }
+    }
+  }
+}
+```
+
+**Types:** `focus` (on-topic), `prompt_injection` (manipulation defense), `content` (category filters), `custom` (LLM-evaluated domain rules). Content categories include `harassment`, `profanity`, `sexual`, `violence`, `self_harm`, and `medical_and_legal_information` — threshold range `0.0`–`1.0` (default `0.3`). Custom rules use `execution_mode: "blocking"` with a `trigger_action` (e.g., `retry` with feedback). Custom guardrails evaluate in parallel and fail-open.
+
+**Per vertical:** healthcare/finance/legal → enable `medical_and_legal_information`; education/youth → `sexual`/`violence`/`self_harm`/`profanity`; support/sales → `harassment`/`profanity`. All agents benefit from `focus` + `prompt_injection` + 2-4 custom rules.
+
+## Testing Agents
+
+Three test types via `POST /v1/convai/agent-testing/create`, then attached with PATCH on the agent. Reference: [Agent Testing](https://elevenlabs.io/docs/eleven-agents/customization/agent-testing).
+
+| Type | Purpose |
+|------|---------|
+| `llm` | Scenario test — does the agent respond appropriately to a message? |
+| `tool` | Tool-call test — right tool, right parameters? |
+| `simulation` | Multi-turn flow with a simulated user persona |
+
+```json
+// Tool-call test (snake_case throughout; chat_history role is "user" or "agent")
+{
+  "name": "Books with correct doctor and date",
+  "type": "tool",
+  "chat_history": [
+    {"role": "user", "message": "Dr. Smith on March 5 at 2pm", "time_in_call_secs": 10}
+  ],
+  "tool_call_parameters": {
+    "referenced_tool": {"id": "show_booking_form", "type": "client"},
+    "parameters": [
+      {"path": "doctor_name", "eval": {"type": "llm", "description": "Should reference Dr. Smith"}},
+      {"path": "date", "eval": {"type": "regex", "pattern": "2025-03-05|March 5"}}
+    ]
+  }
+}
+```
+
+Eval strategies: `exact`, `regex`, `llm`. Attach via PATCH:
+
+```bash
+curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"platform_settings": {"testing": {"attached_tests": [{"test_id": "test_xxxx"}]}}}'
+```
 
 ## Widget Embedding
 

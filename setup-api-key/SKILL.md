@@ -47,6 +47,10 @@ Tell the user:
 >
 > Paste your API key here when ready.
 
+For service account keys, optionally restrict usage to trusted IP addresses or CIDR ranges with
+`allowed_ips`. Omitting it or setting it to `null` allows all IPs; when editing a service account
+key, use `clear` to remove the allowlist or omit the field to leave it unchanged.
+
 Then wait for the user's next message which should contain the API key.
 
 ### Step 2: Validate and configure

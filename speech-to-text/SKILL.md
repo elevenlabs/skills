@@ -192,6 +192,8 @@ async def transcribe_realtime():
     async with client.speech_to_text.realtime.connect(
         model_id="scribe_v2_realtime",
         include_timestamps=True,
+        keyterms=["ElevenLabs", "Scribe"],
+        no_verbatim=True,
     ) as connection:
         await connection.stream_url("https://example.com/audio.mp3")
 
@@ -215,6 +217,8 @@ function TranscriptionComponent() {
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD, // Auto-commit on silence for mic input
+    keyterms: ["ElevenLabs", "Scribe"],
+    noVerbatim: true,
     onPartialTranscript: (data) => console.log("Partial:", data.text),
     onCommittedTranscript: (data) => setTranscript((prev) => prev + data.text),
   });
@@ -247,6 +251,8 @@ import { useScribe, CommitStrategy } from "@elevenlabs/react";
 const scribe = useScribe({
   modelId: "scribe_v2_realtime",
   commitStrategy: CommitStrategy.VAD,
+  keyterms: ["ElevenLabs", "Scribe"],
+  noVerbatim: true,
   // Optional VAD tuning:
   vadSilenceThresholdSecs: 1.5,
   vadThreshold: 0.4,
@@ -257,6 +263,8 @@ const scribe = useScribe({
 // JavaScript client: pass vad config on connect
 const connection = await client.speechToText.realtime.connect({
   modelId: "scribe_v2_realtime",
+  keyterms: ["ElevenLabs", "Scribe"],
+  noVerbatim: true,
   vad: {
     silenceThresholdSecs: 1.5,
     threshold: 0.4,

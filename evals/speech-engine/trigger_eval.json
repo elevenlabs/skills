@@ -1,0 +1,18 @@
+[
+  {"query": "I want to add ElevenLabs Speech Engine to my existing chat app so users can talk to my custom LLM and hear replies", "should_trigger": true},
+  {"query": "build a TypeScript WebSocket server for Speech Engine that streams OpenAI responses back through ElevenLabs", "should_trigger": true},
+  {"query": "how do I create a Speech Engine instance with an ngrok /ws URL and save the seng id?", "should_trigger": true},
+  {"query": "write the React client that gets an ElevenLabs conversation token and starts a Speech Engine voice session", "should_trigger": true},
+  {"query": "my voice agent should use our own LLM backend but ElevenLabs should handle STT and TTS over WebRTC", "should_trigger": true},
+  {"query": "I need to verify the X-Elevenlabs-Speech-Engine-Authorization header when handling the websocket upgrade myself", "should_trigger": true},
+  {"query": "show me a Python on_transcript handler for Speech Engine that sends the full transcript to an LLM and returns a streamed response", "should_trigger": true},
+  {"query": "how do I make the first spoken message play when a Speech Engine browser session connects?", "should_trigger": true},
+  {"query": "transcribe this mp3 meeting recording with speaker diarization using ElevenLabs Scribe", "should_trigger": false},
+  {"query": "convert this paragraph into a warm female voiceover and save it as an mp3", "should_trigger": false},
+  {"query": "create an ElevenLabs Conversational AI agent with a weather webhook tool and a web widget", "should_trigger": false},
+  {"query": "generate a rainstorm sound effect loop for my app", "should_trigger": false},
+  {"query": "compose a 20 second jazz intro track using ElevenLabs Music", "should_trigger": false},
+  {"query": "help me set up my ElevenLabs API key in the environment", "should_trigger": false},
+  {"query": "isolate vocals from this noisy podcast recording", "should_trigger": false},
+  {"query": "change the voice in this wav file into a different character voice", "should_trigger": false}
+]

@@ -92,6 +92,12 @@ This creates a floating button that users can click to start a voice conversatio
 ></elevenlabs-convai>
 ```
 
+### File Uploads
+
+Embedded chat widgets can accept image and PDF uploads when the agent uses a multimodal LLM and
+`conversation_config.conversation.file_input.enabled` is enabled. Configure
+`max_files_per_conversation` to cap uploads per conversation.
+
 ### Full Customization
 
 ```html

@@ -1,0 +1,52 @@
+{
+  "skill_name": "speech-engine",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python Speech Engine server that gets the Speech Engine ID from ELEVENLABS_SPEECH_ENGINE_ID, listens on /ws port 3001, sends each full transcript to the OpenAI Responses API as a streamed request, and sends the streamed response back to ElevenLabs.",
+      "expected_output": "Python async server using ElevenLabs Speech Engine and a streamed LLM response",
+      "files": [],
+      "expectations": [
+        "Uses 'from elevenlabs import AsyncElevenLabs'",
+        "Gets the speech engine with client.speech_engine.get()",
+        "Calls engine.serve with port 3001 and path /ws",
+        "Defines an on_transcript callback that receives transcript and session",
+        "Maps transcript messages with role 'agent' to 'assistant' before calling OpenAI",
+        "Calls OpenAI Responses API with stream=True or otherwise creates a streamed LLM response",
+        "Calls await session.send_response(stream) or equivalent from inside on_transcript",
+        "Reads API keys and IDs from environment variables rather than hard-coding secrets"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a TypeScript server.mts for ElevenLabs Speech Engine. It should attach Speech Engine to a Node HTTP server at /ws, use an onTranscript callback, pass the AbortSignal to the OpenAI request so interruptions cancel, and stream the response back to the session.",
+      "expected_output": "TypeScript Speech Engine server attached to an existing HTTP server",
+      "files": [],
+      "expectations": [
+        "Imports ElevenLabsClient from '@elevenlabs/elevenlabs-js'",
+        "Does NOT import from the deprecated 'elevenlabs' npm package",
+        "Creates or uses a Node HTTP server",
+        "Calls elevenlabs.speechEngine.attach or engine.attach with a speech engine ID and path /ws",
+        "Defines async onTranscript(transcript, signal, session)",
+        "Passes the provided signal to the LLM/OpenAI request",
+        "Calls session.sendResponse(response) with a string or stream",
+        "Starts listening on port 3001 or clearly shows where the HTTP server listens"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Show the setup for a Speech Engine browser client: create the Speech Engine resource with a public /ws URL, add a server-side token endpoint, and a React component that starts a voice session with a first message.",
+      "expected_output": "End-to-end setup snippets for creating the Speech Engine, issuing a conversation token, and starting a React voice session",
+      "files": [],
+      "expectations": [
+        "Creates a Speech Engine resource with speechEngine.wsUrl or speech_engine.ws_url",
+        "Uses a server-side endpoint to call getWebrtcToken or get_webrtc_token",
+        "Does not expose ELEVENLABS_API_KEY to browser code",
+        "Uses @elevenlabs/react or @elevenlabs/client for the browser session",
+        "Requests microphone access before starting the session",
+        "Starts the session with conversationToken",
+        "Shows overrides.agent.firstMessage or equivalent for the first spoken message"
+      ]
+    }
+  ]
+}

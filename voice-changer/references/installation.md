@@ -3,7 +3,7 @@
 ## JavaScript / TypeScript
 
 ```bash
-npm install @elevenlabs/elevenlabs-js@latest
+npm install @elevenlabs/elevenlabs-js
 ```
 
 > **Important:** Always use `@elevenlabs/elevenlabs-js`. The old `elevenlabs` npm package (v1.x) is deprecated and should not be used.
@@ -19,33 +19,10 @@ const client = new ElevenLabsClient();
 const client = new ElevenLabsClient({ apiKey: "your-api-key" });
 ```
 
-### Migrating from deprecated packages
-
-If you have old packages installed, remove them:
-
-```bash
-# Remove deprecated packages
-npm uninstall elevenlabs
-
-# Install the current packages
-npm install @elevenlabs/elevenlabs-js@latest
-
-# For client-side/browser usage, also install:
-npm install @elevenlabs/client@latest  # Browser client
-npm install @elevenlabs/react@latest   # React hooks
-```
-
-**Import changes:**
-```javascript
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import { Scribe } from "@elevenlabs/client";
-import { useScribe } from "@elevenlabs/react";
-```
-
 ## Python
 
 ```bash
-pip install --upgrade elevenlabs
+pip install elevenlabs
 ```
 
 ```python
@@ -70,10 +47,11 @@ export ELEVENLABS_API_KEY="your-api-key"
 Include in requests via the `xi-api-key` header:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
+curl -X POST "https://api.elevenlabs.io/v1/speech-to-speech/JBFqnCBsd6RMkjVDRZzb?output_format=mp3_44100_128" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@audio.mp3" \
-  -F "model_id=scribe_v2"
+  -F "audio=@source.mp3" \
+  -F "model_id=eleven_multilingual_sts_v2" \
+  --output converted.mp3
 ```
 
 ## Getting an API Key
@@ -84,9 +62,3 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 4. Copy and store securely
 
 Or use the `setup-api-key` skill for guided setup.
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `ELEVENLABS_API_KEY` | Your ElevenLabs API key (required) |
