@@ -1,0 +1,33 @@
+{
+  "skill_name": "terminal-multiplexer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a tmux configuration file (.tmux.conf) with vim-style keybindings for pane navigation, a custom status bar showing session name and time, mouse support, and configuration for tmux-resurrect plugin to persist sessions across reboots.",
+      "expected_output": "Complete tmux configuration file",
+      "files": [],
+      "expectations": [
+        "Sets vim-style keybindings (hjkl or similar) for pane navigation",
+        "Configures a custom status bar with session info",
+        "Enables mouse support with set -g mouse on",
+        "Includes tmux-resurrect or tmux-continuum plugin configuration",
+        "Sets a reasonable prefix key (C-a or C-b)",
+        "Includes sensible defaults like increased history limit"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a zellij layout configuration file (KDL format) for a development workflow with three panes: a main editor pane taking 70% width on the left, and two stacked panes on the right for running tests (top) and a shell (bottom). Include tab configuration for switching between project contexts.",
+      "expected_output": "Zellij layout file in KDL format",
+      "files": [],
+      "expectations": [
+        "Uses valid KDL syntax for zellij layouts",
+        "Defines a layout with three panes",
+        "Configures pane size ratios (70/30 or similar split)",
+        "Includes a main editor pane on the left",
+        "Has stacked panes on the right side",
+        "Defines tabs or includes tab-related configuration"
+      ]
+    }
+  ]
+}

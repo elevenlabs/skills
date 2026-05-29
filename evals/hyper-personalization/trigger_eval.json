@@ -1,0 +1,18 @@
+[
+  {"query": "I need a quick dossier on this prospect before my call in 2 minutes", "should_trigger": true},
+  {"query": "build me a 5-point research brief on Sarah Chen at Acme Corp", "should_trigger": true},
+  {"query": "do a 75-second deep dive on this lead for personalization", "should_trigger": true},
+  {"query": "research this prospect so I can personalize my outreach", "should_trigger": true},
+  {"query": "compile a prospect dossier with their background, company, and recent news", "should_trigger": true},
+  {"query": "I need hyper-personalized talking points for my next sales call", "should_trigger": true},
+  {"query": "quick prospect research on the decision maker at TechFlow Inc", "should_trigger": true},
+  {"query": "generate a personalization brief for this LinkedIn profile", "should_trigger": true},
+  {"query": "transcribe this audio file from my meeting", "should_trigger": false},
+  {"query": "help me write a Python script to parse CSV files", "should_trigger": false},
+  {"query": "create a voice AI agent for customer support", "should_trigger": false},
+  {"query": "deploy my application to production", "should_trigger": false},
+  {"query": "review this pull request for bugs", "should_trigger": false},
+  {"query": "generate a sound effect of rain", "should_trigger": false},
+  {"query": "help me set up my CRM integration", "should_trigger": false},
+  {"query": "write unit tests for my React component", "should_trigger": false}
+]

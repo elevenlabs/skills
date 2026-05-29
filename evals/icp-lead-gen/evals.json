@@ -1,0 +1,33 @@
+{
+  "skill_name": "icp-lead-gen",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script that generates a prospect list based on ICP criteria. The ICP is: B2B SaaS companies, 50-500 employees, headquartered in North America, Series A funding or later. Use available data sources to find 50 matching companies with company name, website, employee count, funding stage, and headquarters location.",
+      "expected_output": "Python script that generates ICP-matched prospect lists",
+      "files": [],
+      "expectations": [
+        "Defines clear ICP criteria (industry, size, location, funding)",
+        "Queries data source APIs or databases for matching companies",
+        "Filters results by employee count range (50-500)",
+        "Filters by geography (North America)",
+        "Filters by funding stage (Series A+)",
+        "Outputs structured prospect list with required fields"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a lead enrichment script that takes a list of company names and enriches each with: domain, LinkedIn company page, estimated employee count, industry, headquarters city, and 3 key decision maker contacts (name, title, LinkedIn URL). Output as a CSV ready for sales outreach.",
+      "expected_output": "Python script for lead enrichment with contact data",
+      "files": [],
+      "expectations": [
+        "Reads input list of company names",
+        "Enriches with company domain and LinkedIn page",
+        "Retrieves employee count and industry classification",
+        "Identifies headquarters location",
+        "Finds decision maker contacts with titles and profiles",
+        "Exports enriched data as CSV format"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "skill_name": "git-worktrees",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a shell script that sets up a git worktree workflow using a bare repository. The script should clone a repo as bare, create worktrees for main and develop branches in sibling directories, and include helper functions for adding new feature branch worktrees and cleaning up merged ones.",
+      "expected_output": "Shell script for git worktree workflow setup",
+      "files": [],
+      "expectations": [
+        "Clones repository with --bare flag",
+        "Uses git worktree add to create worktrees",
+        "Creates worktrees in organized directory structure",
+        "Includes function to add new worktrees for feature branches",
+        "Includes cleanup function for removing merged worktrees",
+        "Handles the main/master and develop branches"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a guide with commands for using git worktrees to work on a hotfix while keeping feature development separate. Show how to create worktrees from an existing repo, switch between them, share dependencies (like node_modules via symlinks), and properly clean up worktrees when done.",
+      "expected_output": "Commands and explanation for git worktree parallel development",
+      "files": [],
+      "expectations": [
+        "Shows git worktree add command with branch specification",
+        "Demonstrates creating worktree from existing (non-bare) repository",
+        "Explains navigating between worktree directories",
+        "Includes strategy for sharing dependencies (symlinks or similar)",
+        "Shows git worktree remove or prune for cleanup",
+        "Addresses the hotfix vs feature branch parallel workflow"
+      ]
+    }
+  ]
+}

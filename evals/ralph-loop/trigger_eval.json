@@ -1,0 +1,18 @@
+[
+  {"query": "keep trying to fix this test until it passes", "should_trigger": true},
+  {"query": "babysit the CI until it's green", "should_trigger": true},
+  {"query": "watch this deployment until the health check passes", "should_trigger": true},
+  {"query": "loop until all the migrations complete successfully", "should_trigger": true},
+  {"query": "monitor the build and retry if it fails", "should_trigger": true},
+  {"query": "keep pushing fixes until the linter is happy", "should_trigger": true},
+  {"query": "run this task autonomously until the goal is met", "should_trigger": true},
+  {"query": "I need you to persist on this until it works", "should_trigger": true},
+  {"query": "run my test suite once", "should_trigger": false},
+  {"query": "deploy to production", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "explain how this function works", "should_trigger": false},
+  {"query": "create a new React component", "should_trigger": false},
+  {"query": "fix this bug in the login page", "should_trigger": false},
+  {"query": "what's the status of the CI pipeline", "should_trigger": false},
+  {"query": "help me write a unit test", "should_trigger": false}
+]

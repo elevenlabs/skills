@@ -1,0 +1,30 @@
+{
+  "skill_name": "persistent-ledger",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Initialize a persistent ledger for this project so I can track work across sessions",
+      "expected_output": "Creates .claude/ledger.db with proper schema",
+      "files": [],
+      "expectations": [
+        "Creates SQLite database at .claude/ledger.db",
+        "Creates work_log table with required columns",
+        "Creates goals table for tracking objectives",
+        "Creates checkpoints table for recovery points",
+        "Confirms initialization success"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Log that I completed the authentication refactor and show me the current status",
+      "expected_output": "Inserts log entry and shows status summary",
+      "files": [],
+      "expectations": [
+        "Inserts record into work_log table",
+        "Uses current session ID",
+        "Shows status with pending/done counts",
+        "Shows active goals count"
+      ]
+    }
+  ]
+}

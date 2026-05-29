@@ -1,0 +1,18 @@
+[
+  {"query": "prepare a brief for my call with Acme Corp tomorrow at 2pm", "should_trigger": true},
+  {"query": "I have a meeting with a prospect in an hour, build me a call prep doc", "should_trigger": true},
+  {"query": "generate a pre-call research brief for my demo with TechFlow", "should_trigger": true},
+  {"query": "help me prepare for my sales call with the VP of Marketing", "should_trigger": true},
+  {"query": "create an automated meeting brief for my upcoming discovery call", "should_trigger": true},
+  {"query": "pull together everything I need to know before my call with Jane Smith", "should_trigger": true},
+  {"query": "build a call preparation document with company background and talking points", "should_trigger": true},
+  {"query": "I need a pre-meeting brief covering the account history and key stakeholders", "should_trigger": true},
+  {"query": "transcribe the audio from my last customer call", "should_trigger": false},
+  {"query": "help me write a follow-up email after my meeting", "should_trigger": false},
+  {"query": "create a proposal template for enterprise deals", "should_trigger": false},
+  {"query": "deploy my Node.js application to production", "should_trigger": false},
+  {"query": "review this pull request for code quality", "should_trigger": false},
+  {"query": "generate a voice clone for my podcast", "should_trigger": false},
+  {"query": "help me set up Salesforce automation", "should_trigger": false},
+  {"query": "write test cases for my billing module", "should_trigger": false}
+]

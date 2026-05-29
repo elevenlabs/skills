@@ -1,0 +1,18 @@
+[
+  {"query": "help me set up git worktrees to work on multiple branches simultaneously", "should_trigger": true},
+  {"query": "create a worktree workflow for parallel feature development without stashing", "should_trigger": true},
+  {"query": "configure git worktrees with shared node_modules to save disk space", "should_trigger": true},
+  {"query": "set up a bare repo with multiple worktrees for different branches", "should_trigger": true},
+  {"query": "use worktrees to compare implementations across branches in separate directories", "should_trigger": true},
+  {"query": "create filesystem parallelism for testing hotfix while continuing feature work", "should_trigger": true},
+  {"query": "set up git worktree aliases and scripts for my team's branching workflow", "should_trigger": true},
+  {"query": "configure worktrees with separate IDE workspaces per branch", "should_trigger": true},
+  {"query": "help me create a new git branch for my feature", "should_trigger": false},
+  {"query": "resolve merge conflicts between my feature branch and main", "should_trigger": false},
+  {"query": "set up git aliases for common commands like status and log", "should_trigger": false},
+  {"query": "configure git hooks to run linting before commits", "should_trigger": false},
+  {"query": "help me use git stash to save my work temporarily", "should_trigger": false},
+  {"query": "set up multiple remotes for the same repository", "should_trigger": false},
+  {"query": "configure git submodules for shared library dependencies", "should_trigger": false},
+  {"query": "help me cherry-pick commits from another branch", "should_trigger": false}
+]

@@ -1,0 +1,18 @@
+[
+  {"query": "clean up duplicate contacts in our Salesforce CRM, merge records with matching emails", "should_trigger": true},
+  {"query": "find and merge duplicate companies in HubSpot based on domain name", "should_trigger": true},
+  {"query": "enrich our lead data with LinkedIn profile information and job titles", "should_trigger": true},
+  {"query": "standardize phone number formats across all contacts in our CRM", "should_trigger": true},
+  {"query": "identify stale contacts that haven't been updated in 6 months and flag for review", "should_trigger": true},
+  {"query": "deduplicate our prospect list and consolidate contact information", "should_trigger": true},
+  {"query": "validate and fix email addresses in our CRM database, remove invalid entries", "should_trigger": true},
+  {"query": "normalize company names and remove variations like Inc vs Incorporated", "should_trigger": true},
+  {"query": "build a sales dashboard showing pipeline metrics and conversion rates", "should_trigger": false},
+  {"query": "generate a cold email sequence for our outbound campaign", "should_trigger": false},
+  {"query": "help me write a proposal for a new client", "should_trigger": false},
+  {"query": "create a lead scoring model based on engagement data", "should_trigger": false},
+  {"query": "set up a webhook to sync data between two systems", "should_trigger": false},
+  {"query": "analyze our win/loss data and identify patterns", "should_trigger": false},
+  {"query": "draft talking points for my next sales call", "should_trigger": false},
+  {"query": "build a report showing sales team performance by region", "should_trigger": false}
+]

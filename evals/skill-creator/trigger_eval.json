@@ -1,0 +1,18 @@
+[
+  {"query": "help me create a new skill for deploying to production", "should_trigger": true},
+  {"query": "I want to write a SKILL.md file for our team's code review process", "should_trigger": true},
+  {"query": "how do I make a custom slash command in Claude Code", "should_trigger": true},
+  {"query": "create a skill that runs our test suite with coverage", "should_trigger": true},
+  {"query": "what frontmatter fields are available for skills", "should_trigger": true},
+  {"query": "my skill isn't triggering when I expect it to, how do I fix the description", "should_trigger": true},
+  {"query": "build a skill that injects git status before responding", "should_trigger": true},
+  {"query": "I need a skill that runs in a subagent with the Explore agent type", "should_trigger": true},
+  {"query": "convert this text to speech using ElevenLabs", "should_trigger": false},
+  {"query": "generate a sound effect of thunder", "should_trigger": false},
+  {"query": "create a voice AI agent for customer support", "should_trigger": false},
+  {"query": "transcribe this audio file to text", "should_trigger": false},
+  {"query": "help me write a Python script to process JSON", "should_trigger": false},
+  {"query": "deploy my application to AWS", "should_trigger": false},
+  {"query": "review this pull request for security issues", "should_trigger": false},
+  {"query": "set up my ElevenLabs API key", "should_trigger": false}
+]

@@ -1,0 +1,18 @@
+[
+  {"query": "the prospect said they don't have budget, how do I respond", "should_trigger": true},
+  {"query": "help me handle the 'we're happy with our current solution' objection", "should_trigger": true},
+  {"query": "what's a good rebuttal when they say the timing isn't right", "should_trigger": true},
+  {"query": "my prospect objected that our price is too high, give me talking points", "should_trigger": true},
+  {"query": "how do I overcome the 'I need to think about it' stall", "should_trigger": true},
+  {"query": "craft a response to 'we've tried similar products before and they didn't work'", "should_trigger": true},
+  {"query": "the buyer says they need to consult their team, how do I keep momentum", "should_trigger": true},
+  {"query": "give me objection handling frameworks for enterprise sales", "should_trigger": true},
+  {"query": "transcribe this sales call recording", "should_trigger": false},
+  {"query": "help me write a cold email sequence", "should_trigger": false},
+  {"query": "create a CRM dashboard for pipeline tracking", "should_trigger": false},
+  {"query": "deploy my web application to AWS", "should_trigger": false},
+  {"query": "review this code for security vulnerabilities", "should_trigger": false},
+  {"query": "generate a podcast intro sound effect", "should_trigger": false},
+  {"query": "help me build a lead scoring model", "should_trigger": false},
+  {"query": "write documentation for our API endpoints", "should_trigger": false}
+]

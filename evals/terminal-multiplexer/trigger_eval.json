@@ -1,0 +1,18 @@
+[
+  {"query": "help me set up tmux with custom keybindings and status bar", "should_trigger": true},
+  {"query": "configure zellij with persistent layouts for my development workflow", "should_trigger": true},
+  {"query": "create a tmux session that survives SSH disconnects and persists across reboots", "should_trigger": true},
+  {"query": "set up terminal multiplexing with synchronized panes for multi-server commands", "should_trigger": true},
+  {"query": "configure tmux-resurrect and tmux-continuum for automatic session persistence", "should_trigger": true},
+  {"query": "create a zellij layout file for my three-pane development setup", "should_trigger": true},
+  {"query": "set up tmux with vim-like navigation and copy mode bindings", "should_trigger": true},
+  {"query": "configure persistent terminal sessions that I can attach to from multiple machines", "should_trigger": true},
+  {"query": "help me configure my bash profile with custom aliases", "should_trigger": false},
+  {"query": "install iTerm2 and configure split panes on macOS", "should_trigger": false},
+  {"query": "set up VS Code integrated terminal with multiple tabs", "should_trigger": false},
+  {"query": "configure my shell prompt with git branch information", "should_trigger": false},
+  {"query": "help me use GNU screen for a one-time background job", "should_trigger": false},
+  {"query": "install Windows Terminal and add custom color schemes", "should_trigger": false},
+  {"query": "create a systemd service that runs in the background", "should_trigger": false},
+  {"query": "set up SSH config for connecting to multiple servers", "should_trigger": false}
+]

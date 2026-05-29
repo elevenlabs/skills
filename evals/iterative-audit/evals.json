@@ -1,0 +1,30 @@
+{
+  "skill_name": "iterative-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a security audit on the src/api folder. Find all vulnerabilities.",
+      "expected_output": "Multi-pass audit report with findings from each pass",
+      "files": [],
+      "expectations": [
+        "Pass 1 applies standard security checks (OWASP, etc)",
+        "Pass 2 analyzes patterns in Pass 1 failures",
+        "Pass 3 targets specific vulnerability types found",
+        "Final report shows progress percentages per pass",
+        "Remaining issues have justification"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Do a thorough code quality review of this React component. I want to make sure nothing is missed.",
+      "expected_output": "Iterative audit with multiple passes catching different issue types",
+      "files": [],
+      "expectations": [
+        "First pass catches obvious issues (lint, types)",
+        "Second pass finds patterns (repeated code, complexity)",
+        "Third pass addresses edge cases",
+        "Report tracks what was fixed vs acknowledged"
+      ]
+    }
+  ]
+}

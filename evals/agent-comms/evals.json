@@ -1,0 +1,31 @@
+{
+  "skill_name": "agent-comms",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up a collaborative workflow where three explore agents research different aspects of the codebase and share their findings with cross-references",
+      "expected_output": "Communication protocol with source sharing and cross-reference structure",
+      "files": [],
+      "expectations": [
+        "Defines source sharing protocol with XML structure",
+        "Sets up source registry for verified findings",
+        "Includes cross-reference format for citing sources",
+        "Specifies how to handle conflicting information",
+        "Creates aggregation mechanism for combining findings"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The explore agent found information that conflicts with what the execute agent discovered. Help resolve this conflict and ensure both agents have the correct information.",
+      "expected_output": "Conflict resolution protocol and communication to sync agents",
+      "files": [],
+      "expectations": [
+        "Identifies the conflicting sources",
+        "Documents both claims with source references",
+        "Proposes verification method",
+        "Broadcasts resolution to relevant agents",
+        "Updates source registry with verified information"
+      ]
+    }
+  ]
+}

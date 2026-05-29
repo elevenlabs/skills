@@ -1,0 +1,18 @@
+[
+  {"query": "audit the current permissions for all skills and agents", "should_trigger": true},
+  {"query": "grant Bash access to the deploy skill", "should_trigger": true},
+  {"query": "revoke write permissions from the research agent", "should_trigger": true},
+  {"query": "which tools can the crm-hygiene skill use", "should_trigger": true},
+  {"query": "restrict file access to only the src directory", "should_trigger": true},
+  {"query": "configure skill visibility so only users can invoke deploy", "should_trigger": true},
+  {"query": "set up access control for sensitive file paths", "should_trigger": true},
+  {"query": "block dangerous bash commands for all agents", "should_trigger": true},
+  {"query": "fix this bug in the login page", "should_trigger": false},
+  {"query": "create a new API endpoint", "should_trigger": false},
+  {"query": "deploy to staging", "should_trigger": false},
+  {"query": "run the test suite", "should_trigger": false},
+  {"query": "search for authentication code", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "explain what this function does", "should_trigger": false},
+  {"query": "generate documentation for the API", "should_trigger": false}
+]

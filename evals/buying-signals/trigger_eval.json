@@ -1,0 +1,18 @@
+[
+  {"query": "track job changes for key contacts at my target accounts and alert me when someone gets promoted", "should_trigger": true},
+  {"query": "monitor funding announcements for companies in our pipeline and notify the account owner", "should_trigger": true},
+  {"query": "identify prospects who recently changed jobs to VP or C-level positions", "should_trigger": true},
+  {"query": "find companies that just raised Series B funding in the fintech space", "should_trigger": true},
+  {"query": "alert me when a target account posts a job opening for the role that uses our product", "should_trigger": true},
+  {"query": "detect intent signals like website visits, content downloads, or pricing page views", "should_trigger": true},
+  {"query": "track when prospects engage with competitor content or mention competitor products", "should_trigger": true},
+  {"query": "monitor news for expansion announcements, office openings, or hiring surges at target accounts", "should_trigger": true},
+  {"query": "write a cold email template for reaching out to new prospects", "should_trigger": false},
+  {"query": "build a CRM dashboard showing deal stages and pipeline value", "should_trigger": false},
+  {"query": "help me prepare for a discovery call with a new lead", "should_trigger": false},
+  {"query": "create a sales forecast model for next quarter", "should_trigger": false},
+  {"query": "generate a list of companies that match our ICP criteria", "should_trigger": false},
+  {"query": "analyze our historical close rates by industry", "should_trigger": false},
+  {"query": "draft a proposal document for an enterprise deal", "should_trigger": false},
+  {"query": "set up automated email sequences in our marketing tool", "should_trigger": false}
+]
