@@ -1,0 +1,33 @@
+{
+  "skill_name": "pre-call-brief",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a discovery call with DataStream Inc tomorrow at 10am. The attendees are CEO Alex Rivera and CTO Priya Sharma. Prepare a comprehensive pre-call brief.",
+      "expected_output": "A structured meeting brief with company research, stakeholder profiles, and call strategy",
+      "files": [],
+      "expectations": [
+        "Includes company overview and recent news",
+        "Provides profiles on each attendee with their backgrounds",
+        "Outlines potential pain points and priorities",
+        "Suggests discovery questions tailored to each stakeholder",
+        "Includes competitive landscape context",
+        "Provides a recommended call agenda and talking points"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Prepare me for my product demo with NexGen Solutions. I've had two previous calls with them documented in our CRM. Build a brief that incorporates our history.",
+      "expected_output": "Meeting brief that synthesizes prior engagement history with fresh research",
+      "files": [],
+      "expectations": [
+        "References and summarizes previous call notes or interactions",
+        "Identifies where the deal stands in the sales process",
+        "Highlights objections or concerns raised in prior calls",
+        "Provides updated company and stakeholder research",
+        "Suggests demo focus areas based on stated needs",
+        "Includes next steps and close strategy recommendations"
+      ]
+    }
+  ]
+}

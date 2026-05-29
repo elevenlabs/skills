@@ -1,0 +1,32 @@
+{
+  "skill_name": "crm-hygiene",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script to identify and merge duplicate contacts in a CSV file based on email address. For duplicates, keep the record with the most complete information and consolidate notes from all records.",
+      "expected_output": "Python script that deduplicates contacts by email",
+      "files": [],
+      "expectations": [
+        "Reads contact data from a CSV file",
+        "Identifies duplicates based on email address matching",
+        "Implements logic to select the most complete record",
+        "Merges or concatenates notes from duplicate records",
+        "Outputs a deduplicated CSV file",
+        "Handles case-insensitive email comparison"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a data validation script that cleans CRM contact data: standardize phone numbers to E.164 format, validate email addresses, and normalize company names by removing common suffixes like Inc, LLC, Corp.",
+      "expected_output": "Python script for CRM data standardization and validation",
+      "files": [],
+      "expectations": [
+        "Validates email addresses using regex or email validation library",
+        "Converts phone numbers to E.164 international format",
+        "Strips or normalizes company suffixes like Inc, LLC, Corp, Ltd",
+        "Handles edge cases like missing or malformed data",
+        "Outputs cleaned data with a summary of changes made"
+      ]
+    }
+  ]
+}

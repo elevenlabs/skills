@@ -1,0 +1,33 @@
+{
+  "skill_name": "buying-signals",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script that monitors LinkedIn for job changes among a list of target contacts. The script should read contacts from a CSV with name and LinkedIn URL, detect title changes, and output a report of contacts who were recently promoted or changed companies.",
+      "expected_output": "Python script for tracking job changes as buying signals",
+      "files": [],
+      "expectations": [
+        "Reads contact list from CSV with LinkedIn profile URLs",
+        "Implements logic to detect job title or company changes",
+        "Identifies promotions (e.g., to VP, Director, C-level roles)",
+        "Generates a report of contacts with recent changes",
+        "Includes timestamp or date detection for recency",
+        "Handles rate limiting or API considerations"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a funding round tracker that monitors Crunchbase or similar sources for recent Series A, B, or C funding announcements in the SaaS industry. Output a list of companies with funding amount, date, and key contacts to reach out to.",
+      "expected_output": "Python script for tracking funding announcements as buying signals",
+      "files": [],
+      "expectations": [
+        "Fetches funding data from Crunchbase API or web scraping",
+        "Filters by funding round type (Series A, B, C)",
+        "Filters by industry or sector (SaaS)",
+        "Extracts company name, funding amount, and date",
+        "Identifies or suggests key contacts for outreach",
+        "Outputs structured data in CSV or JSON format"
+      ]
+    }
+  ]
+}

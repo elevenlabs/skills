@@ -1,0 +1,33 @@
+{
+  "skill_name": "objection-handler",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My prospect just said 'Your solution is too expensive compared to competitors.' I'm selling B2B SaaS to mid-market companies. Help me craft a strong rebuttal.",
+      "expected_output": "A structured objection response with multiple rebuttal angles and follow-up questions",
+      "files": [],
+      "expectations": [
+        "Acknowledges the objection without being defensive",
+        "Reframes price in terms of value and ROI",
+        "Provides specific talking points to address cost concerns",
+        "Includes discovery questions to understand the real concern",
+        "Offers comparison frameworks or proof points",
+        "Suggests a path forward to continue the conversation"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The decision maker said 'We're locked into a 2-year contract with our current vendor.' How do I handle this objection and keep the deal alive?",
+      "expected_output": "Strategic response to overcome contractual objection with timing-based approaches",
+      "files": [],
+      "expectations": [
+        "Validates the objection as legitimate",
+        "Explores contract end date and renewal timeline",
+        "Suggests pilot or parallel evaluation options",
+        "Provides strategies to stay engaged long-term",
+        "Offers value in the interim to build relationship",
+        "Identifies ways to quantify switching costs vs staying"
+      ]
+    }
+  ]
+}

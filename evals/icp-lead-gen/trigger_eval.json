@@ -1,0 +1,18 @@
+[
+  {"query": "generate a list of 100 companies that match our ICP: B2B SaaS, 50-200 employees, Series A or later", "should_trigger": true},
+  {"query": "find prospects in the healthcare tech space with decision makers in IT or Operations roles", "should_trigger": true},
+  {"query": "build a target account list of fintech companies headquartered in the US with over $10M ARR", "should_trigger": true},
+  {"query": "identify companies using Salesforce that might need our integration product", "should_trigger": true},
+  {"query": "create a prospect list of ecommerce companies that recently expanded to new markets", "should_trigger": true},
+  {"query": "find VP of Engineering contacts at mid-market software companies in our target geography", "should_trigger": true},
+  {"query": "generate leads matching our ICP criteria and enrich with contact information", "should_trigger": true},
+  {"query": "build a TAM analysis with company counts by segment matching our ideal customer profile", "should_trigger": true},
+  {"query": "clean up duplicate records in our CRM and merge contact information", "should_trigger": false},
+  {"query": "write a follow-up email for a prospect who went dark", "should_trigger": false},
+  {"query": "help me prepare objection handling responses for pricing concerns", "should_trigger": false},
+  {"query": "create a sales playbook for our new product launch", "should_trigger": false},
+  {"query": "analyze why deals are getting stuck in the negotiation stage", "should_trigger": false},
+  {"query": "build a commission calculator for our sales team", "should_trigger": false},
+  {"query": "draft a case study based on our recent customer win", "should_trigger": false},
+  {"query": "set up lead routing rules based on territory and deal size", "should_trigger": false}
+]

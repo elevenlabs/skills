@@ -1,0 +1,33 @@
+{
+  "skill_name": "cognitive-memory",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Implement a multi-tier memory system in Python with working memory, short-term memory, and long-term memory. Include automatic consolidation where memories move from STM to LTM based on access frequency, and implement forgetting curves for unused items.",
+      "expected_output": "Python implementation of a cognitive memory system",
+      "files": [],
+      "expectations": [
+        "Defines separate storage tiers (working memory, STM, LTM or similar)",
+        "Implements memory consolidation logic that promotes items between tiers",
+        "Includes a forgetting or decay mechanism for unused memories",
+        "Tracks access frequency or recency for each memory item",
+        "Provides methods to store, retrieve, and query memories",
+        "Consolidation is triggered by time, access patterns, or explicit calls"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a memory manager for an AI agent that implements Ebbinghaus forgetting curves. Memories should decay over time unless reinforced by access. Include methods to add memories, retrieve with relevance scoring, and run a consolidation pass that removes or compresses forgotten items.",
+      "expected_output": "Python code implementing forgetting curves and memory consolidation",
+      "files": [],
+      "expectations": [
+        "Implements exponential decay or Ebbinghaus-style forgetting formula",
+        "Memory strength increases when items are accessed (reinforcement)",
+        "Provides a consolidation or cleanup method",
+        "Returns relevance or strength scores during retrieval",
+        "Tracks timestamps for memory creation and last access",
+        "Handles memory removal or archival when strength falls below threshold"
+      ]
+    }
+  ]
+}

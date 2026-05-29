@@ -1,0 +1,32 @@
+{
+  "skill_name": "hyper-personalization",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a call with Jennifer Martinez, VP of Engineering at CloudScale Systems in 5 minutes. Build me a quick personalization dossier so I can connect with her authentically.",
+      "expected_output": "A 5-point dossier covering background, company context, recent activity, talking points, and connection angles",
+      "files": [],
+      "expectations": [
+        "Completes research within approximately 75 seconds",
+        "Produces a structured 5-point dossier format",
+        "Includes prospect's professional background and role",
+        "Covers company information and recent news",
+        "Provides specific personalization hooks and talking points",
+        "Identifies potential connection angles or shared interests"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Research this prospect for hyper-personalized outreach: Michael Thompson, Chief Revenue Officer at DataPipe Analytics. I want to reference something specific they care about.",
+      "expected_output": "Personalized research brief with actionable talking points",
+      "files": [],
+      "expectations": [
+        "Gathers information from multiple sources (LinkedIn, company website, news)",
+        "Identifies the prospect's priorities and pain points",
+        "Suggests specific personalization elements to mention",
+        "Provides context on the company's market position",
+        "Highlights recent achievements or announcements to reference"
+      ]
+    }
+  ]
+}

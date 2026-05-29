@@ -1,0 +1,18 @@
+[
+  {"query": "help me implement a multi-tier memory system with short-term and long-term storage", "should_trigger": true},
+  {"query": "how do I add forgetting curves to my AI memory architecture", "should_trigger": true},
+  {"query": "implement memory consolidation where recent memories get compressed over time", "should_trigger": true},
+  {"query": "build a working memory buffer that decays unused items automatically", "should_trigger": true},
+  {"query": "create a semantic memory store with relevance-based retrieval and forgetting", "should_trigger": true},
+  {"query": "design an episodic memory system that consolidates experiences during idle periods", "should_trigger": true},
+  {"query": "implement Ebbinghaus forgetting curve for my chatbot's conversation history", "should_trigger": true},
+  {"query": "build a memory hierarchy with attention-based consolidation from STM to LTM", "should_trigger": true},
+  {"query": "set up a PostgreSQL database with tables for users and orders", "should_trigger": false},
+  {"query": "optimize my Redis cache eviction policy for high throughput", "should_trigger": false},
+  {"query": "help me debug this memory leak in my JavaScript application", "should_trigger": false},
+  {"query": "implement a simple key-value store with TTL expiration", "should_trigger": false},
+  {"query": "create a vector database for RAG document retrieval", "should_trigger": false},
+  {"query": "how do I reduce memory usage in my Python data pipeline", "should_trigger": false},
+  {"query": "set up conversation history storage in a SQLite database", "should_trigger": false},
+  {"query": "implement an LRU cache for my API responses", "should_trigger": false}
+]
