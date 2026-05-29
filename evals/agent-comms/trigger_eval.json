@@ -1,0 +1,18 @@
+[
+  {"query": "share the research findings from explore agent with the execute agent", "should_trigger": true},
+  {"query": "broadcast this update to all active agents", "should_trigger": true},
+  {"query": "cross-reference sources between the research agents", "should_trigger": true},
+  {"query": "aggregate results from all subagents working on this task", "should_trigger": true},
+  {"query": "set up communication protocol between agents", "should_trigger": true},
+  {"query": "request information from the explore agent about auth patterns", "should_trigger": true},
+  {"query": "how do agents share verified sources with each other", "should_trigger": true},
+  {"query": "coordinate the handoff between plan and execute agents", "should_trigger": true},
+  {"query": "fix this bug in the code", "should_trigger": false},
+  {"query": "deploy to production", "should_trigger": false},
+  {"query": "write unit tests", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "create a new component", "should_trigger": false},
+  {"query": "run the linter", "should_trigger": false},
+  {"query": "explain what this function does", "should_trigger": false},
+  {"query": "search for files containing 'config'", "should_trigger": false}
+]

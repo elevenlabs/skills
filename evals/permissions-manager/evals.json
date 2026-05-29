@@ -1,0 +1,31 @@
+{
+  "skill_name": "permissions-manager",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit all permissions and show me what each skill can access, especially any potential security issues",
+      "expected_output": "Comprehensive permissions audit report",
+      "files": [],
+      "expectations": [
+        "Lists tool permissions by layer (user, project, skill)",
+        "Shows directory access rules",
+        "Identifies any dangerous patterns allowed",
+        "Flags potential security concerns",
+        "Provides recommendations for improvement"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Configure the deploy-production skill so it can only be invoked by users, not Claude, and restrict it to git and npm commands only",
+      "expected_output": "Updated skill configuration with restricted permissions",
+      "files": [],
+      "expectations": [
+        "Sets disable-model-invocation: true",
+        "Configures allowed-tools with specific patterns",
+        "Blocks other Bash commands",
+        "Validates the configuration",
+        "Shows effective permissions after change"
+      ]
+    }
+  ]
+}

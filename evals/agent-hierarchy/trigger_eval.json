@@ -1,0 +1,18 @@
+[
+  {"query": "set up a multi-agent workflow with orchestrator and subagents", "should_trigger": true},
+  {"query": "define agent roles and delegation rules for this project", "should_trigger": true},
+  {"query": "create a hierarchy of agents for the deployment pipeline", "should_trigger": true},
+  {"query": "which agent types can spawn other agents", "should_trigger": true},
+  {"query": "configure parent-child relationships between agents", "should_trigger": true},
+  {"query": "set up task escalation paths for autonomous agents", "should_trigger": true},
+  {"query": "define which subagents the orchestrator can spawn", "should_trigger": true},
+  {"query": "create chain of command for my agent system", "should_trigger": true},
+  {"query": "fix this bug in the authentication module", "should_trigger": false},
+  {"query": "deploy to production", "should_trigger": false},
+  {"query": "write unit tests for the API", "should_trigger": false},
+  {"query": "review this pull request", "should_trigger": false},
+  {"query": "search for files containing 'auth'", "should_trigger": false},
+  {"query": "create a new React component", "should_trigger": false},
+  {"query": "run the test suite", "should_trigger": false},
+  {"query": "explain what this function does", "should_trigger": false}
+]

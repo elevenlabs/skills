@@ -1,0 +1,32 @@
+{
+  "skill_name": "agent-hierarchy",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up an agent hierarchy for a code review workflow with research, planning, and execution phases",
+      "expected_output": "Agent hierarchy configuration with orchestrator, explore, plan, and execute agents",
+      "files": [],
+      "expectations": [
+        "Defines orchestrator as top-level coordinator",
+        "Creates explore agent for research (read-only)",
+        "Creates plan agent for design decisions",
+        "Creates execute agent for code changes",
+        "Defines delegation rules (who can spawn whom)",
+        "Includes escalation path to user"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Visualize the current agent hierarchy and validate that permissions are correctly configured",
+      "expected_output": "Hierarchy diagram and validation report",
+      "files": [],
+      "expectations": [
+        "Shows tree structure of agent relationships",
+        "Indicates permission levels for each agent",
+        "Validates no circular dependencies",
+        "Checks that explore agents are read-only",
+        "Reports any permission conflicts"
+      ]
+    }
+  ]
+}
