@@ -20,7 +20,7 @@ Usage:
     python evals/run_all.py --functional-only
 
     # Specific skills
-    python evals/run_all.py --skills text-to-speech agents
+    python evals/run_all.py --skills text-to-speech elevenagents
 
     # Custom model and parallelism
     python evals/run_all.py --model gpt-5.4-high --workers 5
@@ -112,9 +112,9 @@ ALL_SKILLS = [
     "text-to-speech",
     "speech-to-text",
     "speech-engine",
-    "agents",
+    "elevenagents",
     "sound-effects",
-    "music",
+    "elevenmusic",
     "voice-changer",
     "voice-isolator",
     "setup-api-key",

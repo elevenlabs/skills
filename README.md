@@ -17,9 +17,9 @@ npx skills add elevenlabs/skills
 | [text-to-speech](./text-to-speech) | Convert text to lifelike speech using ElevenLabs' AI voices |
 | [speech-to-text](./speech-to-text) | Transcribe audio files to text with timestamps |
 | [speech-engine](./speech-engine) | Add real-time voice conversations to a custom LLM or chat agent |
-| [agents](./agents) | Build conversational voice AI agents |
+| [elevenagents](./elevenagents) | Build conversational voice AI agents |
 | [sound-effects](./sound-effects) | Generate sound effects from text descriptions |
-| [music](./music) | Generate music tracks using AI composition |
+| [elevenmusic](./elevenmusic) | Generate music tracks using AI composition |
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
 | [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
 | [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
@@ -61,7 +61,7 @@ python3 evals/run_all.py --trigger-only -v
 python3 evals/run_all.py --functional-only -v
 
 # Specific skills
-python3 evals/run_all.py --skills text-to-speech agents -v
+python3 evals/run_all.py --skills text-to-speech elevenagents -v
 
 # Custom model (see `cursor-agent --list-models`)
 python3 evals/run_all.py --model gpt-5.4-high -v
