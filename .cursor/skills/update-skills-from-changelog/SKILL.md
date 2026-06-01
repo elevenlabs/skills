@@ -34,7 +34,6 @@ If **no skills are affected**, stop successfully. Do not open a pull request. Re
 1. Resolve `CHANGELOG_DATE` and fetch the merged changelog from `elevenlabs-dx` `main`.
 2. Apply the relevance filter. Exit without a PR if nothing qualifies.
 3. For each affected skill, read `{skill}/SKILL.md` and `{skill}/references/`.
-   If `voice-isolator` is affected, read `voice-isolator/SKILL.md` and `voice-isolator/references/installation.md`.
 4. Follow `.claude/commands/update-skills.md` **Step 3.5 through Step 4.5** for verification, fit decisions, edits, and self-checks.
 5. Create a branch, commit if needed, and open a pull request.
 

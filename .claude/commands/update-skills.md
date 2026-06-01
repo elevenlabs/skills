@@ -68,6 +68,8 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `sound-effects`  | New generation parameters, model changes, SDK method changes                                                                                          |
 | `music`          | New endpoints, new parameters, model changes                                                                                                          |
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()`                                                                     |
+| `speech-engine`  | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations                                 |
+| `voice-changer`  | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()`                     |
 | `setup-api-key`  | Authentication flow changes, new environment variables                                                                                                |
 
 A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
@@ -91,6 +93,8 @@ The skill directories are:
 - `sound-effects/` (SKILL.md + references: installation.md)
 - `music/` (SKILL.md + references: installation.md, api_reference.md)
 - `voice-isolator/` (SKILL.md + references: installation.md)
+- `speech-engine/` (SKILL.md + references: installation.md, javascript-sdk-reference.md, python-sdk-reference.md)
+- `voice-changer/` (SKILL.md + references: installation.md)
 - `setup-api-key/` (SKILL.md only)
 
 ## Step 3.5: Verify changes against source documentation
