@@ -93,6 +93,7 @@ The skill directories are:
 - `agents/` (SKILL.md + references: installation.md, agent-configuration.md, client-tools.md, widget-embedding.md, outbound-calls.md)
 - `sound-effects/` (SKILL.md + references: installation.md)
 - `music/` (SKILL.md + references: installation.md, api_reference.md)
+- `voice-isolator/` (SKILL.md + references: installation.md)
 - `setup-api-key/` (SKILL.md only)
 
 ## Step 3.5: Verify changes against source documentation

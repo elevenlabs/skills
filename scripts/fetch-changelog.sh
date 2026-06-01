@@ -17,5 +17,5 @@ fi
 PATH_IN_REPO="fern/docs/pages/changelog/${CHANGELOG_DATE}.md"
 
 gh api "repos/elevenlabs/elevenlabs-dx/contents/${PATH_IN_REPO}?ref=main" \
-  --jq -r '.content' \
+  --jq '.content' \
   | base64 -d
