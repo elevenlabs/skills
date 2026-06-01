@@ -21,7 +21,7 @@ Fetch the changelog markdown from `elevenlabs-dx` `main`:
 
 ```bash
 gh api "repos/elevenlabs/elevenlabs-dx/contents/fern/docs/pages/changelog/${CHANGELOG_DATE}.md?ref=main" \
-  --jq -r '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
+  --jq '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
 ```
 
 Also read the live page when helpful:

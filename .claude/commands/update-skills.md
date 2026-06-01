@@ -47,7 +47,7 @@ Fetch the changelog file from `elevenlabs-dx` `main`:
 
 ```bash
 gh api "repos/elevenlabs/elevenlabs-dx/contents/fern/docs/pages/changelog/${CHANGELOG_DATE}.md?ref=main" \
-  --jq -r '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
+  --jq '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
 ```
 
 If the file does not exist, stop and report that no merged changelog was found for that date.
