@@ -15,19 +15,13 @@ For detailed editing rules, verification gates, self-checks, and style constrain
 
 ## Trigger input
 
-Determine `CHANGELOG_DATE` (`YYYY-MM-DD`) in this order:
+Determine `CHANGELOG_DATE` (`YYYY-MM-DD`) from the automation trigger or user message.
 
-1. Use the date from the automation trigger or user message if provided.
-2. Otherwise run:
-
-```bash
-./scripts/latest-changelog-date.sh
-```
-
-Fetch the changelog markdown:
+Fetch the changelog markdown from `elevenlabs-dx` `main`:
 
 ```bash
-./scripts/fetch-changelog.sh "$CHANGELOG_DATE" > /tmp/changelog-${CHANGELOG_DATE}.md
+gh api "repos/elevenlabs/elevenlabs-dx/contents/fern/docs/pages/changelog/${CHANGELOG_DATE}.md?ref=main" \
+  --jq -r '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
 ```
 
 Also read the live page when helpful:

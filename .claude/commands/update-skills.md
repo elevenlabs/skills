@@ -41,16 +41,13 @@ Skill files are high-level, task-oriented guidance for working with ElevenLabs. 
 
 ## Step 1: Fetch the merged changelog
 
-Determine `CHANGELOG_DATE` (`YYYY-MM-DD`) from the automation trigger, user message, or:
-
-```bash
-./scripts/latest-changelog-date.sh
-```
+Determine `CHANGELOG_DATE` (`YYYY-MM-DD`) from the automation trigger or user message.
 
 Fetch the changelog file from `elevenlabs-dx` `main`:
 
 ```bash
-./scripts/fetch-changelog.sh "$CHANGELOG_DATE" > /tmp/changelog-${CHANGELOG_DATE}.md
+gh api "repos/elevenlabs/elevenlabs-dx/contents/fern/docs/pages/changelog/${CHANGELOG_DATE}.md?ref=main" \
+  --jq -r '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
 ```
 
 If the file does not exist, stop and report that no merged changelog was found for that date.
