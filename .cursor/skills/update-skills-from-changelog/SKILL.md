@@ -11,40 +11,21 @@ You update ElevenLabs agent skills based on a merged weekly changelog in [eleven
 
 Skill files are evergreen source-of-truth documentation for current behavior. Use the changelog to discover what changed, but write final `SKILL.md` and `references/*.md` content as timeless present-tense documentation.
 
-For detailed editing rules, verification gates, self-checks, and style constraints, follow `.claude/commands/update-skills.md` from **Step 3.5** onward. This skill covers trigger handling, changelog ingestion, relevance filtering, and pull request creation.
+Use `.claude/commands/update-skills.md` as the source of truth for the exact changelog fetch command, the relevance filter, the detailed editing rules from **Step 3.5** onward, and the pull request creation flow. This skill adds the Cursor Cloud Automation trigger handling and stop conditions around that workflow.
 
 ## Trigger input
 
 Determine `CHANGELOG_DATE` (`YYYY-MM-DD`) from the automation trigger or user message.
 
-Fetch the changelog markdown from `elevenlabs-dx` `main`:
+Fetch the changelog markdown from `elevenlabs-dx` `main` using the command in `.claude/commands/update-skills.md` **Step 1**.
 
-```bash
-gh api "repos/elevenlabs/elevenlabs-dx/contents/fern/docs/pages/changelog/${CHANGELOG_DATE}.md?ref=main" \
-  --jq '.content' | base64 -d > "/tmp/changelog-${CHANGELOG_DATE}.md"
-```
-
-Also read the live page when helpful:
+Also read the live page from **Step 1** when helpful:
 
 `https://elevenlabs.io/docs/changelog#${CHANGELOG_DATE}T00:00:00.000Z`
 
 ## Relevance filter (required before editing)
 
-Analyze the changelog against these skills:
-
-| Skill            | What triggers an update                                                                                                                               |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text-to-speech` | New/deprecated models, new TTS parameters, voice settings changes, output format changes, SDK method signature changes for `text_to_speech.convert()` |
-| `speech-to-text` | New transcription models, new parameters, changed response schemas, SDK method changes                                                                |
-| `agents`         | New LLM providers/models, new tool types, new agent config fields, conversation config schema changes, new CLI commands, widget changes               |
-| `sound-effects`  | New generation parameters, model changes, SDK method changes                                                                                          |
-| `music`          | New endpoints, new parameters, model changes                                                                                                          |
-| `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()`                                                                     |
-| `setup-api-key`  | Authentication flow changes, new environment variables                                                                                                |
-
-A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
-
-A change is **not** relevant if it only affects internal/admin APIs, optional fields with no usage-level impact, backward-compatible renames, or pricing/dashboard UI.
+Apply the relevance filter in `.claude/commands/update-skills.md` **Step 2** to determine whether any skills are affected.
 
 If **no skills are affected**, stop successfully. Do not open a pull request. Report `No skills-relevant changes for CHANGELOG_DATE`.
 
@@ -63,33 +44,11 @@ Do not modify skills not implicated by the changelog. Do not edit `openclaw/`.
 
 Use branch name `skills-update/YYYY-MM-DD`.
 
-Before creating a branch, skip if an open PR already exists for that date:
-
-```bash
-gh pr list --repo elevenlabs/skills --head "skills-update/${CHANGELOG_DATE}" --state open --json number --jq 'length == 0'
-```
-
-Create the branch and commit:
-
-```bash
-git fetch origin main
-git checkout -b "skills-update/${CHANGELOG_DATE}" origin/main
-git add -A
-git diff --cached --quiet || git commit -m "Update skills from changelog ${CHANGELOG_DATE}"
-git push -u origin "skills-update/${CHANGELOG_DATE}"
-```
+Before creating a branch, run the open-PR check from `.claude/commands/update-skills.md` **Step 5** and stop if it reports an existing PR for that date.
 
 Write the pull request body to `/tmp/skills-update-report.md` using the report template from `.claude/commands/update-skills.md` **Step 5**, replacing issue references with the changelog source link.
 
-Open the pull request:
-
-```bash
-gh pr create --repo elevenlabs/skills \
-  --base main \
-  --head "skills-update/${CHANGELOG_DATE}" \
-  --title "Update skills from changelog ${CHANGELOG_DATE}" \
-  --body-file /tmp/skills-update-report.md
-```
+Create the branch, commit, push, and open the pull request using the commands in `.claude/commands/update-skills.md` **Step 5**.
 
 If there are no file changes after analysis, do not push or open a PR. Report `No skill file changes needed for CHANGELOG_DATE` with items listed under **No Skill Change Needed**.
 
