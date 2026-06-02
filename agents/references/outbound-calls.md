@@ -1,27 +1,27 @@
 # Outbound Calls
 
-Make outbound phone calls using your ElevenLabs agent via Twilio integration.
+Make outbound phone calls using your ElevenLabs agent via Twilio or Exotel integration.
 
 ## Prerequisites
 
 1. A configured ElevenLabs agent
-2. A Twilio phone number linked to your agent (obtain `agent_phone_number_id` from ElevenLabs dashboard)
+2. A Twilio or Exotel phone number linked to your agent (obtain `agent_phone_number_id` from the ElevenLabs dashboard)
 3. Your ElevenLabs API key
 
 ## Basic Usage
 
-See the [main agents skill](../SKILL.md#outbound-calls) for basic Python, JavaScript, and cURL examples.
+See the [main agents skill](../SKILL.md#outbound-calls) for basic Twilio Python, JavaScript, and cURL examples.
 
 ## Request Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `agent_id` | string | Yes | The ID of your ElevenLabs agent |
-| `agent_phone_number_id` | string | Yes | The ID of the Twilio phone number linked to your agent |
-| `to_number` | string | Yes | The destination phone number (E.164 format) |
-| `conversation_initiation_client_data` | object | No | Override conversation settings for this call |
-| `call_recording_enabled` | boolean | No | Whether to let Twilio record the call |
-| `telephony_call_config` | object | No | Telephony call settings like ringing timeout |
+| Parameter | Type | Provider | Required | Description |
+|-----------|------|----------|----------|-------------|
+| `agent_id` | string | Twilio, Exotel | Yes | The ID of your ElevenLabs agent |
+| `agent_phone_number_id` | string | Twilio, Exotel | Yes | The ID of the linked phone number |
+| `to_number` | string | Twilio, Exotel | Yes | The destination phone number in E.164 format |
+| `conversation_initiation_client_data` | object | Twilio, Exotel | No | Override conversation settings for this call |
+| `telephony_call_config` | object | Twilio, Exotel | No | Telephony call settings like ringing timeout |
+| `call_recording_enabled` | boolean | Twilio | No | Whether to let Twilio record the call |
 
 `conversation_initiation_client_data` also accepts `branch_id` to route the call to a specific
 agent branch and `environment` to control how environment variables resolve for that call.
@@ -42,7 +42,17 @@ agent branch and `environment` to control how environment variables resolve for 
 | `success` | boolean | Whether the call was initiated successfully |
 | `message` | string | Status message |
 | `conversation_id` | string | ElevenLabs conversation ID for tracking |
-| `callSid` | string | Twilio Call SID for reference |
+| `callSid` | string | Provider call SID for reference |
+
+## Exotel Calls
+
+Use the Exotel endpoint when the linked phone number uses the Exotel provider:
+
+```bash
+curl -X POST "https://api.elevenlabs.io/v1/convai/exotel/outbound-call" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{"agent_id": "your-agent-id", "agent_phone_number_id": "your-phone-number-id", "to_number": "+1234567890"}'
+```
 
 ## Customizing the Call
 
@@ -136,7 +146,7 @@ Pass custom data to your agent's prompt using `dynamic_variables`. Reference the
 ### Branch and Environment Routing
 
 Use `branch_id` inside `conversation_initiation_client_data` for per-call branch routing on
-Twilio or SIP trunk outbound calls. Use `environment` alongside it when the call should resolve
+Twilio, Exotel, or SIP trunk outbound calls. Use `environment` alongside it when the call should resolve
 workspace environment variables against a non-default deployment target such as `staging` or
 `production`.
 

@@ -40,7 +40,6 @@ client = ElevenLabs()
 
 agent = client.conversational_ai.agents.create(
     name="My Assistant",
-    enable_versioning=True,
     conversation_config={
         "agent": {
             "first_message": "Hello! How can I help?",
@@ -64,7 +63,6 @@ const client = new ElevenLabsClient();
 
 const agent = await client.conversationalAi.agents.create({
   name: "My Assistant",
-  enableVersioning: true,
   conversationConfig: {
     agent: {
       firstMessage: "Hello! How can I help?",
@@ -83,7 +81,7 @@ const agent = await client.conversationalAi.agents.create({
 ### cURL
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create?enable_versioning=true" \
+curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
   -d '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
@@ -356,6 +354,9 @@ curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
   -d '{"platform_settings": {"testing": {"attached_tests": [{"test_id": "test_xxxx"}]}}}'
 ```
 
+Run selected tests with `POST /v1/convai/agents/{agent_id}/run-tests`. The request
+body requires `tests` and accepts `repeat_count` from `1` to `20` for repeated runs.
+
 ## Widget Embedding
 
 ```html
@@ -369,7 +370,9 @@ See [Widget Embedding Reference](references/widget-embedding.md) for all options
 
 ## Outbound Calls
 
-Make outbound phone calls using your agent via Twilio integration:
+Make outbound phone calls using your agent via Twilio or Exotel integration:
+
+The examples below use Twilio. See the reference for Exotel REST usage.
 
 ### Python
 
@@ -402,7 +405,7 @@ curl -X POST "https://api.elevenlabs.io/v1/convai/twilio/outbound-call" \
   -d '{"agent_id": "your-agent-id", "agent_phone_number_id": "your-phone-number-id", "to_number": "+1234567890", "call_recording_enabled": true}'
 ```
 
-See [Outbound Calls Reference](references/outbound-calls.md) for configuration overrides and dynamic variables.
+See [Outbound Calls Reference](references/outbound-calls.md) for provider-specific endpoints, configuration overrides, and dynamic variables.
 
 ## Managing Agents
 
@@ -479,4 +482,4 @@ Common errors: **401** (invalid key), **404** (not found), **422** (invalid conf
 - [Agent Configuration](references/agent-configuration.md) - All config options and CRUD examples
 - [Client Tools](references/client-tools.md) - Webhook, client, and system tools
 - [Widget Embedding](references/widget-embedding.md) - Website integration
-- [Outbound Calls](references/outbound-calls.md) - Twilio phone call integration
+- [Outbound Calls](references/outbound-calls.md) - Phone call integrations
