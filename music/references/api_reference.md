@@ -21,7 +21,6 @@ Generate music from a text prompt. Returns an audio stream.
 | `composition_plan` | object | Yes* | Pre-defined composition plan (alternative to prompt) |
 | `music_length_ms` | integer | No | Duration in milliseconds (3,000–600,000) when using `prompt`; if omitted, the model chooses |
 | `model_id` | string | No | Defaults to `music_v1` |
-| `generation_mode` | string | No | Generation style hint when using `prompt`: `track`, `loop`, `ambience`, or `video_to_music` |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
 | `respect_sections_durations` | boolean | No | Enforce exact `duration_ms` in each composition plan section |
 
@@ -33,7 +32,6 @@ Generate music from a text prompt. Returns an audio stream.
 audio = client.music.compose(
     prompt="An upbeat electronic track with synth leads",
     music_length_ms=30000,
-    generation_mode="track",
 )
 
 with open("output.mp3", "wb") as f:
@@ -176,8 +174,11 @@ curl -X POST "https://api.elevenlabs.io/v1/music/upload" \
 
 ## video_to_music
 
-Generate background music that follows one or more uploaded video clips. Videos are combined in
-order before music generation.
+Generate background music from uploaded video clips. This is a **separate endpoint** from
+[`compose`](#compose) (`POST /v1/music/video-to-music`, not `POST /v1/music`). See the
+[Video to music API reference](https://elevenlabs.io/docs/api-reference/music/video-to-music).
+
+Videos are combined in order before music generation.
 
 ### Parameters
 
