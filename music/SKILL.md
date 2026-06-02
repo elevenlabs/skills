@@ -69,9 +69,14 @@ See [API Reference](references/api_reference.md) for full parameter details.
 
 ## Video to Music
 
-Generate background music that follows one or more uploaded video clips. The API combines videos
-in order, accepts an optional natural-language description, and lets you steer style with up to 10
-tags such as `upbeat` or `cinematic`.
+Generate background music from uploaded video clips via
+[`POST /v1/music/video-to-music`](https://elevenlabs.io/docs/api-reference/music/video-to-music)
+(`client.music.video_to_music`). This is separate from prompt-based
+[`music.compose`](https://elevenlabs.io/docs/api-reference/music/compose) (`POST /v1/music`).
+
+The API combines videos in order, accepts an optional natural-language description, and lets you
+steer style with up to 10 tags such as `upbeat` or `cinematic`. Use `model_id` on this endpoint
+only (defaults to `music_v1`).
 
 ### Python
 
@@ -102,6 +107,7 @@ curl -X POST "https://api.elevenlabs.io/v1/music/video-to-music" \
   -F "tags=cinematic" \
   -F "tags=suspenseful" \
   -F "tags=uplifting" \
+  -F "model_id=music_v1" \
   --output video-score.mp3
 ```
 
