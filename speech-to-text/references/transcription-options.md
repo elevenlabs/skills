@@ -232,7 +232,7 @@ Full list: Afrikaans, Amharic, Armenian, Azerbaijani, Belarusian, Bengali, Bosni
 **Video:** MP4, AVI, MKV, MOV, WMV, FLV, WebM, MPEG, 3GPP
 
 **Limits:**
-- Maximum file size: 3GB (file upload) or 2GB (cloud storage URL)
+- Maximum file size: 5.0GB (file upload) or 2GB (cloud storage URL)
 - Maximum duration: 10 hours (standard) or 1 hour (multichannel mode)
 
 ## Use Cases
