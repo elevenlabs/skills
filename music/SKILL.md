@@ -84,6 +84,7 @@ audio = client.music.video_to_music(
     videos=["trailer.mp4"],
     description="Build suspense, then resolve with a warm cinematic finish.",
     tags=["cinematic", "suspenseful", "uplifting"],
+    model_id="music_v1",
 )
 
 with open("video-score.mp3", "wb") as f:

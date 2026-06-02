@@ -56,9 +56,27 @@ conversation_config={
 | `language` | string | `"en"` | ISO 639-1 language code (en, es, fr, etc.) |
 | `disable_first_message_interruptions` | bool | `false` | Prevent user from interrupting the first message |
 | `max_conversation_duration_message` | string | - | If non-empty, the message sent when `conversation.max_duration_seconds` is reached |
+| `text_behavior_overrides` | object | - | Per `ConversationInitiationSource` map of `BehaviorOverride` objects for text-channel response behavior (`verbosity`, `output_format`, `interaction_budget`) |
 | `hinglish_mode` | bool | `false` | When enabled and language is Hindi, agent responds in Hinglish |
 | `dynamic_variables` | object | - | Config with `dynamic_variable_placeholders` containing key-value pairs |
 | `prompt` | object | - | LLM configuration (see prompt section below) |
+
+`text_behavior_overrides` keys use `ConversationInitiationSource` values such as `widget`, `whatsapp`, `intercom_integration`, `telegram_integration`, and `freshdesk_integration`. Each value is a `BehaviorOverride` with optional `verbosity` (`auto`, `concise`, `thorough`), `output_format` (`plain_text`, `markdown`), and `interaction_budget` (`realtime`, `async`).
+
+```python
+conversation_config={
+    "agent": {
+        "text_behavior_overrides": {
+            "whatsapp": {
+                "verbosity": "concise",
+                "output_format": "plain_text",
+                "interaction_budget": "async",
+            }
+        },
+        "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"},
+    }
+}
+```
 
 ### tts (Text-to-Speech)
 
