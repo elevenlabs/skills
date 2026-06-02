@@ -56,6 +56,7 @@ conversation_config={
 | `language` | string | `"en"` | ISO 639-1 language code (en, es, fr, etc.) |
 | `disable_first_message_interruptions` | bool | `false` | Prevent user from interrupting the first message |
 | `max_conversation_duration_message` | string | - | If non-empty, the message sent when `conversation.max_duration_seconds` is reached |
+| `text_behavior_overrides` | object | - | Per-channel text behavior overrides. Map of `ConversationInitiationSource` → `BehaviorOverride` (`verbosity`, `output_format`, `interaction_budget`). See [API reference](https://elevenlabs.io/docs/api-reference/agents/create#request.body.conversation_config.agent.text_behavior_overrides). |
 | `hinglish_mode` | bool | `false` | When enabled and language is Hindi, agent responds in Hinglish |
 | `dynamic_variables` | object | - | Config with `dynamic_variable_placeholders` containing key-value pairs |
 | `prompt` | object | - | LLM configuration (see prompt section below) |
