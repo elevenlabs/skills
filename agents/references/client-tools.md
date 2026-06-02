@@ -429,18 +429,22 @@ Transfer to a phone number (requires telephony integration):
 
 ### transfer_to_agent
 
-Transfer to another ElevenLabs agent:
+Transfer to another ElevenLabs agent or workflow node:
 
 ```python
 "built_in_tools": {
     "transfer_to_agent": {
         "transfers": [{
             "agent_id": "other-agent-id",
+            "node_id": "destination-workflow-node-id",
             "condition": "User asks about sales"
         }]
     }
 }
 ```
+
+Use `node_id` when the transfer should start at a specific workflow node. Omit
+`agent_id` when the transfer stays within the current agent's workflow.
 
 ## Best Practices
 

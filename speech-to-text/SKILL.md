@@ -126,7 +126,7 @@ print(f"Detected: {result.language_code} ({result.language_probability:.0%})")
 **Audio:** MP3, WAV, M4A, FLAC, OGG, WebM, AAC, AIFF, Opus
 **Video:** MP4, AVI, MKV, MOV, WMV, FLV, WebM, MPEG, 3GPP
 
-**Limits:** Up to 3GB file size, 10 hours duration
+**Limits:** Up to 5.0GB file size, 10 hours duration
 
 ## Response Format
 
