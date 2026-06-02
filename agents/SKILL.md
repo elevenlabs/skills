@@ -178,8 +178,6 @@ Use `GET /v1/convai/llm/list` to inspect the current model catalog, including de
 
 **Turn eagerness:** `patient` (waits longer for user to finish), `normal`, or `eager` (responds quickly)
 
-**Text channels:** Use `conversation_config.agent.text_behavior_overrides` to tune verbosity, output format, and interaction budget per initiation source (for example WhatsApp vs widget). See [Agent Configuration](references/agent-configuration.md) and the [create agent API reference](https://elevenlabs.io/docs/api-reference/agents/create#request.body.conversation_config.agent.text_behavior_overrides).
-
 See [Agent Configuration](references/agent-configuration.md) for all options.
 
 ## System Prompt Structure
