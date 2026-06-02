@@ -21,6 +21,7 @@ Generate music from a text prompt. Returns an audio stream.
 | `composition_plan` | object | Yes* | Pre-defined composition plan (alternative to prompt) |
 | `music_length_ms` | integer | No | Duration in milliseconds (3,000–600,000) when using `prompt`; if omitted, the model chooses |
 | `model_id` | string | No | Defaults to `music_v1` |
+| `generation_mode` | string | No | Generation style hint when using `prompt`: `track`, `loop`, `ambience`, or `video_to_music` |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
 | `respect_sections_durations` | boolean | No | Enforce exact `duration_ms` in each composition plan section |
 
@@ -31,7 +32,8 @@ Generate music from a text prompt. Returns an audio stream.
 ```python
 audio = client.music.compose(
     prompt="An upbeat electronic track with synth leads",
-    music_length_ms=30000
+    music_length_ms=30000,
+    generation_mode="track",
 )
 
 with open("output.mp3", "wb") as f:
@@ -184,6 +186,7 @@ order before music generation.
 | `videos` | array of files | Yes | One or more video files. Up to 10 files, 200MB combined size, and 600 seconds total duration. |
 | `description` | string | No | Optional text prompt describing the desired music (up to 1000 characters). |
 | `tags` | array of strings | No | Optional style tags such as `upbeat` or `cinematic` (up to 10 tags). |
+| `model_id` | string | No | Music model to use. Defaults to `music_v1`. |
 | `sign_with_c2pa` | boolean | No | Sign generated MP3 output with C2PA metadata. Defaults to `false`. |
 | `output_format` | string | No | Output codec/sample-rate/bitrate, such as `mp3_44100_128`, `pcm_44100`, or `opus_48000_96`. |
 
@@ -194,6 +197,7 @@ audio = client.music.video_to_music(
     videos=[open("scene-1.mp4", "rb"), open("scene-2.mp4", "rb")],
     description="Cinematic ambient score with a gentle build",
     tags=["cinematic", "ambient"],
+    model_id="music_v1",
 )
 
 with open("video-score.mp3", "wb") as f:
