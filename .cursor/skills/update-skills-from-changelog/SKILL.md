@@ -24,7 +24,7 @@ Skill files are high-level, task-oriented guidance for working with ElevenLabs. 
 7. Self-check all edits.
 8. Create `skills-update/YYYY-MM-DD`, commit, push, and open a PR.
 
-Do not modify skills not implicated by the changelog. Do not edit `openclaw/`.
+Do not modify skills not implicated by the changelog.
 
 ## Step 1: Fetch changelog
 

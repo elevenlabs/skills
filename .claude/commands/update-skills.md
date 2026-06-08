@@ -296,7 +296,6 @@ When run via Cursor CLI headless mode, return only the completed markdown report
 ## Important
 
 - Do not modify skills that are not mentioned in the brief.
-- Do not update the `openclaw/` directory — that is community-maintained.
 - Do not change the YAML frontmatter in SKILL.md files unless the brief specifically calls for it (e.g., description change).
 - If the brief mentions a change you cannot verify against the API reference (or another canonical documentation page), do NOT add it to the skill files. Instead, list it in the final report under "Needs Manual Authoring" with what the brief says and why you couldn't verify it. A wrong code example is worse than a missing one.
 - If a brief item is verified but does not fit naturally into existing skill structure, do NOT force a new section or sentence. List it under "No Skill Change Needed" in the final report with a short rationale.
