@@ -251,7 +251,7 @@ If no items apply, write "None."
 [Changelog file on GitHub](https://github.com/elevenlabs/elevenlabs-dx/blob/main/fern/docs/pages/changelog/YYYY-MM-DD.md)
 ```
 
-When run via Cursor Cloud Automation with write access, opening the pull request is required unless no skill files changed. Return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
+When run in an automated/headless agent environment with repository write access, opening the pull request is required unless no skill files changed. Return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
 
 ## Important
 
