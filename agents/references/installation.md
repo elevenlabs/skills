@@ -148,8 +148,6 @@ curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
 3. Click **Create API Key**
 4. Copy and store securely
 
-Or use the `setup-api-key` skill for guided setup.
-
 ## Environment Variables
 
 | Variable | Description |

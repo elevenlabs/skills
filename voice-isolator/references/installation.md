@@ -59,5 +59,3 @@ curl -X POST "https://api.elevenlabs.io/v1/audio-isolation" \
 2. Go to [API Keys](https://elevenlabs.io/app/settings/api-keys)
 3. Click **Create API Key**
 4. Copy and store securely
-
-Or use the `setup-api-key` skill for guided setup.

@@ -22,7 +22,6 @@ npx skills add elevenlabs/skills
 | [music](./music) | Generate music tracks using AI composition |
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
 | [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
-| [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
 
 ## Configuration
 
@@ -32,7 +31,7 @@ All skills require an ElevenLabs API key. Set it as an environment variable:
 export ELEVENLABS_API_KEY="your-api-key"
 ```
 
-Get your API key from the `setup-api-key` skill or use the [ElevenLabs dashboard](https://elevenlabs.io/app/settings/api-keys).
+Get your API key from the [ElevenLabs dashboard](https://elevenlabs.io/app/settings/api-keys).
 
 ## SDK Support
 
