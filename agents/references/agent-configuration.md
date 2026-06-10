@@ -106,6 +106,7 @@ conversation_config={
 conversation_config={
     "asr": {
         "quality": "high",
+        "provider": "scribe_realtime",
         "keywords": ["ElevenLabs", "TechCorp"],
         "user_input_audio_format": "pcm_16000"
     }
@@ -115,7 +116,7 @@ conversation_config={
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `quality` | string | `"high"` | Transcription quality level |
-| `provider` | string | `"elevenlabs"` | ASR provider (`elevenlabs` or `scribe_realtime`) |
+| `provider` | string | `"scribe_realtime"` | ASR provider for current agents |
 | `keywords` | array | - | Words to boost recognition accuracy |
 | `user_input_audio_format` | string | - | Input audio format (e.g., `pcm_16000`, `ulaw_8000`) |
 
@@ -126,7 +127,8 @@ conversation_config={
     "turn": {
         "turn_timeout": 7,
         "turn_eagerness": "normal",
-        "silence_end_call_timeout": -1
+        "silence_end_call_timeout": -1,
+        "turn_model": "turn_v3"
     }
 }
 ```
@@ -139,6 +141,7 @@ conversation_config={
 | `initial_wait_time` | number | - | Seconds to wait for user to start speaking |
 | `spelling_patience` | string | `"auto"` | Entity detection patience: `auto` or `off` |
 | `speculative_turn` | bool | `false` | Enable speculative turn detection |
+| `turn_model` | string | `"turn_v3"` | Turn detection model version: `turn_v2` or `turn_v3` |
 | `soft_timeout_config` | object | - | Configures a message if user is silent (see below) |
 
 **soft_timeout_config:**
@@ -147,7 +150,9 @@ conversation_config={
 |-------|------|---------|-------------|
 | `timeout_seconds` | number | `-1` | Seconds before soft timeout (-1 = disabled) |
 | `message` | string | `"Hhmmmm...yeah."` | What agent says on timeout |
+| `additional_soft_timeout_messages` | array | - | Extra static filler messages for later timeouts in the same LLM response, up to 7 strings |
 | `use_llm_generated_message` | bool | `false` | Let LLM generate the timeout message |
+| `max_soft_timeouts_per_generation` | int | `1` | Maximum filler messages while waiting for one LLM response (1-8) |
 
 ## prompt (nested in conversation_config.agent)
 
@@ -580,7 +585,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
-| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `soft_timeout_config` |
+| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |
 | `platform_settings` | `summary_language`, `guardrails`, `privacy` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
