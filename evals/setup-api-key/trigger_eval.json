@@ -1,0 +1,16 @@
+[
+  {"query": "how do I get an elevenlabs API key? I just signed up but can't find where to generate one", "should_trigger": true},
+  {"query": "I'm getting an auth error when trying to use elevenlabs text to speech, says 401 unauthorized", "should_trigger": true},
+  {"query": "my ELEVENLABS_API_KEY isn't working -- I set it in my .env but the API calls keep failing", "should_trigger": true},
+  {"query": "I want to start using elevenlabs but haven't set up my account or API access yet", "should_trigger": true},
+  {"query": "configure my environment for elevenlabs, I need to set the api key somewhere", "should_trigger": true},
+  {"query": "the elevenlabs tts call is returning a 401, probably need to fix my api key setup", "should_trigger": true},
+  {"query": "generate speech from this text using elevenlabs and save it as output.mp3", "should_trigger": false},
+  {"query": "build a voice agent that handles customer support calls", "should_trigger": false},
+  {"query": "how do I set up an OpenAI API key for my chatbot project", "should_trigger": false},
+  {"query": "help me configure my AWS credentials and IAM roles", "should_trigger": false},
+  {"query": "create a .env file for my project with DATABASE_URL and REDIS_URL", "should_trigger": false},
+  {"query": "I need to rotate all my API keys for a security audit", "should_trigger": false},
+  {"query": "transcribe this meeting recording using elevenlabs scribe", "should_trigger": false},
+  {"query": "help me set up stripe API keys for payment processing", "should_trigger": false}
+]

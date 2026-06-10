@@ -60,4 +60,6 @@ curl -X POST "https://api.elevenlabs.io/v1/music" \
 3. Click **Create API Key**
 4. Copy and store securely
 
+Or use the `setup-api-key` skill for guided setup.
+
 **Note:** Music generation requires a paid ElevenLabs plan.
