@@ -1,6 +1,6 @@
 # Widget Embedding
 
-Add a voice AI agent to any website with the ElevenLabs conversation widget.
+Add an ElevenLabs agent to any website with the conversation widget.
 
 ## Basic Embed
 
@@ -9,7 +9,8 @@ Add a voice AI agent to any website with the ElevenLabs conversation widget.
 <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 ```
 
-This creates a floating button that users can click to start a voice conversation.
+This creates a floating launcher. Voice-only agents show a call entry point, text-only agents
+show a message entry point, and multimodal agents show both.
 
 > **Note:** Widgets currently require public agents with authentication disabled. For authenticated flows, use the SDKs.
 
