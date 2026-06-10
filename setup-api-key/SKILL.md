@@ -15,8 +15,8 @@ Guide the user through obtaining and configuring an ElevenLabs API key without e
 
 Before guiding setup, check for an existing `ELEVENLABS_API_KEY`:
 
-1. Check whether `ELEVENLABS_API_KEY` exists in the current environment.
-2. If it is not in the environment, check `.env` for `ELEVENLABS_API_KEY=<value>`.
+1. Check whether `ELEVENLABS_API_KEY` exists in the current environment. If it does, use that value for this initial check.
+2. Only if it is not in the environment, check `.env` for `ELEVENLABS_API_KEY=<value>`.
 3. Do not print, quote, or repeat the key. If you mention it, redact it.
 4. If an existing key is found, validate it:
    ```text
@@ -62,21 +62,23 @@ Then wait for the user to confirm that the key is saved locally.
 
 After the user says the key is saved:
 
-1. Re-check the current environment and `.env` for `ELEVENLABS_API_KEY`.
-2. If no key is found:
+1. Re-check both `.env` and the current environment for `ELEVENLABS_API_KEY`, but treat `.env` as the source of truth for this step.
+2. If `.env` contains a value, validate that value even when the current environment also has a different `ELEVENLABS_API_KEY`.
+3. If `.env` does not contain the key:
    - Tell the user `.env` does not appear to contain `ELEVENLABS_API_KEY`.
    - Show the expected line again.
+   - If the current environment does contain a key, note that this step still requires saving the key in `.env`.
    - Remind them not to paste the key into chat.
-3. If a key is found, validate it:
+4. If a `.env` key is found, validate it:
    ```text
    GET https://api.elevenlabs.io/v1/user
    Header: xi-api-key: <local-api-key>
    ```
-4. If validation fails:
+5. If validation fails:
    - Tell the user the local key appears invalid or expired.
    - Remind them of the API keys page.
    - Ask them to replace the `.env` value and tell you when it is saved.
-5. If validation succeeds, confirm:
+6. If validation succeeds, confirm:
    > Done. ElevenLabs is configured and the key in `.env` works.
 
 ## Safety Rules
