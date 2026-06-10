@@ -1,7 +1,7 @@
 [
   {"query": "how do I get an elevenlabs API key? I just signed up but can't find where to generate one", "should_trigger": true},
   {"query": "I'm getting an auth error when trying to use elevenlabs text to speech, says 401 unauthorized", "should_trigger": true},
-  {"query": "my ELEVENLABS_API_KEY isn't working — I set it in my .env but the API calls keep failing", "should_trigger": true},
+  {"query": "my ELEVENLABS_API_KEY isn't working -- I set it in my .env but the API calls keep failing", "should_trigger": true},
   {"query": "I want to start using elevenlabs but haven't set up my account or API access yet", "should_trigger": true},
   {"query": "configure my environment for elevenlabs, I need to set the api key somewhere", "should_trigger": true},
   {"query": "the elevenlabs tts call is returning a 401, probably need to fix my api key setup", "should_trigger": true},

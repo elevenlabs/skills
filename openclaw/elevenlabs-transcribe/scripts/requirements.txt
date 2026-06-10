@@ -1,6 +1,0 @@
-# ElevenLabs transcription dependencies
-elevenlabs==2.34.0
-pydub==0.25.1
-python-dotenv==1.0.1
-sounddevice==0.5.1
-numpy>=1.24.0

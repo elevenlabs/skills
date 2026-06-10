@@ -24,7 +24,7 @@ Skill files are high-level, task-oriented guidance for working with ElevenLabs. 
 7. Self-check all edits.
 8. Create `skills-update/YYYY-MM-DD`, commit, push, and open a PR.
 
-Do not modify skills not implicated by the changelog. Do not edit `openclaw/`.
+Do not modify skills not implicated by the changelog.
 
 ## Step 1: Fetch changelog
 
@@ -57,11 +57,11 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |
 | `speech-engine` | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations |
 | `voice-changer` | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()` |
-| `setup-api-key` | Authentication flow changes, new environment variables |
+| `setup-api-key` | Authentication flow changes, API key dashboard changes, environment variable guidance |
 
 A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
 
-A change is not relevant if it only affects internal/admin APIs, optional fields with no usage-level impact, backward-compatible renames, or pricing/dashboard UI.
+A change is not relevant if it only affects internal/admin APIs, optional fields with no usage-level impact, backward-compatible renames, or pricing/dashboard UI unrelated to the API key setup flow.
 
 If no skills are affected, stop successfully without opening a pull request. Report `No skills-relevant changes for CHANGELOG_DATE`.
 
@@ -253,7 +253,7 @@ If no items apply, write "None."
 [Changelog file on GitHub](https://github.com/elevenlabs/elevenlabs-dx/blob/main/fern/docs/pages/changelog/YYYY-MM-DD.md)
 ```
 
-When run via Cursor Cloud Automation with write access, opening the pull request is required unless no skill files changed. Return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
+When run in an automated/headless agent environment with repository write access, opening the pull request is required unless no skill files changed. Return only the completed markdown report in the final response unless the invoking user explicitly asks for extra commentary.
 
 ## Important
 
