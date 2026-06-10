@@ -61,7 +61,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 
 A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
 
-A change is not relevant if it only affects internal/admin APIs, optional fields with no usage-level impact, backward-compatible renames, or pricing/dashboard UI.
+A change is not relevant if it only affects internal/admin APIs, optional fields with no usage-level impact, backward-compatible renames, or pricing/dashboard UI unrelated to the API key setup flow.
 
 If no skills are affected, stop successfully without opening a pull request. Report `No skills-relevant changes for CHANGELOG_DATE`.
 
