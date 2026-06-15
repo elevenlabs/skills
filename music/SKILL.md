@@ -271,8 +271,7 @@ for await (const chunk of stream) {
 ## Inpainting
 
 Inpainting edits or extends a stored song by mixing **audio reference chunks** (unchanged slices
-of a stored song) with new **generation chunks** in a single composition plan. Available to
-enterprise customers.
+of a stored song) with new **generation chunks** in a single composition plan. 
 
 Step 1 — get a `song_id`, either by storing a fresh generation or uploading existing audio:
 
