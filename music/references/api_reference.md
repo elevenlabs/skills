@@ -361,7 +361,7 @@ Available to enterprise clients.
 
 ### Getting a `song_id`
 
-- Call [`compose_detailed`](#compose_detailed) with `store_for_inpainting=True` to keep a
+- Call [`compose_detailed`](#compose_detailed) or [`compose`](#compose) with `store_for_inpainting=True` to keep a
   generation for later editing.
 - Call [`upload`](#upload) with `extract_composition_plan="music_v2"` to import an existing
   track and recover its plan.
