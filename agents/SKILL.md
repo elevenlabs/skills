@@ -364,6 +364,7 @@ curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
 
 Run selected tests with `POST /v1/convai/agents/{agent_id}/run-tests`. The request
 body requires `tests` and accepts `repeat_count` from `1` to `20` for repeated runs.
+For completed conversations, rerun one evaluation criterion with `POST /v1/convai/conversations/{conversation_id}/analysis/evaluations/run` and a request body containing `evaluation_id`.
 
 ## Widget Embedding
 
