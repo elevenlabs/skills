@@ -56,7 +56,7 @@ conversation_config={
 | `language` | string | `"en"` | ISO 639-1 language code (en, es, fr, etc.) |
 | `disable_first_message_interruptions` | bool | `false` | Prevent user from interrupting the first message |
 | `max_conversation_duration_message` | string | - | If non-empty, the message sent when `conversation.max_duration_seconds` is reached |
-| `text_behavior_overrides` | object | - | Per-channel text behavior overrides. Map of `ConversationInitiationSource` → `BehaviorOverride` (`verbosity`, `output_format`, `interaction_budget`). See [API reference](https://elevenlabs.io/docs/api-reference/agents/create#request.body.conversation_config.agent.text_behavior_overrides). |
+| `text_behavior_overrides` | object | - | Per-channel text behavior overrides. Map of `ConversationInitiationSource` -> `BehaviorOverride` (`verbosity`, `output_format`, `interaction_budget`). Interaction budgets are `realtime`, `5_minutes`, `10_minutes`, or `1_hour`. See [API reference](https://elevenlabs.io/docs/api-reference/agents/create#request.body.conversation_config.agent.text_behavior_overrides). |
 | `hinglish_mode` | bool | `false` | When enabled and language is Hindi, agent responds in Hinglish |
 | `dynamic_variables` | object | - | Config with `dynamic_variable_placeholders` containing key-value pairs |
 | `prompt` | object | - | LLM configuration (see prompt section below) |
@@ -88,6 +88,7 @@ conversation_config={
 | `expressive_mode` | bool | `true` | Enable expressive voice generation |
 | `agent_output_audio_format` | string | - | Output audio codec format |
 | `pronunciation_dictionary_locators` | array | - | Pronunciation overrides |
+| `enable_phoneme_tags` | bool | `false` | Parse inline and pronunciation-dictionary SSML phoneme tags into IPA for V3 models |
 
 **Available TTS models for agents:**
 
@@ -294,6 +295,18 @@ Use `platform_settings.guardrails` to configure built-in safety controls for use
 | `prompt_injection` | object | Detects prompt injection and instruction override attempts. |
 | `custom` | object | Configures user-defined response validation guardrails. |
 | `content` | object | Configures category-specific content moderation guardrails. |
+
+**custom.config.configs[]:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `is_enabled` | bool | Enables the custom guardrail. |
+| `name` | string | User-facing guardrail name. |
+| `prompt` | string | Instruction describing what to block. |
+| `execution_mode` | string | Guardrail execution mode: `streaming` or `blocking`. |
+| `model` | string | LLM model used for custom guardrail evaluation, such as `gemini-2.5-flash-lite`, `claude-sonnet-4-6`, or `gpt-5.4-mini`. |
+| `history_message_count` | integer | Number of recent customer messages to include in guardrail history; `0` includes none. |
+| `trigger_action` | object | Action when triggered, such as retrying with feedback or ending the call. |
 
 **focus / prompt_injection:**
 
@@ -581,9 +594,9 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | Section | Fields |
 |---------|--------|
 | Root | `name`, `tags` |
-| `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables` |
+| `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables`, `text_behavior_overrides` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
-| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode` |
+| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |

@@ -9,6 +9,7 @@
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
 | `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
+| `use_speaker_library` | boolean | No | Match diarized speakers against registered speaker profiles in the workspace speaker library. Requires `diarize=true` |
 | `detect_speaker_roles` | boolean | No | Label diarized speakers as `agent` and `customer` instead of `speaker_0`, `speaker_1`, etc. Requires `diarize=true` and cannot be used with `use_multi_channel=true` |
 | `num_speakers` | integer | No | Maximum speakers to detect (up to 32 for batch) |
 | `diarization_threshold` | number | No | Tune diarization sensitivity (default: ~0.22; only when `diarize=true` and `num_speakers` is not set) |
@@ -117,7 +118,8 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
   -F "file=@call.mp3" \
   -F "model_id=scribe_v2" \
   -F "diarize=true" \
-  -F "detect_speaker_roles=true"
+  -F "detect_speaker_roles=true" \
+  -F "use_speaker_library=true"
 ```
 
 ## Cloud Storage URL

@@ -67,7 +67,7 @@ curl -X POST "https://api.elevenlabs.io/v1/music" \
 | `music.composition_plan.create` | Generate a structured plan for fine-grained control |
 | `music.compose_detailed` | Generate audio + composition plan + metadata; pass `store_for_inpainting=True` to enable inpainting |
 | `music.video_to_music` | Generate background music from one or more uploaded video files |
-| `music.upload` | Upload an audio file for later inpainting workflows and optionally extract its composition plan |
+| `music.upload` | Upload an audio file for later inpainting workflows, optionally extracting its composition plan or word-level timestamps |
 
 See [API Reference](references/api_reference.md) for full parameter details.
 
