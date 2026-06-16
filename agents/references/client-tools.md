@@ -480,6 +480,10 @@ Help the LLM extract correct values:
 }
 ```
 
+For optional tool parameters that should never be sent in the request payload, set
+`is_omitted: true` on the JSON schema property. Do not combine it with `description`,
+`dynamic_variable`, `is_system_provided`, or `constant_value`.
+
 ### Error Handling
 
 Configure how tool errors are shared with the agent using `tool_error_handling_mode`:
