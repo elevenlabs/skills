@@ -212,7 +212,8 @@ Workspace environment variables can resolve per-environment server tool URLs, he
     ],
     "built_in_tools": {
         "end_call": {},
-        "transfer_to_number": {"transfers": [{"transfer_destination": {"type": "phone", "phone_number": "+1234567890"}, "condition": "User asks for human support"}]}
+        "transfer_to_number": {"transfers": [{"transfer_destination": {"type": "phone", "phone_number": "+1234567890"}, "condition": "User asks for human support"}]},
+        "start_procedure": {}
     }
 }
 ```
@@ -239,6 +240,8 @@ Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaul
 | `language_detection` | Multilingual agents |
 | `transfer_to_number` | Phone-based human escalation |
 | `transfer_to_agent` | Multi-agent workflows |
+| `start_procedure` | Procedure-guided conversations |
+| `end_procedure` | Completing active procedures |
 | `skip_turn` | Tutoring / coaching (silent listening) |
 | `voicemail_detection` | Outbound calling |
 | `play_keypad_touch_tone` | IVR navigation |
@@ -281,12 +284,15 @@ Route conversations through discrete steps with branching logic. Define under th
   "type": "override_agent",
   "label": "Book Appointment",
   "additional_prompt": "Discuss preferred dates and doctors. Show the booking form once agreed.",
+  "entry_behavior": "wait_for_user",
   "additional_tool_ids": ["show_booking_form", "display_appointment_card"],
   "position": {"x": 0, "y": 400}
 }
 ```
 
 Include `position` (`{x, y}`) on every node so the editor renders cleanly. Start at `y=0`, put `end` at the bottom, and space branches horizontally at `x=-150` and `x=150`; suggested spacing is 200px vertical between levels and 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
+
+Use `entry_behavior` on `override_agent` nodes to choose whether a sub-agent speaks immediately (`generate_immediately`), waits for user input (`wait_for_user`), or lets the platform decide (`auto`).
 
 ## Guardrails
 
@@ -306,6 +312,8 @@ Layered safety enforcement that runs independently of the LLM — configured und
           "name": "No medical diagnoses",
           "prompt": "Block the agent from providing medical diagnoses or treatment advice.",
           "execution_mode": "blocking",
+          "model": "gemini-2.5-flash-lite",
+          "history_message_count": 1,
           "trigger_action": {"type": "retry", "feedback": "Reason: {{trigger_reason}}"}
         }]
       }
@@ -314,7 +322,7 @@ Layered safety enforcement that runs independently of the LLM — configured und
 }
 ```
 
-**Types:** `focus` (on-topic), `prompt_injection` (manipulation defense), `content` (category filters), `custom` (LLM-evaluated domain rules). Content categories include `harassment`, `profanity`, `sexual`, `violence`, `self_harm`, and `medical_and_legal_information` — threshold range `0.0`–`1.0` (default `0.3`). Custom rules use `execution_mode: "blocking"` with a `trigger_action` (e.g., `retry` with feedback). Custom guardrails evaluate in parallel and fail-open.
+**Types:** `focus` (on-topic), `prompt_injection` (manipulation defense), `content` (category filters), `custom` (LLM-evaluated domain rules). Content categories include `harassment`, `profanity`, `sexual`, `violence`, `self_harm`, and `medical_and_legal_information` — threshold range `0.0`–`1.0` (default `0.3`). Custom rules use `execution_mode: "blocking"` with a `model`, `history_message_count`, and `trigger_action` (e.g., `retry` with feedback). Custom guardrails evaluate in parallel and fail-open.
 
 **Per vertical:** healthcare/finance/legal → enable `medical_and_legal_information`; education/youth → `sexual`/`violence`/`self_harm`/`profanity`; support/sales → `harassment`/`profanity`. All agents benefit from `focus` + `prompt_injection` + 2-4 custom rules.
 

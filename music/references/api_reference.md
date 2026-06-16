@@ -250,6 +250,7 @@ Upload a music file for later inpainting workflows. This endpoint is available t
 |-----------|------|----------|-------------|
 | `file` | file | Yes | The audio file to upload |
 | `extract_composition_plan` | boolean \| string | No | If `true` (or a model id such as `"music_v2"`), the response includes an extracted composition plan; passing a model id chooses the extraction model. The request may take longer to return. |
+| `with_timestamps` | boolean | No | Transcribe the uploaded song and include word-level timestamps in the response. The request may take longer to return. |
 
 ### Returns
 
@@ -257,6 +258,7 @@ Upload a music file for later inpainting workflows. This endpoint is available t
 |-------|-------------|
 | `song_id` | Unique identifier for the uploaded song |
 | `composition_plan` | Extracted composition plan, or `null` when `extract_composition_plan` is not enabled |
+| `words_timestamps` | Word-level timestamps when `with_timestamps` is enabled |
 
 ### Python
 

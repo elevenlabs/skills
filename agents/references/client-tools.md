@@ -437,6 +437,7 @@ Transfer to another ElevenLabs agent or workflow node:
         "transfers": [{
             "agent_id": "other-agent-id",
             "node_id": "destination-workflow-node-id",
+            "preserve_client_tts_overrides": true,
             "condition": "User asks about sales"
         }]
     }
@@ -445,6 +446,8 @@ Transfer to another ElevenLabs agent or workflow node:
 
 Use `node_id` when the transfer should start at a specific workflow node. Omit
 `agent_id` when the transfer stays within the current agent's workflow.
+Set `preserve_client_tts_overrides` when client-side TTS overrides should continue
+after the transfer.
 
 ## Best Practices
 
