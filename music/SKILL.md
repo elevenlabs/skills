@@ -236,6 +236,12 @@ const audio = await client.music.compose({
 Put broader characteristics (genre, instrumentation, vocal style) in `positive_styles`, not in
 `text`. The first chunk's styles set the overall tone — include 6–7 styles there.
 
+## Output Formats
+
+Use the `output_format` query parameter on compose, detailed compose, or stream requests to select
+the generated audio format. `auto` chooses a model-appropriate MP3 format; for `music_v2`, it
+selects `mp3_48000_192`. Higher-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`.
+
 ## Streaming
 
 For paid plans, stream audio chunks as they are generated instead of waiting for the full file:

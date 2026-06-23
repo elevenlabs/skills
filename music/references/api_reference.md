@@ -27,6 +27,7 @@ Generate music from a text prompt or composition plan. Returns an audio stream.
 | `model_id` | string | No | Music model. Defaults to `music_v1`. |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
 | `respect_sections_durations` | boolean | No | Enforce exact `duration_ms` for each composition plan chunk. Ignored if using `music_v2` model. |
+| `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`; high-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`. |
 
 *Provide either `prompt` or `composition_plan`, not both.
 
@@ -193,6 +194,7 @@ Generate music while returning both the composition plan and metadata alongside 
 | `model_id` | string | No | Defaults to `music_v2` |
 | `store_for_inpainting` | boolean | No | If `true`, retains the generated audio under a `song_id` so it can be referenced by later inpainting plans |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
+| `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`; high-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`. |
 
 *Provide either `prompt` or `composition_plan`, not both.
 

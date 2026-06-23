@@ -117,6 +117,7 @@ import { Conversation } from "@elevenlabs/client";
 const conversation = await Conversation.startSession({
   agentId: "your-agent-id",
   environment: "staging",
+  overrides: { asr: { keywords: ["ElevenLabs", "TechCorp"] } },
   onMessage: (msg) => console.log("Agent:", msg.message),
   onUserTranscript: (t) => console.log("User:", t.message),
   onError: (e) => console.error(e)
@@ -363,7 +364,9 @@ curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
 ```
 
 Run selected tests with `POST /v1/convai/agents/{agent_id}/run-tests`. The request
-body requires `tests` and accepts `repeat_count` from `1` to `20` for repeated runs.
+body requires `tests` and accepts `repeat_count` from `1` to `50` for repeated runs.
+Simulation tests can define up to 30 `success_conditions` prompts; all criteria are
+evaluated and merged into the final result.
 For completed conversations, rerun one evaluation criterion with `POST /v1/convai/conversations/{conversation_id}/analysis/evaluations/run` and a request body containing `evaluation_id`.
 
 ## Widget Embedding
