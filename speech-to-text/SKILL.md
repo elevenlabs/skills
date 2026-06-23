@@ -222,6 +222,7 @@ function TranscriptionComponent() {
     commitStrategy: CommitStrategy.VAD, // Auto-commit on silence for mic input
     keyterms: ["ElevenLabs", "Scribe"],
     noVerbatim: true,
+    includeLanguageDetection: true,
     onPartialTranscript: (data) => console.log("Partial:", data.text),
     onCommittedTranscript: (data) => setTranscript((prev) => prev + data.text),
   });
@@ -246,6 +247,9 @@ function TranscriptionComponent() {
 |----------|-------------|
 | **Manual** | You call `commit()` when ready - use for file processing or when you control the audio segments |
 | **VAD** | Voice Activity Detection auto-commits when silence is detected - use for live microphone input |
+
+Set `includeLanguageDetection: true` to receive the detected language code on committed transcript
+events that include timestamps.
 
 ```typescript
 // React: set commitStrategy on the hook (recommended for mic input)

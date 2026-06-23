@@ -44,6 +44,7 @@ function TranscriptionComponent() {
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD, // Auto-commit on silence for mic input
+    includeLanguageDetection: true,
     onPartialTranscript: (data) => {
       // Show live feedback as user speaks
       console.log("Partial:", data.text);
@@ -118,6 +119,7 @@ async function startTranscription() {
     token,
     modelId: "scribe_v2_realtime",
     includeTimestamps: true,
+    includeLanguageDetection: true,
     keyterms: ["ElevenLabs", "Scribe"],
     noVerbatim: true,
     microphone: {
@@ -157,7 +159,7 @@ async function startTranscription() {
 }
 ```
 
-`keyterms` biases realtime recognition toward important terms. `noVerbatim` removes filler words, false starts, and disfluencies from committed transcripts.
+`keyterms` biases realtime recognition toward important terms. `noVerbatim` removes filler words, false starts, and disfluencies from committed transcripts. `includeLanguageDetection` returns the detected language code on committed transcript events that include timestamps.
 
 ## Manual Audio Chunking
 

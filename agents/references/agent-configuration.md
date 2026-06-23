@@ -143,6 +143,7 @@ conversation_config={
 | `spelling_patience` | string | `"auto"` | Entity detection patience: `auto` or `off` |
 | `speculative_turn` | bool | `false` | Enable speculative turn detection |
 | `turn_model` | string | `"turn_v3"` | Turn detection model version: `turn_v2` or `turn_v3` |
+| `interruption_ignore_terms` | array | - | Case-insensitive terms that should not trigger an interruption when spoken by the user |
 | `soft_timeout_config` | object | - | Configures a message if user is silent (see below) |
 
 **soft_timeout_config:**
@@ -150,10 +151,12 @@ conversation_config={
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `timeout_seconds` | number | `-1` | Seconds before soft timeout (-1 = disabled) |
-| `message` | string | `"Hhmmmm...yeah."` | What agent says on timeout |
+| `message` | string | `"Hhmmmm...yeah."` | What agent says on timeout; supports dynamic variables |
 | `additional_soft_timeout_messages` | array | - | Extra static filler messages for later timeouts in the same LLM response, up to 7 strings |
 | `use_llm_generated_message` | bool | `false` | Let LLM generate the timeout message |
+| `randomize_fillers` | bool | `false` | Shuffle static soft timeout messages once at the start of each turn |
 | `max_soft_timeouts_per_generation` | int | `1` | Maximum filler messages while waiting for one LLM response (1-8) |
+| `llm_generated_message_prompt_override` | string | - | Custom prompt for LLM-generated filler messages; supports dynamic variables |
 
 ## prompt (nested in conversation_config.agent)
 
@@ -267,6 +270,7 @@ platform_settings={
 | `guardrails` | object | Built-in safety and policy controls for agent interactions |
 | `privacy` | object | Recording, retention, and conversation history redaction settings |
 | `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
+| `topic_discovery` | object | Per-agent topic discovery configuration |
 
 ### auth
 
@@ -382,6 +386,7 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `monitoring_enabled` | bool | `false` | Enable real-time WebSocket monitoring |
 | `client_events` | array | - | Client events forwarded to the connected application |
 | `monitoring_events` | array | - | Events forwarded to monitoring WebSocket connections |
+| `background_sound` | object | - | Background sound played during conversations |
 | `source_attribution` | bool | `false` | Instructs the LLM to report sources used when knowledge base content is present |
 
 Common client events include `agent_response_correction`, `agent_tool_response_full_payload`,
@@ -394,6 +399,15 @@ and must be enabled in `client_events`.
 |-------|------|---------|-------------|
 | `enabled` | bool | `true` | Allows end users to attach images or PDFs in chat when the selected LLM supports multimodal input |
 | `max_files_per_conversation` | int | `10` | Maximum number of uploaded files allowed in a single conversation |
+
+**background_sound:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `source_type` | string | - | Background sound source type; use `preset` for built-in sounds |
+| `source_id` | string | - | Preset sound ID, such as `office1`, `office2`, `restaurant`, `city`, `typing`, or `elevator1`-`elevator4` |
+| `volume` | number | `0.6` | Playback volume from `0.01` to `1.0` |
+| `crossfade_loop` | bool | `false` | Crossfade loop boundaries to avoid audible pops |
 
 ## Additional Top-Level Fields
 
@@ -598,9 +612,9 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
-| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `soft_timeout_config` |
-| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled` |
-| `platform_settings` | `summary_language`, `guardrails`, `privacy` |
+| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `soft_timeout_config` |
+| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
+| `platform_settings` | `summary_language`, `guardrails`, `privacy`, `topic_discovery` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
