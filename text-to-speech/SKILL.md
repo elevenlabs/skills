@@ -106,15 +106,15 @@ audio = client.text_to_speech.convert(
 )
 ```
 
-## Language Enforcement
+## Language Selection
 
-Force specific language for pronunciation:
+Use `language_code` with models that support language enforcement to guide pronunciation and text normalization. Unsupported language codes are ignored, and `language_code` is not supported on `eleven_multilingual_v2`.
 
 ```python
 audio = client.text_to_speech.convert(
     text="Bonjour, comment allez-vous?",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_multilingual_v2",
+    model_id="eleven_v3",
     language_code="fr"  # ISO 639-1 code
 )
 ```
