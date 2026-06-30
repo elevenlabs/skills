@@ -98,6 +98,19 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
   -F "use_speaker_library=true"
 ```
 
+## Multichannel Audio
+
+Use `use_multi_channel=true` when each speaker is isolated on a separate audio channel. By default, the API returns one transcript per channel under `transcripts`; set `multichannel_output_style="combined"` to receive one transcript merged by timestamp, with `channel_index` on each word.
+
+```python
+result = client.speech_to_text.convert(
+    file=audio_file,
+    model_id="scribe_v2",
+    use_multi_channel=True,
+    multichannel_output_style="combined",
+)
+```
+
 ## Keyterm Prompting
 
 Help the model recognize specific words it might otherwise mishear - product names, technical jargon, or unusual spellings (up to 100 terms):

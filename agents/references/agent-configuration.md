@@ -144,6 +144,7 @@ conversation_config={
 | `speculative_turn` | bool | `false` | Enable speculative turn detection |
 | `turn_model` | string | `"turn_v3"` | Turn detection model version: `turn_v2` or `turn_v3` |
 | `interruption_ignore_terms` | array | - | Case-insensitive terms that should not trigger an interruption when spoken by the user |
+| `transcribe_on_disabled_interruptions` | bool | `false` | When interruptions are disabled, still transcribe user speech so it can carry into the next turn |
 | `soft_timeout_config` | object | - | Configures a message if user is silent (see below) |
 
 **soft_timeout_config:**
@@ -612,7 +613,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
-| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `soft_timeout_config` |
+| `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
 | `platform_settings` | `summary_language`, `guardrails`, `privacy`, `topic_discovery` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |

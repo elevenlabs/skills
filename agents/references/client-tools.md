@@ -179,6 +179,7 @@ context as a lazily evaluated JSON history object with user, agent, and tool ent
 | `tool_call_sound` | string | - | Sound during execution: `typing`, `elevator1`-`elevator4` |
 | `pre_tool_speech` | string | `"auto"` | Controls whether the agent speaks before execution: `auto`, `force`, or `off` |
 | `tool_error_handling_mode` | string | `"auto"` | `auto`, `summarized`, `passthrough`, or `hide` |
+| `api_schema.response_filter` | object | - | Filters JSON webhook responses before the LLM sees them. Use `mode: "allow"` with `filters` dot-paths to keep selected fields, or `mode: "hide_all"` to hide the response |
 
 MCP server configuration supports the same `pre_tool_speech`, `execution_mode`, and
 `response_timeout_secs` controls at the server level, with per-tool overrides in
