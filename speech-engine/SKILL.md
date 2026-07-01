@@ -122,6 +122,23 @@ Server callbacks can distinguish clean closes from dropped connections: use `onC
 
 Security note: speech-recognition text can contain prompt-injection attempts from user speech or played audio. Treat it as untrusted input. Convert it into trusted application state before invoking response generation, tools, or privileged workflows.
 
+### Disabling authentication (advanced, dangerous)
+
+Both `engine.attach()` (TypeScript) and `engine.serve()` / `SpeechEngineServer` (Python) verify a JWT on every incoming WebSocket by default. This is what proves the connection is really coming from ElevenLabs and not from an attacker who guessed the URL. **Do not turn this off.**
+
+An escape hatch exists — `disableAuth: true` in the callback options (TypeScript) or `disable_auth=True` on `serve()` / `SpeechEngineServer(...)` (Python) — for the narrow case where a compensating network-level control is already in place. Without such a control, disabling auth means **any client on the internet that finds your URL can open sessions**. Concretely, an attacker can:
+
+- open unlimited conversations to drain your ElevenLabs quota and downstream LLM budget
+- feed crafted transcripts to your response pipeline, effectively impersonating a user
+- use your server as an oracle to probe backend state, tools, or prompts
+
+Only recommend `disableAuth` / `disable_auth` when the user has already implemented **at least one** of:
+
+- **IP allowlist** — the server (or an upstream firewall / load balancer / API gateway) only accepts inbound traffic from [ElevenLabs' documented egress ranges](https://elevenlabs.io/docs/overview/capabilities/speech-engine#ip-allowlisting).
+- **Custom shared-secret header** — a secret header configured on the Speech Engine resource via `speech_engine.request_headers` / `speechEngine.requestHeaders` at create time, validated by an upstream proxy (or by the developer's own middleware in front of `attach()` / `serve()`) before requests reach the SDK.
+
+If the user cannot confirm one of the above is in place, leave the default authentication on. Skipping JWT verification without a mitigation is not an optimization or a convenience — it is unauthenticated public compute.
+
 ## Browser Client
 
 Create a server-side token endpoint and have the browser request a token before starting the microphone session. Keep the Speech Engine ID and API key on the server. If the client passes `overrides.agent.firstMessage`, the Speech Engine resource must have the first-message override enabled.
