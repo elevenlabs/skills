@@ -68,7 +68,18 @@ engine.attach(httpServer, "/ws", { debug: true, ...validatedCallbacks });
 
 Call `await attachment.close()` to stop accepting Speech Engine connections without shutting down the HTTP server.
 
-Callback options include `onInit`, `onTranscript`, `onClose`, `onDisconnect`, `onError`, and `debug`. Use `onClose` for clean disconnects from ElevenLabs and `onDisconnect` when the WebSocket drops unexpectedly.
+Callback options include `onInit`, `onTranscript`, `onClose`, `onDisconnect`, `onError`, `debug`, and `disableAuth`. Use `onClose` for clean disconnects from ElevenLabs and `onDisconnect` when the WebSocket drops unexpectedly.
+
+### disableAuth (dangerous)
+
+`attach()` and `SpeechEngine.Server` verify the `X-Elevenlabs-Speech-Engine-Authorization` JWT on every incoming connection by default. Passing `disableAuth: true` in the callback options turns that check off. When it is off, the server accepts any client that can reach it — an attacker who finds the URL can open unlimited conversations, drain your ElevenLabs and downstream LLM quota, and inject arbitrary transcripts into your response pipeline.
+
+Only recommend this option when the developer has already implemented **at least one** compensating control:
+
+- an **IP allowlist** restricting inbound traffic to [ElevenLabs' egress ranges](https://elevenlabs.io/docs/overview/capabilities/speech-engine#ip-allowlisting), or
+- a **custom shared-secret header** — configured via `speechEngine.requestHeaders` on the Speech Engine resource at create time — validated by an upstream proxy or middleware before the request reaches the SDK.
+
+If neither is in place, do not disable auth. When it is enabled, the SDK also emits a `console.warn` at startup to make the state visible in logs. `apiKey` is not required in this mode, since it is only used for JWT verification.
 
 ### verifyRequest
 

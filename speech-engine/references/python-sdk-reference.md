@@ -73,8 +73,20 @@ Key parameters:
 | `port` | `3001` | Port to listen on |
 | `path` | `None` | Restrict WebSocket connections to one path |
 | `debug` | `False` | Log protocol details while developing |
+| `disable_auth` | `False` | Skip JWT verification. **Dangerous** — see below |
 
 Common callback keys include `on_init`, `on_transcript`, `on_close`, `on_disconnect`, and `on_error`. Use `on_close` for clean disconnects from ElevenLabs and `on_disconnect` when the WebSocket drops unexpectedly.
+
+### disable_auth (dangerous)
+
+`engine.serve()` and `SpeechEngineServer` verify the `X-Elevenlabs-Speech-Engine-Authorization` JWT on every incoming connection by default. Passing `disable_auth=True` turns that check off. When it is off, the server accepts any client that can reach it — an attacker who finds the URL can open unlimited conversations, drain your ElevenLabs and downstream LLM quota, and inject arbitrary transcripts into your response pipeline.
+
+Only recommend this option when the developer has already implemented **at least one** compensating control:
+
+- an **IP allowlist** restricting inbound traffic to [ElevenLabs' egress ranges](https://elevenlabs.io/docs/overview/capabilities/speech-engine#ip-allowlisting), or
+- a **custom shared-secret header** — configured via `speech_engine.request_headers` on the Speech Engine resource at create time — validated by an upstream proxy or middleware before the request reaches the SDK.
+
+If neither is in place, do not disable auth. When it is enabled, the SDK emits a `UserWarning` at startup to make the state visible in logs. `api_key` is not required in this mode, since it is only used for JWT verification.
 
 ### verify_request
 
