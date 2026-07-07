@@ -1,5 +1,7 @@
 ![LOGO](/logo.png)
 
+| [healthcare-voice-ai](https://github.com/elevenlabs/skills/blob/main/healthcare-voice-ai) | Build voice AI for clinical/healthcare — doctor alerts, patient agents, encounter transcription, PHI-safe evaluation |
+
 # ElevenLabs Skills
 
 Agent skills for [ElevenLabs](https://elevenlabs.io) developer products. These skills follow the [Agent Skills specification](https://agentskills.io/specification) and can be used with any compatible AI coding assistant.
