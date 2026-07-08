@@ -187,6 +187,7 @@ conversation_config={
 | `max_tokens` | int | `-1` | Max tokens for LLM response (-1 = unlimited) |
 | `reasoning_effort` | string | - | Reasoning depth: `none`, `minimal`, `low`, `medium`, `high`, or `xhigh` (model-dependent) |
 | `thinking_budget` | int | - | Max thinking tokens for reasoning models |
+| `enable_reasoning_summary` | bool | `false` | Request provider reasoning summaries when supported; keep disabled for lower time-to-first-byte |
 | `tools` | array | - | Webhook and client tool definitions |
 | `built_in_tools` | object | - | System tools (end_call, transfer, etc.) |
 | `tool_ids` | array | - | References to pre-configured tools |

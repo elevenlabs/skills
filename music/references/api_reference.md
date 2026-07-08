@@ -8,6 +8,7 @@ All endpoints below default to `music_v1` unless noted for backwards compatibili
 - [stream](#stream)
 - [composition_plan.create](#composition_plancreate)
 - [compose_detailed](#compose_detailed)
+- [compose_detailed_stream](#compose_detailed_stream)
 - [upload](#upload)
 - [video_to_music](#video_to_music)
 - [Inpainting](#inpainting)
@@ -240,6 +241,38 @@ console.log(result.json);    // composition plan + metadata
 console.log(result.songId);  // reusable identifier for inpainting
 
 writeFileSync(result.filename, result.audio);
+```
+
+## compose_detailed_stream
+
+Stream music generation details as Server-Sent Events from
+[`POST /v1/music/detailed/stream`](https://elevenlabs.io/docs/api-reference/music/compose-detailed-stream).
+Use this when a client should receive the composition plan, song metadata, audio chunks, optional
+word timestamps, and completion signal incrementally.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `prompt` | string | Yes* | Description of desired music |
+| `composition_plan` | object | Yes* | Pre-defined composition plan (alternative to `prompt`) |
+| `music_length_ms` | integer | No | Duration in milliseconds when using `prompt` |
+| `model_id` | string | No | Defaults to `music_v1`; pass `music_v2` for the current model |
+| `seed` | integer | No | Random seed for more consistent generation; cannot be used with `prompt` |
+| `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
+| `store_for_inpainting` | boolean | No | Store the generated song so it can be referenced by later inpainting plans |
+| `with_timestamps` | boolean | No | Include word timestamps in the streamed events |
+| `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`. |
+
+*Provide either `prompt` or `composition_plan`, not both.
+
+### cURL
+
+```bash
+curl -N -X POST "https://api.elevenlabs.io/v1/music/detailed/stream?output_format=auto" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A bright indie pop hook with warm guitars", "music_length_ms": 30000, "model_id": "music_v2", "with_timestamps": true}'
 ```
 
 ## upload

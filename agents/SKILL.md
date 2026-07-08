@@ -355,7 +355,9 @@ Three test types via `POST /v1/convai/agent-testing/create`, then attached with 
 }
 ```
 
-Eval strategies: `exact`, `regex`, `llm`. Attach via PATCH:
+Eval strategies: `exact`, `regex`, `llm`. Prompt evaluation criteria can use binary scoring or
+numeric scoring with `scoring_mode: "numeric_uniform"`, `max_score`, and `score_instructions`;
+numeric scores are normalized into the aggregate conversation success percentage. Attach via PATCH:
 
 ```bash
 curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \

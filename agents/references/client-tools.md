@@ -174,14 +174,14 @@ context as a lazily evaluated JSON history object with user, agent, and tool ent
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `response_timeout_secs` | int | `20` | Timeout in seconds (5-120) |
-| `disable_interruptions` | bool | `false` | Prevent user interruptions during tool execution |
+| `interruption_mode` | string | `"allow"` | Controls whether the user can interrupt around this tool call: `allow`, `disable_during_tool`, or `disable_during_tool_and_turn` |
 | `execution_mode` | string | `"immediate"` | `immediate`, `post_tool_speech`, or `async` |
 | `tool_call_sound` | string | - | Sound during execution: `typing`, `elevator1`-`elevator4` |
 | `pre_tool_speech` | string | `"auto"` | Controls whether the agent speaks before execution: `auto`, `force`, or `off` |
 | `tool_error_handling_mode` | string | `"auto"` | `auto`, `summarized`, `passthrough`, or `hide` |
 | `api_schema.response_filter` | object | - | Filters JSON webhook responses before the LLM sees them. Use `mode: "allow"` with `filters` dot-paths to keep selected fields, or `mode: "hide_all"` to hide the response |
 
-MCP server configuration supports the same `pre_tool_speech`, `execution_mode`, and
+MCP server configuration supports the same `pre_tool_speech`, `interruption_mode`, `execution_mode`, and
 `response_timeout_secs` controls at the server level, with per-tool overrides in
 `tool_config_overrides`. MCP timeouts default to 30 seconds and must be 5-300 seconds.
 
