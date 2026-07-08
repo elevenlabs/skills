@@ -66,6 +66,7 @@ curl -X POST "https://api.elevenlabs.io/v1/music" \
 | `music.stream` | Stream audio chunks as they are generated (paid plans) |
 | `music.composition_plan.create` | Generate a structured plan for fine-grained control |
 | `music.compose_detailed` | Generate audio + composition plan + metadata; pass `store_for_inpainting=True` to enable inpainting |
+| `music.compose_detailed_stream` | Stream audio plus composition plan, metadata, and optional word timestamps as Server-Sent Events |
 | `music.video_to_music` | Generate background music from one or more uploaded video files |
 | `music.upload` | Upload an audio file for later inpainting workflows, optionally extracting its composition plan or word-level timestamps |
 
@@ -272,6 +273,20 @@ const chunks: Buffer[] = [];
 for await (const chunk of stream) {
   chunks.push(chunk);
 }
+```
+
+### Detailed streaming
+
+Use detailed streaming when the application needs generated music metadata while audio is still
+arriving. `POST /v1/music/detailed/stream` accepts the same prompt or composition-plan body as
+detailed compose, streams `text/event-stream`, and can include word timestamps with
+`with_timestamps`.
+
+```bash
+curl -N -X POST "https://api.elevenlabs.io/v1/music/detailed/stream?output_format=auto" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "A bright indie pop hook with warm guitars", "music_length_ms": 30000, "model_id": "music_v2", "with_timestamps": true}'
 ```
 
 ## Inpainting
