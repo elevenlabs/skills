@@ -256,7 +256,7 @@ word timestamps, and completion signal incrementally.
 |-----------|------|----------|-------------|
 | `prompt` | string | Yes* | Description of desired music |
 | `composition_plan` | object | Yes* | Pre-defined composition plan (alternative to `prompt`) |
-| `music_length_ms` | integer | No | Duration in milliseconds when using `prompt` |
+| `music_length_ms` | integer | No | Duration in milliseconds when using `prompt`; returns an error if a composition plan is also provided. |
 | `model_id` | string | No | Defaults to `music_v1`; pass `music_v2` for the current model |
 | `seed` | integer | No | Random seed for more consistent generation; cannot be used with `prompt` |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
