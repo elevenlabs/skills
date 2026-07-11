@@ -26,11 +26,9 @@ Two gotchas:
 
 The agent's customer-facing output is a public comment posted via the write tool. Decide the envelope once: greeting with the requester's first name (from a dynamic variable, with a neutral fallback), sign-off, and any required AI disclosure line — and pin it with tests.
 
-## Escalation — recommend a deterministic procedure
+## Escalation
 
-Escalation to a human is a *fixed, silent, multi-step write sequence* — typically: post an internal-note summary → unassign / set status → set routing tags (including the suppress-AI tag from the loop-prevention rule above). This is exactly the case for a **deterministic procedure** (or a single composite tool): the value is the fixed order and the guarantee no step is skipped, not the model's judgment. A free-form "call these four tools" instruction will occasionally drop one — usually the tag that stops the agent from re-engaging.
-
-Keep the customer-facing part out of the sequence: the escalation *reply* (acknowledgment + hand-off line) is governed by the system prompt (see [prompt-and-procedures.md](prompt-and-procedures.md)); the deterministic island does the writes.
+The escalation write sequence (internal note → unassign/status → routing + suppress-AI tags) is a deterministic procedure derived from the customer's own workflow — full treatment in [escalation.md](escalation.md).
 
 ## Dev and prod instances
 

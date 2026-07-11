@@ -48,10 +48,7 @@ If the user opted into reply-in-customer's-language:
 
 ## Escalation
 
-- Define **one verbatim escalation line** in the system prompt, and require a one-sentence explanation of the finding *before* it when the agent has already pulled data — "I'll escalate this" with no explanation reads as a non-answer.
-- The escalation *sequence* (post internal note → tag/update → hand off) is a fixed silent series of tool calls — implement it as a **deterministic procedure** (or a single composite tool) so the model can't skip or reorder a step. Make mistakes impossible to execute rather than trying to catch them. The concrete call set depends on the customer's ticketing platform — on Zendesk typically add-internal-comment, update-ticket (unassign/status), add/remove-tags; other platforms have their own equivalents — so derive it from *their* escalation workflow during intake, then freeze it in the deterministic steps.
-- The internal note should start with the customer's original issue, then what was checked and found — the model otherwise summarizes only the most recent step.
-- Procedures loaded earlier in the conversation may no longer be in context by the time the escalation reply is written — cross-cutting rules about the escalation reply belong in the **system prompt**, not in topic procedures.
+See [escalation.md](escalation.md): derive the write sequence from the customer's own workflow at intake and freeze it in a deterministic procedure; branch the hand-off reply on language *before* presenting the verbatim sentence; internal note starts with the original issue and carries claim + verified figures.
 
 ## Guardrails — last resort, kept narrow
 

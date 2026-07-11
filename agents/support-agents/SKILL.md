@@ -16,7 +16,8 @@ Reference files (read when you reach the phase):
 - [references/ground-truth.md](references/ground-truth.md) — ranking sources of truth, deriving correct answers
 - [references/knowledge-base.md](references/knowledge-base.md) — KB setup and RAG tuning
 - [references/prompt-and-procedures.md](references/prompt-and-procedures.md) — system prompt and procedure authoring
-- [references/channel-integration.md](references/channel-integration.md) — wiring the agent to a ticketing channel (trigger, identity binding, escalation writes)
+- [references/channel-integration.md](references/channel-integration.md) — wiring the agent to a ticketing channel (trigger, identity binding)
+- [references/escalation.md](references/escalation.md) — the human hand-off: deterministic write sequence, hand-off reply language rules, internal note
 - [references/testing.md](references/testing.md) — test types, suite discipline, mining tickets into tests
 - [references/improvement-loop.md](references/improvement-loop.md) — analyzing production conversations, picking the fix layer
 
@@ -142,7 +143,7 @@ Procedures are edited in the dashboard (Agent → Procedures). A REST surface fo
 
 - Start with **read-only diagnostic tools**: account/subscription lookup, usage overview, invoice list, order status — whatever lets the agent *explain* instead of guessing. Wrap the user's existing APIs as webhook tools (see the parent agents skill for schemas).
 - **Tool descriptions carry prompt-level leverage** (they're read every turn): state what the tool returns AND what it does NOT return, naming the tool to use instead. Overlapping/vague descriptions are a top cause of wrong-tool calls.
-- **Escalation is a first-class flow, not a fallback.** Wire it as an explicit sequence (internal note for the human agent + ticket update/handoff). For non-English conversations the customer-facing reply is in the customer's language, but the internal escalation note is written in English (or the team's working language) so any teammate can act on it.
+- **Escalation is a first-class flow, not a fallback.** Ask the user at intake how their team takes over tickets today, then freeze that into a deterministic write sequence — see [references/escalation.md](references/escalation.md).
 - If a ticketing system is involved, mock its **write** tools during all testing — never let a test post to production tickets (see [references/testing.md](references/testing.md)).
 
 ## Phase 5 — Test suite
