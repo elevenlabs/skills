@@ -22,6 +22,7 @@ A ticket thread is not a clean "customer + human agent" transcript. It may inter
 
 - "What actually happened" = the *last* substantive handling, usually the human's post-escalation resolution when one exists — not the first AI reply.
 - Teams without an incumbent AI agent will have human-only threads; the loop below works the same, the human reply is just the whole ground-truth side.
+- **Inventory the incumbent's *non-reply* behaviors too** — silent spam closes, tag conventions, status hygiene. Reply-focused comparisons never surface them, so they silently vanish in config rebuilds/migrations (a dropped silent-close path was rediscovered here only because spam tickets started getting polite multi-turn replies).
 
 ## 2. Judge each conversation against ground truth
 

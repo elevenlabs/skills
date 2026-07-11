@@ -114,7 +114,7 @@ curl -s -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
   }'
 ```
 
-- Pick the LLM deliberately: support agents follow multi-step policies and call tools, so prefer a strong tool-calling model; check `GET /v1/convai/llm/list` for the current catalog. If the model supports a reasoning-effort setting, `low` is usually the sweet spot for procedural support agents — see [references/prompt-and-procedures.md](references/prompt-and-procedures.md).
+- Pick the LLM deliberately: support agents follow multi-step policies and call tools, so prefer a strong tool-calling model; check `GET /v1/convai/llm/list` for the current catalog. If the model supports a reasoning-effort setting, start at `low` or `medium` for procedural support agents and pick by measuring — see [references/prompt-and-procedures.md](references/prompt-and-procedures.md).
 - **Config PATCH gotchas:** GET returns the prompt block with both resolved `tools` and `tool_ids` — strip `tools` before PATCHing the config back or the API rejects it; and always re-verify tool wiring (`tool_ids`) and `platform_settings.testing.attached_tests` after any agent write, since careless writes can silently reset them. Prefer round-tripping the *live* config (GET → surgical edit → PATCH) over pushing a locally-stored copy.
 - **Branch discipline:** make changes on a working branch, not the live one. `POST /v1/convai/agents/{agent_id}/branches` creates one; pass `branch_id` on reads/patches; merge via `POST /v1/convai/agents/{agent_id}/branches/{source_branch_id}/merge` once the suite is green. Traffic can be split between branches for staged rollout (start ~10%, watch, then promote).
 
