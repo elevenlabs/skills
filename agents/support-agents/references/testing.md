@@ -38,6 +38,33 @@ Also validate tests **proactively**: when config changes (a tool renamed, a pric
 - **Never let tests write to production systems.** Mock every ticketing/CRM *write* tool with `mocking_strategy: "selected"` + the write-tool ids, and keep the fallback on raise-error, never call-real-tool. For maximum realism run **pre-production tests**: real read tools against a real (consenting) account, only the writes mocked — this surfaces payload shapes synthetic mocks miss.
 - You generally cannot mock a tool *error* — an unmocked call is the only "failure" the harness produces. Exclude those runs when judging agent behavior.
 
+## Replaying real tickets with real reads (preprod batch)
+
+The agent is almost always *picking up from* an incumbent — usually human support associates, sometimes an older or weaker AI model. The highest-signal validation short of production is to replay a batch of recent real tickets through the agent with **real read tools** (the lookup resolves the ticket's actual requester) and **only the write tools mocked**, then compare each reply against what the incumbent actually did on that ticket. Two outputs, both valuable:
+
+- **Behavior gaps** — where the agent's handling diverges from the incumbent's (validate before treating as a failure; the incumbent isn't always right).
+- **Capability gaps** — places the incumbent used data or took actions the agent has no tool or knowledge source for. Log these explicitly ("human quoted the decline reason from the payment processor; agent has no lookup for it") — they're the tooling/KB roadmap, and per the read-only doctrine some are correctly answered by escalation rather than a new tool.
+
+Outline of the runner (write it as a small script against the public API — don't hand-run 20 tickets):
+
+1. **Safety pre-flight (non-negotiable):** fetch the agent config for the branch, extract every tool id referenced anywhere in it, resolve each tool's name, and abort unless every ticketing-system tool is in the mocked list. This is the only thing standing between a real-account run and a mutated production ticket.
+2. Per ticket, create a `simulation` test: persona built from the ticket (below), `tool_mock_config` with `mocking_strategy: "selected"` + the write-tool ids + fallback raise-error, dynamic variables carrying the **real requester email** (so reads resolve their real account) but a **fake ticket id**, and the production conversation-initiation source (real turn budget).
+3. Attach the tests to the working branch, run them in one `run-tests` invocation (the platform caps concurrency itself), and poll the invocation for results.
+4. Save the full invocation JSON locally — the transcripts (replies + every tool call marked real vs mocked) are your comparison corpus. It contains customer PII: keep it out of version control.
+5. These tests are throwaways: after analysis, delete them and remove their attachments; only validated failures get re-authored as anonymized committed regressions.
+
+### Building a faithful persona from a ticket
+
+The simulated customer is only as good as its briefing. Craft the persona deliberately:
+
+- **Faithful first message.** The persona's opening message should be the ticket's actual first message (lightly trimmed), in the ticket's original language — not a paraphrase. Paraphrases quietly drop the phrasing that drives routing.
+- **Hidden information.** Real customers know things they didn't put in the opener (which email they paid with, what they already tried, the exact error text, their purchase platform). Put those facts *in the persona description* — drawn from the **whole thread**, not just the opener — so when the agent probes, the sim answers consistently instead of inventing. A persona that invents "I subscribed on the website" when the real customer later said "Google Play" sends the whole comparison down the wrong branch.
+- **Identity consistency.** If the harness resolves real data via the ticket's requester email, the persona must know that email is *its own* — a persona claiming a different address than the one the tools resolve produces a fake "account not found" dispute.
+- **Disposition fidelity.** Carry the real customer's later-turn behavior into the persona: if they refused self-serve steps and demanded direct action, the persona must too. A compliant sim customer makes the agent's handling look better than it would have played out; an extra-suspicious one (e.g. distrusting a link the real customer accepted) makes it look worse.
+- **Describe attachments in text.** Customers convey key facts via screenshots (an invoice, an error dialog, a bank statement). If the agent is image-blind — and in most test harnesses even vision-capable agents won't get the pixels — the persona description must carry what the image showed, marked as such ("you have a screenshot showing a $22 charge dated the 3rd; describe it if asked").
+- **Explicit stop rule.** Tell the persona when the conversation is over ("stop once the agent gives its substantive answer or hands off to a human") — otherwise simulations pad turns and burn budget.
+- **Don't leak the answer.** The persona must know what the customer knew, not what the resolution was. A persona that hints at the expected fix invalidates the test.
+
 ## Mining historical tickets into tests
 
 Once the seeded suite is green, grow it from real traffic:

@@ -16,6 +16,7 @@ Reference files (read when you reach the phase):
 - [references/ground-truth.md](references/ground-truth.md) — ranking sources of truth, deriving correct answers
 - [references/knowledge-base.md](references/knowledge-base.md) — KB setup and RAG tuning
 - [references/prompt-and-procedures.md](references/prompt-and-procedures.md) — system prompt and procedure authoring
+- [references/channel-integration.md](references/channel-integration.md) — wiring the agent to a ticketing channel (trigger, identity binding, escalation writes)
 - [references/testing.md](references/testing.md) — test types, suite discipline, mining tickets into tests
 - [references/improvement-loop.md](references/improvement-loop.md) — analyzing production conversations, picking the fix layer
 
@@ -114,6 +115,7 @@ curl -s -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
 ```
 
 - Pick the LLM deliberately: support agents follow multi-step policies and call tools, so prefer a strong tool-calling model; check `GET /v1/convai/llm/list` for the current catalog. If the model supports a reasoning-effort setting, `low` is usually the sweet spot for procedural support agents — see [references/prompt-and-procedures.md](references/prompt-and-procedures.md).
+- **Config PATCH gotchas:** GET returns the prompt block with both resolved `tools` and `tool_ids` — strip `tools` before PATCHing the config back or the API rejects it; and always re-verify tool wiring (`tool_ids`) and `platform_settings.testing.attached_tests` after any agent write, since careless writes can silently reset them. Prefer round-tripping the *live* config (GET → surgical edit → PATCH) over pushing a locally-stored copy.
 - **Branch discipline:** make changes on a working branch, not the live one. `POST /v1/convai/agents/{agent_id}/branches` creates one; pass `branch_id` on reads/patches; merge via `POST /v1/convai/agents/{agent_id}/branches/{source_branch_id}/merge` once the suite is green. Traffic can be split between branches for staged rollout (start ~10%, watch, then promote).
 
 ## Phase 2 — Knowledge base
@@ -150,17 +152,20 @@ Read [references/testing.md](references/testing.md). The arc:
 1. Seed the suite from the survey's key scenarios (one happy path + one escalation per topic), then grow it by mining historical tickets: convert tickets the agent likely handles poorly into simulation tests, derive expected behavior from ground truth (never from the old human reply alone), and keep only the ones that fail — a passing ticket-test adds no signal.
 2. Use `simulation` tests for reply content, `tool`-type tests for routing/dispatch (deterministic, no grader noise).
 3. Run via `POST /v1/convai/agents/{agent_id}/run-tests` (branch-aware); read results from `GET /v1/convai/test-invocations/{test_invocation_id}` — never re-run a suite just to recover results.
-4. Respect variance discipline: re-run a red individually before treating it as real; LLM-graded multi-turn tests are stochastic.
-5. Anonymize any real customer data before it lands in a committed test (emails → `example.com`, fake names/ids that preserve shape).
+4. **Always download and read the full transcript** of a failing (or surprising-passing) run — the grader's pass/fail and rationale are an LLM's interpretation, not ground truth. Judge from what the agent actually saw and did.
+5. Respect variance discipline: re-run a red individually before treating it as real; LLM-graded multi-turn tests are stochastic.
+6. Anonymize any real customer data before it lands in a committed test (emails → `example.com`, fake names/ids that preserve shape).
+7. **Delete temporary tests when done** — throwaway replay/probe sims and their agent attachments. Anything left attached pollutes the suite and its pass rate; only validated failures stay, re-authored as anonymized committed regressions.
 
 ## Phase 6 — Improvement loop (once live)
 
 Read [references/improvement-loop.md](references/improvement-loop.md). Loop:
 
-1. Pull a dated batch of production conversations (transcripts + tool results + RAG retrieval info + the human resolution when escalated).
-2. For each conversation, derive the ground-truth answer, then judge the agent's reply: complete, accurate, policy-following? Group into **no action needed / agent-config fix / platform limitation**.
-3. For each config fix: validate the eval criterion, pick the fix layer, make the smallest change, run the target test plus adjacent tests, keep only on improvement without regression.
-4. Encode every confirmed gap as a permanent regression test before fixing it.
+1. Recommend a fresh branch per tuning pass (user-configurable); fixes land there and the user reviews + merges.
+2. Pull a dated batch of production conversations (transcripts + tool results + RAG retrieval info + the human resolution when escalated). Classify thread authors first — threads mix your agent, other AI systems, and humans.
+3. For each conversation, derive the ground-truth answer, then judge the agent's reply: complete, accurate, policy-following? Where the agent's handling diverges from the thread, validate with an independent checker (N independent sources) before calling it a failure. Group into **no action needed / agent-config fix / platform limitation**.
+4. For each config fix: validate the eval criterion, pick the fix layer, make the smallest change, run the target test plus adjacent tests, keep only on improvement without regression.
+5. Encode every confirmed gap as a permanent regression test before fixing it.
 
 ## Safety rules
 

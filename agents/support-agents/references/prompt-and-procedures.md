@@ -15,6 +15,7 @@ A rule of thumb for what goes where: if it applies to *every* conversation, one 
 - **Prefer several small procedures with distinct triggers** over one catch-all. When two procedures are chronically confused, merge them instead of adding tie-breaker prose.
 - **Structure the body as numbered STEPs with explicit gates:** "STEP 1 look up the account → STEP 2 explain the finding → STEP 3 escalate. You may NOT reach STEP 3 until STEP 2 is done." This is the single most effective control against the model jumping to the end state (escalating before explaining).
 - **Positive examples beat prohibitions.** A flat "do NOT X" is violated a surprising fraction of the time even when explicit. Counter the *specific* deviation with a "say this instead" example, or give the real mechanism so the instruction reconciles with the model's prior — don't stack a fourth paragraph of prohibitions.
+- **Guard at the point of action, not (only) globally.** When the failure is an *action* (closing a ticket, firing a write), a global system-prompt rule routinely loses to action momentum — put an explicit gate inside the procedure that performs the action ("check BOTH before doing anything below; if either fails, stop"). A prompt rule against premature ticket-closing kept failing until the same check became the first step of the close procedure itself.
 - Happy path first, then branches and edge cases. Be explicit about when to stop.
 - Each procedure must stand alone — the same fact appearing in two procedures is often intentional, not duplication to clean up.
 - Don't paraphrase a shared template inside each topic; point at one verbatim template.
@@ -39,6 +40,7 @@ If the user opted into reply-in-customer's-language:
 
 - The **entire customer-facing reply** is in the customer's language — greeting, body, and the escalation hand-off line (translated, meaning preserved). A translated body with an English verbatim escalation line appended is the common failure; make the language rule explicitly override any "copy this line verbatim" instruction, in the procedure body as well as the prompt (when a procedure is active, its wording dominates).
 - Decide what stays untranslated (usually only the brand sign-off and any required AI disclosure) and say so explicitly.
+- **Never give exactly one translated worked example.** A single-language exemplar ("e.g. Spanish: '…'") becomes a template: in threads of *other* languages the model copies that sentence verbatim instead of translating — producing a three-language reply. Write the directive language-neutrally ("translate this sentence, meaning preserved, into the customer's language — do not copy any example verbatim"), or give examples in several languages, never one.
 - On escalation, the **internal note is written in the support team's working language** (usually English), ideally prefixed with the thread language — a teammate must be able to act without re-reading a foreign-language thread.
 - Pin each language rule with a test (e.g. "reply fully in Spanish" + "internal note in English") — these regress easily.
 

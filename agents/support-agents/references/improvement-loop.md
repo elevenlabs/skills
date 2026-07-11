@@ -16,6 +16,13 @@ One dated file per review (don't append to old ones — each review stays reprod
 
 Keep the corpus local and uncommitted; it's customer data.
 
+### Classify thread authors before trusting them
+
+A ticket thread is not a clean "customer + human agent" transcript. It may interleave: the customer, **your** agent's replies, a *different* AI system's replies (many teams run more than one, or a vendor bot answered first), human agents after escalation, and internal notes. Classify every comment (requester id → customer; non-public → internal note; AI signature/disclosure line → which AI; otherwise human) before treating anything as "the resolution". Two consequences:
+
+- "What actually happened" = the *last* substantive handling, usually the human's post-escalation resolution when one exists — not the first AI reply.
+- Teams without an incumbent AI agent will have human-only threads; the loop below works the same, the human reply is just the whole ground-truth side.
+
 ## 2. Judge each conversation against ground truth
 
 Derive the correct answer independently ([ground-truth.md](ground-truth.md)) — never assume the agent's reply, the human's reply, or the current procedure is correct. Then judge the agent's reply on three axes:
@@ -23,6 +30,14 @@ Derive the correct answer independently ([ground-truth.md](ground-truth.md)) —
 - **Complete** — answered the whole ask, used the data it had already pulled
 - **Accurate** — no invented prices, paths, or mechanics; matches the verified answer
 - **Policy-following** — right escalate-vs-resolve call, firm where policy is firm, correct envelope
+
+### Validate divergences with an independent checker
+
+When the agent's handling *differs* from what the thread shows, don't trust your own first read — spawn a separate validation pass (a subagent on a cheaper model works well; the judging is retrieval-heavy, not reasoning-heavy) with a strict brief:
+
+- It must find **N independent supporting sources** (3 is a good default) across the evidence — product code, KB/docs, pricing data, the written policy, the thread itself — before the divergence counts as a real agent failure. Independent means different origins, not three quotes from one page.
+- It defaults to **exonerating the agent**: "different from the human" is not "wrong" (humans deviate from policy too; the old reply may be stale). The verdict must state which side the sources support.
+- Give it the complete evidence (agent transcript incl. tool results, the thread, the ground-truth source list) — a checker on partial data returns confident nonsense.
 
 Calibration rules:
 
@@ -44,6 +59,7 @@ For each confirmed gap, choose the *layer* first — most wasted cycles come fro
 | Wrong or missing product fact | **Knowledge base** (verify retrieval), or a deterministic read tool for facts retrieval can't serve |
 | Answered from memory instead of looking up | Make the lookup an explicit, mandatory procedure step; prefer "look it up" wording over inline facts |
 | Wrong/confused/absent tool call | **Tool description** — state what it returns and what it does NOT, naming the right alternative |
+| Misread its own tool payload (conflated look-alike fields, e.g. plan quota vs actual usage) | **Procedure or tool description** — name the exact field to read and the look-alike to avoid; require the dedicated tool for that fact |
 | A fact that must span topics or override a strong prior | A cross-cutting instruction — used sparingly; global additions pollute every topic |
 | High-cost damage class (false promise, leak, double reply) | **Guardrail** — last resort, narrow, biased to pass ([prompt-and-procedures.md](prompt-and-procedures.md)) |
 | Criterion contradicts ground truth | Fix the **test**, not the agent |
@@ -51,6 +67,8 @@ For each confirmed gap, choose the *layer* first — most wasted cycles come fro
 Hallucination is almost always a routing or missing-lookup bug — find why the model lacked the fact; "please don't hallucinate" prompt text fixes nothing.
 
 ## 4. Verify, then lock in
+
+**Recommend a fresh branch per tuning pass** (named after the pass, e.g. a date), created off the live branch at the start of the pass: all fixes land there, the suite runs there, and the user reviews and merges when it gates green. This keeps live traffic untouched while you iterate and makes the whole pass revertible as a unit. It's a recommendation, not a mandate — some users prefer per-fix branches or direct edits with review; ask once and follow their preference.
 
 Per change (one at a time):
 
