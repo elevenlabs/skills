@@ -8,7 +8,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 # Building Support Agents
 
-Act as a support-agent engineer. This skill is a guided journey: interview the user, set up (or adopt) an agent, ground it in verified knowledge, then iterate failure → verified fix with a test suite as the gate. The typical entry point is a user in this directory saying "walk me through building a support agent for X".
+Act as a support-agent engineer. This skill is a guided journey: set up (or adopt) an agent, interview the user, ground the agent in verified knowledge, then iterate failure → verified fix with a test suite as the gate. The typical entry point is a user in this directory saying "walk me through building a support agent for X".
 
 For general Agents Platform reference (creating agents, tools, workflows, widget, guardrails config), see the parent [agents skill](../SKILL.md). This skill covers what is specific to *support* agents.
 
@@ -35,27 +35,34 @@ These are hard-won; follow them even when a shortcut looks faster.
 ## How to run the journey
 
 - Ask questions in small groups (2–3 per message), acknowledge answers, then move on. Don't dump a 20-question form.
-- Keep a local project directory as the source of truth — config as files the user can review and diff:
-
-```
-support-agent/
-├── survey.md            # intake answers (Phase 0)
-├── prompt.md            # system prompt
-├── procedures/*.md      # one file per procedure
-├── tools/*.json         # tool definitions
-├── tests/*.json         # saved tests (the committed suite)
-└── kb/sources.md        # KB source inventory + doc ids
-```
-
 - After each phase, checkpoint: summarize what's set, what's default, what's missing; get explicit confirmation before deploying anything.
 - Never delete an agent, test, or KB document without explicit approval.
 - API calls use the `xi-api-key: $ELEVENLABS_API_KEY` header against `https://api.elevenlabs.io`. If the key is missing or invalid, run the [setup-api-key skill](../../setup-api-key/SKILL.md) flow — never ask the user to paste a key into chat.
 
-## Phase 0 — Intake survey
+### The config repo
 
-### 0.1 The agent
+Keep the agent's config as files in a dedicated **git repository** — `git init` it in Phase 0. Files are what you and the user edit and review; the live agent is what's deployed; small sync scripts against the public API connect the two. This is what makes every change a reviewable diff, keeps history revertible independent of platform branches, and lets config survive across sessions and teammates.
 
-Ask: **"Do you already have an ElevenLabs support agent, or are we starting from scratch?"**
+```
+support-agent/           # git init on day one
+├── survey.md            # intake answers (Phase 1)
+├── agent.json           # top-level agent config; prompt referenced as a file, not inlined
+├── prompt.md            # system prompt
+├── procedures/*.md      # one file per procedure
+├── tools/*.json         # tool definitions
+├── tests/*.json         # saved tests (the committed suite)
+├── kb/sources.md        # KB source inventory + doc ids
+├── registry.json        # platform-assigned ids, written back by the sync scripts
+└── scripts/             # upload / register-tests / run-tests (outlines below)
+```
+
+- Apply config through **idempotent sync scripts**, not hand-edited dashboard state. Outline of `scripts/upload`: require `--agent-id` and `--branch-id` flags and fail fast unless they match ids pinned in the repo (protects against pushing one project's config onto the wrong agent); GET the live config, apply file contents surgically, PATCH back (mind the `tools`/`tool_ids` gotcha in Phase 0); let source files reference procedures/tools by *name* and rewrite name → platform id at upload time from `registry.json`, writing newly assigned ids back. Same shape for `scripts/register-tests` (create/update saved tests from `tests/*.json`, write ids back, attach to the branch) and `scripts/run-tests` (launch, poll the invocation, exit non-zero on failure).
+- Commit every change you apply to the agent, so `git log` matches what actually shipped.
+- Secrets and customer data never land in the repo: the API key lives in a gitignored `.env`; ticket dumps, transcripts, and run outputs stay local and uncommitted.
+
+## Phase 0 — Create or adopt the agent
+
+Start by getting a real agent id — every later phase is then a reviewable patch against it. Ask two things: **"Do you already have an ElevenLabs support agent, or are we starting from scratch?"** and **"Will it handle support tickets/email, a chat widget, or voice?"** (ticket/chat agents set `conversation_config.conversation.text_only: true`; voice adds TTS/ASR concerns covered in the parent agents skill).
 
 If they have one, accept a dashboard URL and parse it:
 
@@ -64,16 +71,39 @@ https://elevenlabs.io/app/agents/agents/{agent_id}?branchId={branch_id}
 ```
 
 - `agent_id` starts with `agent_`; the optional `branchId` query param (starts with `agtbrch_`) is the branch they're working on.
-- Verify and dump the config: `GET /v1/convai/agents/{agent_id}`. Materialize the config into the project directory (prompt, tools, attached tests, KB references) so all later edits are reviewable diffs.
+- Verify and dump the config: `GET /v1/convai/agents/{agent_id}`.
 
-If they don't have one, you'll create it in Phase 1.
+If they don't have one, create a minimal one now — placeholder prompt, defaults everywhere; don't wait for the survey:
 
-### 0.2 Channel and language
+```bash
+curl -s -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
+  -d '{
+    "name": "Acme Support",
+    "conversation_config": {
+      "conversation": {"text_only": true},
+      "agent": {
+        "first_message": "",
+        "language": "en",
+        "prompt": {"prompt": "<placeholder until Phase 3>", "llm": "claude-sonnet-4-5"}
+      }
+    }
+  }'
+```
 
-- **Channel:** support tickets/email (e.g. via the Zendesk integration), a chat widget, or voice? Ticket/chat agents should set `conversation_config.conversation.text_only: true`; voice adds TTS/ASR concerns covered in the parent agents skill.
-- **Languages:** English-only or reply-in-customer's-language? If multilingual, plan for it from the start (see the language section of [references/prompt-and-procedures.md](references/prompt-and-procedures.md)) — retrofitting language rules is much harder.
+- Pick the LLM deliberately: support agents follow multi-step policies and call tools, so prefer a strong tool-calling model; check `GET /v1/convai/llm/list` for the current catalog. If the model supports a reasoning-effort setting, start at `low` or `medium` for procedural support agents and pick by measuring — see [references/prompt-and-procedures.md](references/prompt-and-procedures.md).
+- **Config PATCH gotchas:** GET returns the prompt block with both resolved `tools` and `tool_ids` — strip `tools` before PATCHing the config back or the API rejects it; and always re-verify tool wiring (`tool_ids`) and `platform_settings.testing.attached_tests` after any agent write, since careless writes can silently reset them. Prefer round-tripping the *live* config (GET → surgical edit → PATCH) over pushing a locally-stored copy.
+- **Branch discipline:** make changes on a working branch, not the live one. `POST /v1/convai/agents/{agent_id}/branches` creates one; pass `branch_id` on reads/patches; merge via `POST /v1/convai/agents/{agent_id}/branches/{source_branch_id}/merge` once the suite is green. Traffic can be split between branches for staged rollout (start ~10%, watch, then promote).
 
-### 0.3 Ground-truth sources
+Either way, finish the phase by initializing the config repo (see "The config repo" above) and committing the materialized config — prompt, tools, attached tests, KB references — as the baseline.
+
+## Phase 1 — Intake survey
+
+### 1.1 Languages
+
+English-only or reply-in-customer's-language? If multilingual, plan for it from the start (see the language section of [references/prompt-and-procedures.md](references/prompt-and-procedures.md)) — retrofitting language rules is much harder.
+
+### 1.2 Ground-truth sources
 
 This is the highest-leverage part of the interview. Read [references/ground-truth.md](references/ground-truth.md), then survey the user for what exists:
 
@@ -87,37 +117,13 @@ This is the highest-leverage part of the interview. Read [references/ground-trut
 
 Record the resulting hierarchy in `survey.md` — you will consult it on every fix.
 
-### 0.4 Scope and escalation policy
+### 1.3 Scope and escalation policy
 
 - Which topics must the agent answer, which must it *always* escalate (legal threats, security incidents, VIP accounts)?
 - What data may it read? What actions (if any) may it take? Default to read-only (principle 4).
 - Tone/brand rules: greeting/sign-off envelope, phrases to avoid, disclosure requirements (e.g. an "AI-generated" notice).
 
-**Checkpoint:** present the full survey (including empty fields) and get confirmation before Phase 1.
-
-## Phase 1 — Create or adopt the agent
-
-Creating a text support agent:
-
-```bash
-curl -s -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{
-    "name": "Acme Support",
-    "conversation_config": {
-      "conversation": {"text_only": true},
-      "agent": {
-        "first_message": "",
-        "language": "en",
-        "prompt": {"prompt": "<from prompt.md>", "llm": "claude-sonnet-4-5"}
-      }
-    }
-  }'
-```
-
-- Pick the LLM deliberately: support agents follow multi-step policies and call tools, so prefer a strong tool-calling model; check `GET /v1/convai/llm/list` for the current catalog. If the model supports a reasoning-effort setting, start at `low` or `medium` for procedural support agents and pick by measuring — see [references/prompt-and-procedures.md](references/prompt-and-procedures.md).
-- **Config PATCH gotchas:** GET returns the prompt block with both resolved `tools` and `tool_ids` — strip `tools` before PATCHing the config back or the API rejects it; and always re-verify tool wiring (`tool_ids`) and `platform_settings.testing.attached_tests` after any agent write, since careless writes can silently reset them. Prefer round-tripping the *live* config (GET → surgical edit → PATCH) over pushing a locally-stored copy.
-- **Branch discipline:** make changes on a working branch, not the live one. `POST /v1/convai/agents/{agent_id}/branches` creates one; pass `branch_id` on reads/patches; merge via `POST /v1/convai/agents/{agent_id}/branches/{source_branch_id}/merge` once the suite is green. Traffic can be split between branches for staged rollout (start ~10%, watch, then promote).
+**Checkpoint:** present the full survey (including empty fields) and get confirmation before Phase 2.
 
 ## Phase 2 — Knowledge base
 
