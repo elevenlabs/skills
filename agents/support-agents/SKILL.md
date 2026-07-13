@@ -99,6 +99,8 @@ Either way, finish the phase by initializing the config repo (see "The config re
 
 ## Phase 1 — Intake survey
 
+The deliverable of this phase is `survey.md` in the config repo — record every answer there as you go, one section per subsection below, plus the agent/branch ids and channel from Phase 0. Keep a heading even when the answer is "none/unknown": empty fields are findings too, and this is the file you (and every later session) consult on each fix.
+
 ### 1.1 Languages
 
 English-only or reply-in-customer's-language? If multilingual, plan for it from the start (see the language section of [references/prompt-and-procedures.md](references/prompt-and-procedures.md)) — retrofitting language rules is much harder.
