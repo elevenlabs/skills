@@ -43,8 +43,11 @@ These are hard-won; follow them even when a shortcut looks faster.
 
 Keep the agent's config as files in a dedicated **git repository** — `git init` it in Phase 0. Files are what you and the user edit and review; the live agent is what's deployed; small sync scripts against the public API connect the two. This is what makes every change a reviewable diff, keeps history revertible independent of platform branches, and lets config survive across sessions and teammates.
 
+The recommended layout is two repos, one root: the user's **agent repo** is the working directory, and this **skills repo** lives inside it as a git submodule (`git submodule add https://github.com/elevenlabs/skills`). The submodule pins the guidance to a known version per project — pull refinements deliberately with `git submodule update --remote` — and everything user-specific stays in the agent repo, never inside the skills checkout. If the session started inside a clone of the skills repo instead, create the agent repo in Phase 0 and continue from there. (A plain sibling clone of the skills repo also works; it just doesn't record the pairing or the version.)
+
 ```
-support-agent/           # git init on day one
+support-agent/           # the user's own repo — git init on day one
+├── skills/              # this skills repo as a git submodule
 ├── survey.md            # intake answers (Phase 1)
 ├── agent.json           # top-level agent config; prompt referenced as a file, not inlined
 ├── prompt.md            # system prompt
@@ -95,7 +98,7 @@ curl -s -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
 - **Config PATCH gotchas:** GET returns the prompt block with both resolved `tools` and `tool_ids` — strip `tools` before PATCHing the config back or the API rejects it; and always re-verify tool wiring (`tool_ids`) and `platform_settings.testing.attached_tests` after any agent write, since careless writes can silently reset them. Prefer round-tripping the *live* config (GET → surgical edit → PATCH) over pushing a locally-stored copy.
 - **Branch discipline:** make changes on a working branch, not the live one. `POST /v1/convai/agents/{agent_id}/branches` creates one; pass `branch_id` on reads/patches; merge via `POST /v1/convai/agents/{agent_id}/branches/{source_branch_id}/merge` once the suite is green. Traffic can be split between branches for staged rollout (start ~10%, watch, then promote).
 
-Either way, finish the phase by initializing the config repo (see "The config repo" above) and committing the materialized config — prompt, tools, attached tests, KB references — as the baseline.
+Either way, finish the phase by initializing the config repo (see "The config repo" above) — the agent repo as the working root, this skills repo added as a submodule — and committing the materialized config (prompt, tools, attached tests, KB references) as the baseline.
 
 ## Phase 1 — Intake survey
 
