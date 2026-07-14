@@ -246,6 +246,26 @@ Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaul
 | `skip_turn` | Tutoring / coaching (silent listening) |
 | `voicemail_detection` | Outbound calling |
 | `play_keypad_touch_tone` | IVR navigation |
+| `run_subagent` | Delegating one question to a dedicated specialist agent (e.g. KB research) |
+
+**`run_subagent`** calls out to one or more *separate agent objects* (not just another branch) and returns their reply as the tool result:
+
+```json
+"run_subagent": {
+    "type": "system", "name": "run_subagent", "params": {
+        "system_tool_type": "run_subagent",
+        "agents": [
+            {"agent_id": "agent_xxxx", "branch_id": "agtbrch_xxxx",
+             "description": "Answers ONE factual question against <product>'s knowledge base via its own multi-query RAG lookups. Call for any product/pricing/policy fact you aren't already certain of — never guess.",
+             "parameters": {"type": "object", "properties": {}, "required": []}}
+        ]
+    }
+}
+```
+
+- The model supplies an implicit `query`/question; there is no per-call model override — the target agent's own configured LLM and settings run the call.
+- `agents` can list more than one target; the calling model picks between them by reading each `description` — write it with the same precision as a tool description (what it answers, when to prefer it).
+- The target must be its own agent (create a small dedicated one — empty first message, no write tools, no procedures) since the tool can't point at a branch of the calling agent itself.
 
 ### Integration Tools
 
