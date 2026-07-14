@@ -183,7 +183,9 @@ context as a lazily evaluated JSON history object with user, agent, and tool ent
 
 MCP server configuration supports the same `pre_tool_speech`, `interruption_mode`, `execution_mode`, and
 `response_timeout_secs` controls at the server level, with per-tool overrides in
-`tool_config_overrides`. MCP timeouts default to 30 seconds and must be 5-300 seconds.
+`tool_config_overrides`. Set a per-tool `tool_call_sound` override to `"off"` to silence that tool
+while retaining the server default for other tools. MCP timeouts default to 30 seconds and must be
+5-300 seconds.
 
 **Note:** The default `api_schema.method` is `GET`. Always set `"method": "POST"` explicitly for webhook tools that send request bodies.
 

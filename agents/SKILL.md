@@ -120,6 +120,7 @@ const conversation = await Conversation.startSession({
   overrides: { asr: { keywords: ["ElevenLabs", "TechCorp"] } },
   onMessage: (msg) => console.log("Agent:", msg.message),
   onUserTranscript: (t) => console.log("User:", t.message),
+  onPing: (event) => console.log("Estimated latency:", event.ping_ms),
   onError: (e) => console.error(e)
 });
 ```
@@ -154,6 +155,7 @@ function App({ signedUrl }: { signedUrl: string }) {
   return (
     <ConversationProvider
       onError={(error) => console.error("Conversation error:", error)}
+      onPing={(event) => console.log("Estimated latency:", event.ping_ms)}
     >
       <Agent signedUrl={signedUrl} />
     </ConversationProvider>
@@ -247,6 +249,11 @@ Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaul
 | `voicemail_detection` | Outbound calling |
 | `play_keypad_touch_tone` | IVR navigation |
 
+`run_subagent` is a system tool for delegating a task to another configured agent. Add it to
+`conversation_config.agent.prompt.tools` with `params.system_tool_type: "run_subagent"` and an
+`agents` array. Each entry requires `agent_id` and `description`; `branch_id` and a JSON-schema
+`parameters` object are optional.
+
 ### Integration Tools
 
 Pre-built connectors managed by the platform. Create a connection with credentials, then attach via `tool_ids`:
@@ -294,6 +301,9 @@ Route conversations through discrete steps with branching logic. Define under th
 Include `position` (`{x, y}`) on every node so the editor renders cleanly. Start at `y=0`, put `end` at the bottom, and space branches horizontally at `x=-150` and `x=150`; suggested spacing is 200px vertical between levels and 300px horizontal between branches. Keep workflows to 4-7 nodes and always have a path to `end`.
 
 Use `entry_behavior` on `override_agent` nodes to choose whether a sub-agent speaks immediately (`generate_immediately`), waits for user input (`wait_for_user`), or lets the platform decide (`auto`).
+
+For nested agent transfers, set `enable_nesting` on a `standalone_agent` node and
+`return_when_nested` on an `end` node that should return control to the parent workflow.
 
 ## Guardrails
 
