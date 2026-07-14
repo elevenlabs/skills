@@ -114,7 +114,7 @@ This is the highest-leverage part of the interview. Read [references/ground-trut
 
 - an **authoritative code repository** (how the product actually behaves — billing logic, error codes, feature gating)
 - **existing support procedures / SOPs / macros** (how a human agent is told to handle each case)
-- a **help center / docs site** and a **pricing page**
+- a **help center / docs site** and a **pricing page** — and, per source, *where it lives*: already in the platform KB, in local files/repos you can read, or only on the public web (this decides the Phase 2 route)
 - **historical tickets or conversations** and how to access them:
   - their ticketing system's export (a local dump is ideal — ask how they can produce one)
   - or, if an ElevenLabs agent already handles traffic, pull conversations via `GET /v1/convai/conversations?agent_id=...` (paginate with `cursor`), then `GET /v1/convai/conversations/{conversation_id}` for full transcripts
@@ -134,10 +134,11 @@ Record the resulting hierarchy in `survey.md` — you will consult it on every f
 
 Read [references/knowledge-base.md](references/knowledge-base.md). Summary of the flow:
 
-1. Ingest the help center / docs / pricing sources (`POST /v1/convai/knowledge-base/url|file|text`), RAG-index them, attach to the agent.
-2. Keep the KB **wide** (the agent must eventually answer all query types) but **clean** — noisy or off-topic pages in a shared folder actively hurt retrieval.
-3. Verify facts the way the agent retrieves them, not by browsing the public site.
-4. Watch for JS-rendered pages (pricing pages are the classic case): a crawler often captures only navigation cruft. Verify what was actually ingested before trusting it.
+1. Establish where each source lives: the **platform KB** (preferred — ingest + RAG), **local files** (verify there, upload verified extracts), or a **web-only help center** that resists ingestion (facts get inlined into procedures — then audit them against the live articles on a cadence; the reference covers the audit and the web-only traps).
+2. Ingest what can be ingested (`POST /v1/convai/knowledge-base/url|file|text`), RAG-index, attach to the agent.
+3. Keep the KB **wide** (the agent must eventually answer all query types) but **clean** — noisy or off-topic pages in a shared folder actively hurt retrieval.
+4. Verify facts the way the agent retrieves them, not by browsing the public site.
+5. Watch for JS-rendered pages (pricing pages are the classic case): a crawler often captures only navigation cruft. Verify what was actually ingested before trusting it.
 
 ## Phase 3 — System prompt and procedures
 

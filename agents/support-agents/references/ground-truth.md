@@ -12,6 +12,8 @@ Rank the user's sources during intake and record the ranking in `survey.md`. A g
 4. **Historical tickets** — real scenarios plus what a human actually did. High value as *evidence*, but human replies go stale and contain mistakes: verify a ticket-only claim against policy or code before treating it as truth.
 5. **Sibling agents / competitor transcripts** — last resort for a product fact; handling policy does not transfer between products.
 
+The hierarchy ranks *authority*; it says nothing about *where* a source lives. Any of these can sit in the platform KB, in local files (an internal repo, a policy folder), or only on the public web — record the location next to the ranking in `survey.md`, because it changes how you verify: platform-KB facts are verified the way the agent retrieves them (see [knowledge-base.md](knowledge-base.md)), local files are read directly, and web-only sources are fetched fresh (beware JS-rendered pages and crawl noise — what you see in a browser is not what a crawler captured).
+
 Two rules on top of the ranking:
 
 - **Never average conflicting sources.** If the pricing page and the code disagree, that conflict is a real finding — surface it to the user and let them resolve it (often the finding is "your docs are stale," which is valuable on its own).
@@ -32,6 +34,7 @@ Ask, in the user's terms:
 - "Is there a code repository that's authoritative for how the product behaves? Can I read it from here?"
 - "Do you have written support procedures, SOPs, macros, or a human-agent playbook?"
 - "Where's your help center / docs / pricing page? Which of those is most current?"
+- "Where does each source live — already in the platform KB, in files/repos I can read, or only on the public web?"
 - "How can we get historical tickets or conversations? An export from your ticketing system? API access? If an ElevenLabs agent already answers traffic, I can pull its conversations."
 - "When sources disagree — say the docs and the app — which wins?"
 - "Who are the humans behind escalation, and what do they wish the agent told them in a handoff?"

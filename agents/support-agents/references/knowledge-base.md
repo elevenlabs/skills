@@ -1,5 +1,27 @@
 # Knowledge base — setup and RAG tuning
 
+## Where the knowledge lives
+
+Knowledge sources come in three shapes; establish per source at intake which one you have, because it decides the whole Phase 2 route:
+
+1. **Platform KB (preferred).** Ingest into the Agents Platform knowledge base and retrieve via RAG — single source of truth, refreshable crawls, retrieval you can inspect. Everything below assumes this route where possible.
+2. **Local files** — internal docs, policy files, or code that isn't public. These are ground-truth *research* material first: verify facts from them, then upload verified extracts as text documents when the agent should retrieve them. Never ingest raw internal material wholesale — anything in the KB can surface verbatim in a customer reply.
+3. **Web-only help center** — the knowledge exists only as public web articles and resists clean ingestion: no markdown export, raw crawls full of nav noise, or articles whose substance is screenshots. Teams in this spot usually end up **inlining facts into procedures** instead. That works, but it decays silently — pair it with the procedures-vs-source audit below, and re-try ingestion per article class (a custom parser for one help-center platform often unlocks the whole site).
+
+Web-only traps worth checking before you commit to a route:
+
+- **Image-heavy articles:** key facts living in screenshots don't survive text ingestion — transcribe what the image shows into the ingested text or the procedure, marked as such.
+- **Deflection pages poison retrieval:** help-center articles that conclude "contact support" rank high for exactly the questions the agent should answer, and retrieved chunks are hard to override from prompt/procedure text — so the agent starts telling customers to contact support. Exclude or clean deflection-style pages at ingest; the KB carries *facts*, procedures carry *handling*.
+
+## Auditing procedures against the source of truth
+
+Whenever facts are inlined in procedures (route 3, but also any inline fact from [the inline-vs-retrieval rule](#inline-facts-vs-retrieval)), they drift as the source changes. Run this audit on a cadence and after any known docs/policy change:
+
+1. Enumerate the factual claims in each procedure (prices, limits, step sequences, feature availability — anything checkable).
+2. Map each claim to its authoritative source (KB document, help-center article, code) — recording this mapping once makes every later audit cheap.
+3. Re-fetch the source and diff: stale, contradicted, or no-longer-covered claims are findings; so are new articles covering a topic no procedure handles.
+4. Propose the smallest updates one at a time through the normal review-diff-approve flow, each with a test where behavior changes.
+
 ## Setup
 
 1. **Ingest sources** identified in the intake survey:
