@@ -71,7 +71,6 @@ conversation_config={
         "stability": 0.5,
         "similarity_boost": 0.8,
         "speed": 1.0,
-        "optimize_streaming_latency": 3,
         "expressive_mode": True
     }
 }
@@ -84,7 +83,6 @@ conversation_config={
 | `stability` | float | `0.5` | 0-1, lower = more expressive |
 | `similarity_boost` | float | `0.8` | 0-1, higher = closer to original voice |
 | `speed` | float | `1.0` | 0.7-1.2, speech speed multiplier |
-| `optimize_streaming_latency` | int | - | 0-4, higher = faster but lower quality |
 | `expressive_mode` | bool | `true` | Enable expressive voice generation |
 | `agent_output_audio_format` | string | - | Output audio codec format |
 | `pronunciation_dictionary_locators` | array | - | Pronunciation overrides |
@@ -266,6 +264,7 @@ platform_settings={
 | Field | Type | Description |
 |-------|------|-------------|
 | `summary_language` | string | Language for conversation analysis outputs such as summaries, titles, evaluation rationales, and data collection rationales. If omitted, ElevenLabs infers it from the conversation. |
+| `auto_translate_transcript_to_app_language` | bool | Automatically translate a transcript to the viewer's application language when they open it |
 | `widget` | object | Hosted widget and shareable page configuration. See the widget table below for selected options. |
 | `auth` | object | Authentication and origin restrictions for agent access |
 | `call_limits` | object | Concurrency and daily usage limits |
@@ -273,6 +272,7 @@ platform_settings={
 | `privacy` | object | Recording, retention, and conversation history redaction settings |
 | `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
 | `topic_discovery` | object | Per-agent topic discovery configuration |
+| `sentiment_analysis` | object | Per-agent post-call sentiment analysis configuration |
 
 ### auth
 
@@ -612,11 +612,11 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | Root | `name`, `tags` |
 | `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables`, `text_behavior_overrides` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
-| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `optimize_streaming_latency`, `expressive_mode`, `enable_phoneme_tags` |
+| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
-| `platform_settings` | `summary_language`, `guardrails`, `privacy`, `topic_discovery` |
+| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
@@ -692,7 +692,7 @@ agent = client.conversational_ai.agents.create(
                 "max_tokens": 100
             }
         },
-        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5", "optimize_streaming_latency": 4},
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5"},
         "turn": {"turn_eagerness": "eager", "turn_timeout": 3}
     }
 )
