@@ -26,6 +26,10 @@ Other platforms have equivalents (Intercom assignment + snooze rules, Front tags
 - The reply is ONE message: no separate findings message before the escalation writes (double-reply).
 - Cross-cutting hand-off reply rules belong in the **system prompt**: by escalation time, the topic procedure that routed here may no longer be in context.
 
+## Partial eligibility: order the carve-out before the escalation
+
+When one request splits into an in-policy part and an out-of-policy part (e.g. the latest charge is refund-eligible, earlier ones need review), the failure mode under customer pressure is **escalate-everything**: the model hands the whole case to a human and the customer loses the self-serve resolution they were entitled to. Wording it as a preference ("handle the eligible part; escalate the rest if warranted") does not survive pushback — the model reads exception-pressure as the warrant. What works is an explicit ordering constraint at the point of action: *the eligible part's resolution step must be completed first, and the escalation writes for the remainder may only fire in a turn whose reply also carries the eligible part's deliverable.* That makes skipping the carve-out structurally impossible rather than merely discouraged.
+
 ## The internal note
 
 - Start with the customer's original issue, then what was checked and found — otherwise the model summarizes only the most recent step.

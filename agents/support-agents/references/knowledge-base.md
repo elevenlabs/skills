@@ -39,6 +39,7 @@ curl -s -X POST "https://api.elevenlabs.io/v1/convai/knowledge-base/text" \
 ```
 
 2. **RAG-index** documents (`POST /v1/convai/knowledge-base/{documentation_id}/rag-index`) and attach them to the agent's `knowledge_base` config. Record every document id and its source in `kb/sources.md`.
+   - **Text documents do not auto-index.** A text doc attached without an explicit rag-index call is a silent no-op: it shows in the agent's KB list but never appears in retrieval (`GET /v1/convai/knowledge-base/{documentation_id}/rag-index` returns empty `indexes`). Verify the index exists after every text upload — and audit any *past* "added a KB doc" fix for this, because the failure produces no error anywhere.
 3. **Refresh policy:** URL documents can be re-crawled (`POST /v1/convai/knowledge-base/{documentation_id}/refresh`). Decide per source whether it refreshes on a cadence or is regenerated manually, and write that down — stale pricing is the classic silent failure.
 
 ## Keep the KB wide, keep it clean
@@ -50,6 +51,14 @@ curl -s -X POST "https://api.elevenlabs.io/v1/convai/knowledge-base/text" \
 - **JS-rendered pages don't crawl.** Pricing pages are the canonical case: the crawler captures only navigation, never the prices. Two reliable alternatives:
   - render the content from the code/data that already defines it (impossible-by-construction drift) and upload as a text document on a schedule;
   - give the agent a deterministic read tool that GETs the document's content directly — `GET /v1/convai/knowledge-base/{documentation_id}/content` — instead of gambling on retrieval, with a procedure rule like "before quoting any price, call the pricing tool and quote only from its result."
+
+## Curated fact documents: one topic per document, phrased as the question
+
+When you add verified facts the crawled KB lacks (support-discovered gotchas, policy clarifications), the packaging decides whether they ever retrieve:
+
+- **A multi-topic "validated facts" document can lose retrieval outright.** Mixing unrelated facts dilutes the embedding — in one observed case even a near-verbatim query scored ~2x worse against the combined doc than the big crawled folders' chunks, so it never ranked, while splitting the same content into **one document per fact** made those queries rank #1 with no knob changes. (A different, shorter multi-fact doc in the same KB retrieved fine — the failure isn't universal, which is exactly why you probe rather than assume.)
+- **Title each document as the customer's question** ("Why is my emailed login code always expired?"), not as an internal label — retrieval is query-to-chunk similarity, and question-phrased docs sit closest to real customer queries.
+- Validate competitiveness, not just presence: probe with natural customer phrasings and check the fact's chunk actually wins against the rest of the KB (see "Verify facts the way the agent retrieves them" below).
 
 ## Retrieval knobs (and their limits)
 
