@@ -117,6 +117,7 @@ ALL_SKILLS = [
     "music",
     "voice-changer",
     "voice-isolator",
+    "dubbing",
     "setup-api-key",
 ]
 

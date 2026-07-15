@@ -1,0 +1,21 @@
+[
+  {"query": "I have a product demo video at ~/videos/demo.mp4 and want to dub it into Spanish and German with elevenlabs, keeping the original presenter's voice", "should_trigger": true},
+  {"query": "translate my podcast episode into French but keep it sounding like me — the file is ~/podcasts/ep42.mp3", "should_trigger": true},
+  {"query": "write a script that uploads a video to elevenlabs dubbing, waits for it to finish processing, and downloads the dubbed audio", "should_trigger": true},
+  {"query": "the spanish dub of our promo video has a mistranslated line, I need to fix just that one segment and regenerate the audio", "should_trigger": true},
+  {"query": "we're launching in the EU next month and need our onboarding videos localized into 5 languages, can you set that up with the elevenlabs api", "should_trigger": true},
+  {"query": "before translating my video I want to review and correct the auto-generated transcript, then kick off the japanese dub", "should_trigger": true},
+  {"query": "can u dub this video into hindi? its hosted at https://cdn.example.com/launch.mp4", "should_trigger": true},
+  {"query": "batch dub every mp4 in ~/content/tutorials into portuguese using the elevenlabs api", "should_trigger": true},
+  {"query": "my elevenlabs dubbing project has been stuck in queued for a while — write me a poller that checks status until it's ready and then adds italian", "should_trigger": true},
+  {"query": "transcribe this conference call recording and label who said what — there were 4 people on the call", "should_trigger": false},
+  {"query": "convert this paragraph of text into natural sounding spanish speech with a warm female voice", "should_trigger": false},
+  {"query": "translate this English marketing document to Japanese", "should_trigger": false},
+  {"query": "change the voice in this recording so it sounds like an old man instead of me", "should_trigger": false},
+  {"query": "generate subtitles with timestamps for my video at ~/clips/interview.mp4", "should_trigger": false},
+  {"query": "build a multilingual voice agent that can switch between english and spanish during customer calls", "should_trigger": false},
+  {"query": "remove the background music and isolate the speech in this video's audio track", "should_trigger": false},
+  {"query": "I already recorded a french voiceover myself — help me replace the audio track in the video using ffmpeg", "should_trigger": false},
+  {"query": "clone my voice and use it to read this german script aloud", "should_trigger": false},
+  {"query": "compose an upbeat instrumental backing track for my travel vlog", "should_trigger": false}
+]

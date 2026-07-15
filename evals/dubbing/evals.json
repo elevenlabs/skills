@@ -1,0 +1,44 @@
+{
+  "skill_name": "dubbing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script that dubs the video at ~/videos/promo.mp4 into Spanish using ElevenLabs. It should upload the file, wait for processing to finish, and download the final dubbed audio when it's done.",
+      "expected_output": "Python script driving the Dubbing Projects API end-to-end: create project, poll until ready, add Spanish, poll until completed, download output",
+      "files": [],
+      "expectations": [
+        "Creates a project via POST /v1/dubbing/project with a multipart file upload (not the legacy /v1/dubbing endpoint or SDK client.dubbing methods)",
+        "Sends the API key in the xi-api-key header from the ELEVENLABS_API_KEY environment variable",
+        "Polls GET /v1/dubbing/project/{project_id} until status is 'ready' (handles 'failed')",
+        "Adds Spanish via POST /v1/dubbing/project/{project_id}/language with target_language 'es'",
+        "Polls the language until status is 'completed'",
+        "Downloads the dubbed audio from the outputs.lossless_audio URL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an ElevenLabs dubbing project (id proj_1601kwkyxp0hfzvtmyxwqxx6mcy3) that just finished transcribing. Before I add any languages I want to fix a recurring transcription mistake: the product name should be 'Acme Cloud', not 'Acme Crowd'. Write a Python script that fetches the source transcript, finds every segment containing 'Acme Crowd', and corrects it.",
+      "expected_output": "Python script that reads the source transcript and PATCHes each offending segment's text",
+      "files": [],
+      "expectations": [
+        "Fetches the source transcript via GET /v1/dubbing/project/{project_id}/transcript",
+        "Iterates segments and matches those whose text contains the wrong phrase",
+        "Edits each matched segment via PATCH /v1/dubbing/project/{project_id}/transcript/segment/{segment_id} using the segment's id from the transcript response",
+        "Sends only the changed field in the PATCH body (just 'text'), not the full segment",
+        "Uses the xi-api-key header for authentication"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The Spanish dub of my ElevenLabs project has one bad translation. Project id is proj_1601kwkyxp0hfzvtmyxwqxx6mcy3, language id is lang_1001kwkyxp0je6ktn4knsfrasx5s, segment id is 0199a3f0-1c2d-7abc-8def-0123456789ab. Write a script that replaces that segment's translation with 'Bienvenido a nuestra última demostración de producto.', regenerates the dub, waits for it to finish, and downloads the new audio.",
+      "expected_output": "Script that edits the translation, triggers a regeneration, polls until complete, and downloads the fresh output",
+      "files": [],
+      "expectations": [
+        "Updates the translation via PATCH /v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id} with a 'translation' field in the JSON body",
+        "Triggers POST /v1/dubbing/project/{project_id}/language/{language_id}/transcript/regenerate",
+        "Polls the language status until it is 'completed' rather than using a single fixed sleep",
+        "Downloads the refreshed outputs.lossless_audio URL only after completion (the signed URL comes from re-fetching the language)"
+      ]
+    }
+  ]
+}
