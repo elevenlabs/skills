@@ -1,6 +1,6 @@
 # Installation
 
-The Dubbing Projects API is prerelease and REST-only for now — call the HTTP endpoints directly rather than using SDK helper methods. (The SDK's existing `client.dubbing` methods target the older v1 `/v1/dubbing` API, not `/v1/dubbing/project`.)
+Call the Dubbing Projects API endpoints directly over REST rather than using SDK helper methods — the SDK's existing `client.dubbing` methods target the older v1 `/v1/dubbing` API, not `/v1/dubbing/project`.
 
 ## cURL / REST API
 
@@ -59,7 +59,3 @@ Or use the `setup-api-key` skill for guided setup.
 | Variable | Description |
 |----------|-------------|
 | `ELEVENLABS_API_KEY` | Your ElevenLabs API key (required) |
-
-## Workspace Gating
-
-These endpoints are gated per workspace during the prerelease. If a call returns a "feature not available" error, the workspace hasn't been enabled for the Dubbing Projects API yet.

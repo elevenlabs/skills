@@ -2,7 +2,7 @@
 name: dubbing
 description: Dub audio and video into other languages using the ElevenLabs Dubbing API (dubbing_v2), preserving the original speakers' voices. Use when translating videos, podcasts, or recordings into other languages, localizing media content, reviewing or correcting dubbing transcripts and translations, or regenerating a dub after edits.
 license: MIT
-compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY). The Dubbing Projects API is prerelease and gated per workspace.
+compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY).
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
 ---
 
@@ -10,7 +10,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 Dub audio or video into other languages while preserving the original speakers' voices. Create a project from a file or URL, review and edit the source transcript, add one or more target languages, refine translations per segment, and regenerate outputs.
 
-> **Prerelease:** These endpoints are gated per workspace. A "feature not available" error means the workspace hasn't been enabled for the Dubbing Projects API yet. Use direct REST calls (shown below) — do **not** use the SDK's legacy `client.dubbing` methods, which target the older `/v1/dubbing` (v1) API, not `/v1/dubbing/project`.
+> **Important:** Use direct REST calls (shown below) — do **not** use the SDK's legacy `client.dubbing` methods, which target the older `/v1/dubbing` (v1) API, not `/v1/dubbing/project`.
 
 > **Setup:** See [Installation Guide](references/installation.md). Base URL is `https://api.elevenlabs.io`; send your API key in the `xi-api-key` header on every request.
 
@@ -153,7 +153,7 @@ const language = await fetch(`${API}/v1/dubbing/project/${project.project_id}/la
 | `source_url` | one of file/source_url | Public URL to fetch the source media from |
 | `source_language` | no | ISO 639 code (e.g. `en`). Omit to auto-detect — the detected language is reported on the source transcript's `language` field |
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
-| `model_id` | no | `dubbing_v2` (default and only model today; `dubbing_v1` support will follow) |
+| `model_id` | no | `dubbing_v2` (default) |
 | `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 100 terms of 200 chars each; repeat the field once per term in multipart |
 
 ## Editing the Source Transcript
@@ -216,7 +216,6 @@ You can add a language before the project is `ready` — it stays `queued` and s
 ## Error Handling
 
 - **401**: Invalid API key
-- **"feature not available"**: Workspace not enabled for the Dubbing Projects API (prerelease gating)
 - **409 Conflict** on regenerate: The project isn't `ready` or the language isn't settled (e.g. already generating) — wait and retry
 - **Expired download URL**: `outputs.lossless_audio` is signed and valid ~1 hour; re-fetch the language for a fresh URL
 

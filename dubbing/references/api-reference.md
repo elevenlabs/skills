@@ -1,10 +1,10 @@
 # Dubbing Projects API Reference
 
-Full endpoint-by-endpoint reference for the prerelease Dubbing Projects API.
+Full endpoint-by-endpoint reference for the Dubbing Projects API.
 
 - **Base URL:** `https://api.elevenlabs.io`
 - **Authentication:** `xi-api-key` header on every request
-- **Model:** `dubbing_v2` (default and only model today; `dubbing_v1` support will follow)
+- **Model:** `dubbing_v2` (default)
 - **Source size limit:** up to 3 GiB per source (upload or URL)
 
 ## Contents
@@ -218,7 +218,7 @@ JSON body:
 }
 ```
 
-A language can be added to a project that isn't `ready` yet — it stays `queued` and starts automatically once the project becomes `ready`. (The walkthrough also mentions a `target_language` shortcut on project create.)
+A language can be added to a project that isn't `ready` yet — it stays `queued` and starts automatically once the project becomes `ready`.
 
 **Language states:**
 
