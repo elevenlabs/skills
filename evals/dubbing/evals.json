@@ -8,6 +8,7 @@
       "files": [],
       "expectations": [
         "Creates a project via POST /v1/dubbing/project with a multipart file upload",
+        "Does not use the deprecated legacy /v1/dubbing endpoint (NOT '/v1/dubbing')",
         "Does not use the deprecated legacy dubbing SDK methods (NOT 'client.dubbing', NOT 'elevenlabs.dubbing')",
         "Sends the API key in the xi-api-key header from the ELEVENLABS_API_KEY environment variable",
         "Polls GET /v1/dubbing/project/{project_id} until status is 'ready' (handles 'failed')",

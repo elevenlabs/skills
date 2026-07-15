@@ -566,12 +566,16 @@ def extract_negative_terms(expectation: str) -> list[str]:
 
 
 def find_forbidden_reference(response_text: str, term: str) -> str | None:
-    """Detect an exact forbidden package reference in JS/package-manager contexts.
+    """Detect exact forbidden package, endpoint, or SDK method references.
 
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
     package names — those are forbidden as literal substrings anywhere in the response,
-    since import-context matching can't catch SDK method usage."""
+    since import-context matching can't catch SDK method usage. Terms starting with
+    '/' are API paths and match exact endpoints, not child routes."""
     escaped = re.escape(term)
+    if term.startswith("/"):
+        match = re.search(rf"(?i){escaped}(?![\w/-])", response_text)
+        return match.group(0) if match else None
     if "." in term:
         match = re.search(rf"(?i){escaped}", response_text)
         return match.group(0) if match else None
