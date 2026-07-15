@@ -5,7 +5,7 @@
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `file` | file | Yes | Audio or video file to transcribe |
-| `model_id` | string | Yes | `scribe_v2` (or legacy `scribe_v1`) for batch transcription |
+| `model_id` | string | Yes | `scribe_v2` for batch transcription |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
 | `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
