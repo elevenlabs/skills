@@ -7,7 +7,8 @@
       "expected_output": "Python script driving the Dubbing Projects API end-to-end: create project, poll until ready, add Spanish, poll until completed, download output",
       "files": [],
       "expectations": [
-        "Creates a project via POST /v1/dubbing/project with a multipart file upload (not the legacy /v1/dubbing endpoint or SDK client.dubbing methods)",
+        "Creates a project via POST /v1/dubbing/project with a multipart file upload",
+        "Does not use the deprecated legacy dubbing SDK methods (NOT 'client.dubbing', NOT 'elevenlabs.dubbing')",
         "Sends the API key in the xi-api-key header from the ELEVENLABS_API_KEY environment variable",
         "Polls GET /v1/dubbing/project/{project_id} until status is 'ready' (handles 'failed')",
         "Adds Spanish via POST /v1/dubbing/project/{project_id}/language with target_language 'es'",
