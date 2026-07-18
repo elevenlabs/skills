@@ -84,3 +84,36 @@ A merged platform-side change is not necessarily deployed — before enabling co
 ## Keep the human in the loop
 
 All agent-config changes are proposals until a human approves them: show the diff, explain the failing-conversation evidence behind it, apply after approval, and keep changes versioned (branches) so anything can be reverted. Every proposal carries its before/after test — that's what makes the review concrete.
+
+## Adherence at scale: put "every time" behaviors below the model
+
+Measured pattern (296-conversation prod audit, 2026-07): rules that must fire on EVERY turn drop at
+a stable rate when they live in prompt prose, no matter how clearly they're written. Concrete rates
+from one day of traffic on a claude-sonnet-4-6 / medium-reasoning agent:
+- "set ticket status after every follow-up reply" (stated twice in the prompt): dropped on ~19% of
+  follow-up turns — while the same behavior on turn 1, owned by a deterministic intake procedure,
+  was 251/251.
+- "never use an em dash" (rule + rewrite examples + pre-send scan instruction): violated in ~64% of
+  replies; adding examples moved the em dash to a different sentence.
+
+The lever ordering that follows:
+1. If a behavior must happen every time, make the PLATFORM do it (bundle status into the reply
+   delivery call, post-process style at the channel layer, deterministic procedure steps). Prompt
+   text caps out well below 100% adherence.
+2. If it can't move below the model, put it in the ONE place the model provably re-reads at the
+   moment it acts (a close-checklist immediately before reply rules), and make the checklist
+   exhaustive — a three-way close where the prompt lists only two legs teaches the model the third
+   leg is optional.
+3. Never diagnose "missing rule" before grepping the prompt: in the audited failures, the rule
+   already existed every single time.
+
+## Research subagents need mandatory provenance
+
+If the agent delegates KB lookups to a research subagent, an answer without citations WILL
+eventually be a confident hallucination that overrides the main agent's own correct reasoning
+(observed: a subagent invented a "discount only for new signups" rule contradicting the KB's
+proration doc; the main agent deferred to it over its own KB-grounded draft). Two-sided fix:
+- Subagent prompt: every factual claim must name the backing KB doc/URL; a claim with no named
+  source is replaced by "not covered in the KB"; an answer with no named source is invalid.
+- Main agent prompt: a subagent answer that cites no document is treated as "the KB doesn't cover
+  this" and never overrides a documented fact already in context.
