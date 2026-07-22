@@ -291,10 +291,12 @@ wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime
 ```
 
 Add repeated `keyterms` query parameters to bias recognition toward specific terms, and set
-`no_verbatim=true` to remove filler words, false starts, and disfluencies:
+`no_verbatim=true` to remove filler words, false starts, and disfluencies. Add repeated
+`secondary_languages` parameters with ISO-639-1 or ISO-639-3 codes when the audio may contain
+additional languages:
 
 ```
-wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&keyterms=ElevenLabs&keyterms=Scribe&no_verbatim=true
+wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&keyterms=ElevenLabs&keyterms=Scribe&secondary_languages=es&secondary_languages=fr&no_verbatim=true
 ```
 
 ### Message Format

@@ -6,6 +6,7 @@
 |-----------|------|----------|-------------|
 | `file` | file | Yes | Audio or video file to transcribe |
 | `model_id` | string | Yes | `scribe_v2` for batch transcription |
+| `token` | string | No | Single-use authentication token from `POST /v1/single-use-token/batch_scribe`. Alternative to API key or bearer authentication for frontend clients; expires after 15 minutes and is consumed on use. |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
 | `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
@@ -29,6 +30,21 @@
 | `additional_formats` | array | No | Export transcript as `docx`, `html`, `pdf`, `srt`, `txt`, or `segmented_json` |
 | `file_format` | string | No | `pcm_s16le_16` (for lower latency) or `other` (default) |
 | `enable_logging` | boolean | No | Set `false` for zero retention mode (enterprise only; default: `true`) |
+
+## Single-Use Token Authentication
+
+Generate a batch Scribe token on a trusted backend, then pass it as the `token` query parameter
+from the frontend. Do not expose the API key to the client.
+
+```bash
+TOKEN=$(curl -s -X POST \
+  "https://api.elevenlabs.io/v1/single-use-token/batch_scribe" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" | jq -r '.token')
+
+curl -X POST "https://api.elevenlabs.io/v1/speech-to-text?token=$TOKEN" \
+  -F "file=@audio.mp3" \
+  -F "model_id=scribe_v2"
+```
 
 ## Python Example
 
