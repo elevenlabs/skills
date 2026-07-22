@@ -27,6 +27,8 @@ Generate music from a text prompt or composition plan. Returns an audio stream.
 | `music_length_ms` | integer | No | Duration in milliseconds (3,000–600,000) when using `prompt`; if omitted, the model chooses. Returns an error if a composition plan is also provided. |
 | `model_id` | string | No | Music model. Defaults to `music_v1`. |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
+| `finetune_id` | string | No | ID of the music finetune to use for generation. |
+| `finetune_strength` | number | No | Finetune influence; defaults to `1` and is only meaningful with `finetune_id`. |
 | `respect_sections_durations` | boolean | No | Enforce exact `duration_ms` for each composition plan chunk. Ignored if using `music_v2` model. |
 | `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`; high-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`. |
 

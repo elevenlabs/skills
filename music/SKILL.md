@@ -69,10 +69,28 @@ curl -X POST "https://api.elevenlabs.io/v1/music" \
 | `music.compose_detailed_stream` | Stream audio plus composition plan, metadata, and optional word timestamps as Server-Sent Events |
 | `music.video_to_music` | Generate background music from one or more uploaded video files |
 | `music.upload` | Upload an audio file for later inpainting workflows, optionally extracting its composition plan or word-level timestamps |
+| `music.finetunes.list` | List accessible music finetunes |
+| `music.finetunes.create` | Train a music finetune from uploaded audio |
+| `music.finetunes.get` | Retrieve finetune status and metadata |
+| `music.finetunes.update` | Update finetune metadata or visibility |
+| `music.finetunes.delete` | Delete a music finetune |
 
 See [API Reference](references/api_reference.md) for full parameter details.
 
 `music.upload` is available to enterprise clients with access to the inpainting feature.
+
+## Music Finetunes
+
+Create a finetune from training audio with
+[`POST /v1/music/finetunes`](https://elevenlabs.io/docs/api-reference/music/finetunes/create),
+then poll the [get endpoint](https://elevenlabs.io/docs/api-reference/music/finetunes/get) until
+its status is `completed`. Pass the returned `id` as `finetune_id` when composing music.
+`finetune_strength` controls the influence and defaults to `1`.
+
+Use the [list](https://elevenlabs.io/docs/api-reference/music/finetunes/list),
+[update](https://elevenlabs.io/docs/api-reference/music/finetunes/update), and
+[delete](https://elevenlabs.io/docs/api-reference/music/finetunes/delete) endpoints to manage
+accessible finetunes.
 
 ## Video to Music
 

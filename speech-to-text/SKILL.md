@@ -54,6 +54,8 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 |----------|-------------|----------|
 | `scribe_v2` | State-of-the-art accuracy, 90+ languages | Batch transcription, subtitles, long-form audio |
 | `scribe_v2_realtime` | Low latency (~150ms) | Live transcription, voice agents |
+| `scribe_v2_realtime_turbo` | Realtime transcription variant | Live transcription |
+| `scribe_v2_realtime_lite` | Realtime transcription variant | Live transcription |
 
 ## Transcription with Timestamps
 
