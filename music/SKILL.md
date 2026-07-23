@@ -85,7 +85,6 @@ Create a finetune from training audio with
 [`POST /v1/music/finetunes`](https://elevenlabs.io/docs/api-reference/music/finetunes/create),
 then poll the [get endpoint](https://elevenlabs.io/docs/api-reference/music/finetunes/get) until
 its status is `completed`. Pass the returned `id` as `finetune_id` when composing music.
-`finetune_strength` controls the influence and defaults to `1`.
 
 Use the [list](https://elevenlabs.io/docs/api-reference/music/finetunes/list),
 [update](https://elevenlabs.io/docs/api-reference/music/finetunes/update), and
