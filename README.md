@@ -18,6 +18,7 @@ npx skills add elevenlabs/skills
 | [speech-to-text](./speech-to-text) | Transcribe audio files to text with timestamps |
 | [speech-engine](./speech-engine) | Add real-time voice conversations to a custom LLM or chat agent |
 | [agents](./agents) | Build conversational voice AI agents |
+| [agents/support-agents](./agents/support-agents) | Guided workflow for building, testing, and improving customer-support agents |
 | [sound-effects](./sound-effects) | Generate sound effects from text descriptions |
 | [music](./music) | Generate music tracks using AI composition |
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
