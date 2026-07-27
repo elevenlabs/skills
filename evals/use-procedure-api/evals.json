@@ -1,0 +1,43 @@
+{
+  "skill_name": "use-procedure-api",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a bash script using curl that creates a free-form procedure named 'Refund requests' on ElevenLabs agent agent_abc123, branch agtbranch_xyz789, and then publishes it. Do not run the script.",
+      "expected_output": "Bash script that POSTs a free-form procedure and then publishes the branch",
+      "files": [],
+      "expectations": [
+        "POSTs to a URL matching /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures with agent_abc123 and agtbranch_xyz789",
+        "Sends the xi-api-key header populated from the ELEVENLABS_API_KEY environment variable, never a literal key",
+        "Sends a JSON body containing name, type set to free_form, trigger, and content",
+        "Captures procedure_id from the create response before using it later",
+        "Publishes with a PATCH to /v1/convai/agents/agent_abc123 with branch_id as a query parameter"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Using the ElevenLabs REST API and curl, show me how to add a structured (deterministic) procedure to agent agent_abc123 on branch agtbranch_xyz789 and get it live. Do not run anything.",
+      "expected_output": "Curl commands covering structured validation, compile, and publish",
+      "files": [],
+      "expectations": [
+        "Uses type 'deterministic' with the procedure content passed as a JSON-encoded string",
+        "Calls the validate-structured-procedure endpoint or explains validating before saving",
+        "POSTs to the procedures/compile endpoint before publishing",
+        "Checks the compile response for errors and does not publish when errors are present",
+        "Sends the compiled workflow in the PATCH body to /v1/convai/agents/agent_abc123 along with branch_id"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I created a procedure on my ElevenLabs agent a minute ago, but GET /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id} returns 404. Explain why and show me the curl call that reads what I actually have.",
+      "expected_output": "Explanation of draft versus branch HEAD reads, plus the draft endpoint call",
+      "files": [],
+      "expectations": [
+        "Explains that the plain procedure endpoint reads branch HEAD and a newly created procedure is still an unpublished draft",
+        "Shows a GET against the /draft suffix of the procedure endpoint",
+        "Mentions that publishing the branch through the agent update endpoint makes the branch HEAD read succeed",
+        "Does not suggest retrying the create call to fix the 404"
+      ]
+    }
+  ]
+}

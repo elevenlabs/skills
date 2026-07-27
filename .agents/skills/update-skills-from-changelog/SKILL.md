@@ -52,6 +52,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `text-to-speech` | New/deprecated models, new TTS parameters, voice settings changes, output format changes, SDK method signature changes for `text_to_speech.convert()` |
 | `speech-to-text` | New transcription models, new parameters, changed response schemas, SDK method changes |
 | `agents` | New LLM providers/models, new tool types, new agent config fields, conversation config schema changes, new CLI commands, widget changes |
+| `use-procedure-api` | New or changed procedure endpoints, procedure request/response fields, procedure types, structured procedure validation rules, compile or publish behavior |
 | `sound-effects` | New generation parameters, model changes, SDK method changes |
 | `music` | New endpoints, new parameters, model changes |
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |
@@ -79,6 +80,7 @@ Skill directories:
 - `text-to-speech/` (`SKILL.md` plus `references/installation.md`, `references/streaming.md`, `references/voice-settings.md`)
 - `speech-to-text/` (`SKILL.md` plus `references/installation.md`, `references/transcription-options.md`, `references/realtime-server-side.md`, `references/realtime-client-side.md`, `references/realtime-commit-strategies.md`, `references/realtime-events.md`)
 - `agents/` (`SKILL.md` plus `references/installation.md`, `references/agent-configuration.md`, `references/client-tools.md`, `references/widget-embedding.md`, `references/outbound-calls.md`)
+- `use-procedure-api/` (`SKILL.md` only)
 - `sound-effects/` (`SKILL.md` plus `references/installation.md`)
 - `music/` (`SKILL.md` plus `references/installation.md`, `references/api_reference.md`)
 - `voice-isolator/` (`SKILL.md` plus `references/installation.md`)

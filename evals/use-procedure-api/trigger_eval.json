@@ -1,0 +1,20 @@
+[
+  {"query": "add a refund handling procedure to my elevenlabs agent using the REST API and publish it to the main branch", "should_trigger": true},
+  {"query": "I need to update the content of an existing procedure on my agents platform agent with curl, then publish the branch", "should_trigger": true},
+  {"query": "write a script that creates a deterministic structured procedure on my elevenlabs agent, compiles it, and publishes the workflow", "should_trigger": true},
+  {"query": "how do I discard the unpublished draft edits I made to an agent procedure and go back to what's on the branch?", "should_trigger": true},
+  {"query": "my agent procedure GET returns 404 right after I created it, what am I doing wrong with the elevenlabs procedure api", "should_trigger": true},
+  {"query": "remove a procedure from my elevenlabs agent branch and make sure the removal is actually published", "should_trigger": true},
+  {"query": "validate this structured procedure JSON against the elevenlabs agents platform before I save it", "should_trigger": true},
+  {"query": "read a specific historical version of an agent procedure by version_id from the convai api", "should_trigger": true},
+  {"query": "list every procedure on my elevenlabs agent's main branch and tell me which ones have unpublished draft changes", "should_trigger": true},
+  {"query": "generate speech from this text paragraph and save it as an mp3 file", "should_trigger": false},
+  {"query": "transcribe this recorded support call to text with speaker labels", "should_trigger": false},
+  {"query": "build a voice AI assistant that answers questions about our product docs", "should_trigger": false},
+  {"query": "embed the elevenlabs voice chat widget on my marketing site", "should_trigger": false},
+  {"query": "write a runbook document describing our internal refund procedure for the support team", "should_trigger": false},
+  {"query": "create a stored procedure in postgres that archives old orders", "should_trigger": false},
+  {"query": "set up a github actions workflow that runs our test suite on every pull request", "should_trigger": false},
+  {"query": "compose calming hold music for our phone system", "should_trigger": false},
+  {"query": "make an outbound call to a sales lead with my elevenlabs agent over twilio", "should_trigger": false}
+]
