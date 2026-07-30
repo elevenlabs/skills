@@ -113,7 +113,7 @@ ALL_SKILLS = [
     "speech-to-text",
     "speech-engine",
     "agents",
-    "use-procedure-api",
+    "agent-procedures",
     "sound-effects",
     "music",
     "voice-changer",
