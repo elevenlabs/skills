@@ -102,6 +102,15 @@ Until the ElevenLabs LiveKit server supports `/rtc/v1`, browser clients using We
 
 Use the pin when the app logs `/rtc/v1` 404s, `v1 RTC path not found`, or `could not establish pc connection` during session startup. This is a LiveKit server compatibility workaround for WebRTC sessions, not the ElevenLabs `connectionType: "websocket"` transport. Remove it after the upstream LiveKit server or SDK issue is fixed.
 
+**Authenticated WebRTC:** Request a session token from your backend. The response includes both
+the token and the conversation ID:
+```python
+session = client.conversational_ai.conversations.get_webrtc_token(
+    agent_id="your-agent-id",
+)
+print(session.token, session.conversation_id)
+```
+
 **Server-side (Python):** Get signed URL for client connection:
 ```python
 signed_url = client.conversational_ai.conversations.get_signed_url(
@@ -304,6 +313,14 @@ Use `entry_behavior` on `override_agent` nodes to choose whether a sub-agent spe
 
 For nested agent transfers, set `enable_nesting` on a `standalone_agent` node and
 `return_when_nested` on an `end` node that should return control to the parent workflow.
+
+### Procedures
+
+Use [procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures) to give an
+agent task-specific instructions selected by a trigger. Free-form procedures let the agent adapt
+the wording and order of natural-language instructions; structured procedures run an ordered list
+of typed steps consistently. Use workflows instead when you need explicit branching and control
+over each subagent.
 
 ## Guardrails
 
