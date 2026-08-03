@@ -43,7 +43,7 @@
         "Adds a server token endpoint that returns a conversation token to the browser, e.g. getWebrtcToken",
         "Does not expose ELEVENLABS_API_KEY to browser code",
         "Uses @elevenlabs/react or @elevenlabs/client for the browser session",
-        "Should request mic access, e.g. getUserMedia, before the session begins",
+        "Should request mic access, e.g. getUserMedia before the session begins",
         "Starts the session with conversationToken from the server token endpoint",
         "Shows overrides.agent.firstMessage or equivalent for the first spoken message"
       ]
