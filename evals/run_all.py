@@ -32,6 +32,7 @@ import os
 import queue
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -445,36 +446,54 @@ def run_functional_eval_for_skill(
         t0 = time.time()
         response_text = ""
         try:
-            result = subprocess.run(
+            # Popen + killpg instead of subprocess.run: cursor-agent can leave grandchildren
+            # holding the stdout pipe, and subprocess.run's timeout path then blocks forever
+            # in communicate(). start_new_session lets us kill the whole process group.
+            process = subprocess.Popen(
                 cmd,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=timeout,
                 cwd=str(eval_dir),
                 env=env,
+                start_new_session=True,
             )
+            try:
+                stdout_text, stderr_text = process.communicate(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    process.kill()
+                try:
+                    process.communicate(timeout=10)
+                except subprocess.TimeoutExpired:
+                    pass
+                raise
             elapsed = time.time() - t0
-            success = result.returncode == 0
+            success = process.returncode == 0
 
-            response_text = result.stdout
+            response_text = stdout_text
 
             # Save full response
             (eval_dir / "response.md").write_text(response_text)
-            if result.stderr:
-                (eval_dir / "stderr.txt").write_text(result.stderr)
+            if stderr_text:
+                (eval_dir / "stderr.txt").write_text(stderr_text)
 
             # Include output files in grading context
             grading_text = response_text
             outputs_dir = eval_dir / "outputs"
             if outputs_dir.is_dir():
-                for out_file in sorted(outputs_dir.iterdir()):
+                # Recursive: agents legitimately nest configs (e.g. outputs/agent_configs/*.json)
+                # and a top-level-only scan hides them from grading.
+                for out_file in sorted(outputs_dir.rglob("*")):
                     if out_file.is_file() and out_file.suffix in (
                         ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
                         ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
-                            grading_text += f"\n\n--- {out_file.name} ---\n{content}"
+                            grading_text += f"\n\n--- {out_file.relative_to(outputs_dir)} ---\n{content}"
                         except Exception:
                             pass
 
@@ -887,8 +906,10 @@ def main():
     # Set up output directory
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     if args.output_dir:
-        # Honor user-specified directory and allow reuse
-        output_dir = Path(args.output_dir)
+        # Honor user-specified directory and allow reuse. Resolve to an absolute path:
+        # functional evals pass eval_dir as both cwd and --workspace to cursor-agent,
+        # and a relative workspace would be re-resolved against that cwd (doubled path).
+        output_dir = Path(args.output_dir).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
     else:
         # Create a unique default directory to avoid mixing results from concurrent runs

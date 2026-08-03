@@ -13,7 +13,7 @@
   {"query": "generate a thunder and rain sound effect for my game's intro scene", "should_trigger": false},
   {"query": "compose a lo-fi hip hop track with chill vibes for my study playlist", "should_trigger": false},
   {"query": "build a voice AI agent that answers customer support questions over the phone", "should_trigger": false},
-  {"query": "how do I set up my ELEVENLABS_API_KEY environment variable on macOS?", "should_trigger": false},
+  {"query": "convert a batch of wav files to mp3 from the command line", "should_trigger": false},
   {"query": "trim the first 10 seconds off this mp3 and export it with ffmpeg", "should_trigger": false},
   {"query": "change the pitch of my vocal recording up by 3 semitones", "should_trigger": false},
   {"query": "normalize the loudness of this audio file to -16 LUFS for streaming", "should_trigger": false}

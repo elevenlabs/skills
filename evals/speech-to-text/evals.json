@@ -17,7 +17,7 @@
     },
     {
       "id": 2,
-      "prompt": "Transcribe a call recording with speaker diarization using ElevenLabs in Python. I need to know who said what — there were 3 people on the call. File is call.mp3.",
+      "prompt": "Write a Python script that transcribes a call recording (call.mp3) with speaker diarization using ElevenLabs. I need to know who said what — there were 3 people on the call.",
       "expected_output": "Python script with diarization enabled that outputs speaker-labeled text",
       "files": [],
       "expectations": [
