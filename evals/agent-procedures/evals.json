@@ -45,19 +45,18 @@
         "Produces JSON with a trigger and a non-empty steps array",
         "Uses an ask step with an instruction field to collect the order ID",
         "Uses a tool_call step carrying tool_id set to tool_abc123",
-        "Expresses the either/or outcome with a branch step pairing a condition with a non-empty steps list, rather than inventing an 'if' or 'else' step type"
+        "Expresses the either/or outcome with a branch step pairing a typed llm or expression condition object with a non-empty steps list, rather than using a bare string or inventing an 'if' or 'else' step type"
       ]
     },
     {
       "id": 5,
-      "prompt": "Using the ElevenLabs Python SDK, write a script that creates a free-form procedure on agent agent_abc123, branch agtbranch_xyz789, then compiles and publishes it. Do not run it.",
-      "expected_output": "Python script using the SDK procedures client, compiling before publishing",
+      "prompt": "Using the ElevenLabs Python SDK, write a script that creates and publishes a free-form procedure on agent agent_abc123, branch agtbranch_xyz789. Do not run it.",
+      "expected_output": "Python script using the SDK procedures client and publishing without compiling",
       "files": [],
       "expectations": [
         "Calls procedures.create with the body passed as request=CreateProcedureRequestModel",
-        "Calls procedures.compile before agents.update",
-        "Wraps procedures.compile in try/except BadRequestError and reads error.body",
-        "Publishes with agents.update, passing branch_id and workflow=compiled.workflow"
+        "Does not call procedures.compile because only a free-form procedure changed",
+        "Publishes with agents.update, passing branch_id and no workflow"
       ]
     },
     {
@@ -66,7 +65,7 @@
       "expected_output": "A drafts.update call sending the full procedure body",
       "files": [],
       "expectations": [
-        "Sends name, type, trigger and content together, since the draft update is a full replacement",
+        "Sends the current name, type, and trigger with the new content to preserve behavior during the replacement update",
         "Reads the current draft with procedures.drafts.get before writing the update"
       ]
     },

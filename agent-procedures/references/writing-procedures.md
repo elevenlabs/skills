@@ -1,27 +1,30 @@
 # Writing Procedures
 
-Read the docs before authoring procedure content. They are the source of truth for how procedures behave:
+Check the current documentation before authoring procedure content. Procedures are in Alpha, and the content schema may change:
 
 - [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) — what a procedure is, and when to use one instead of a workflow or the system prompt.
 - [Free-form procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures/free-form-procedures.md) — anatomy, inline references, and how to write triggers and content.
 - [Structured procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures/structured-procedures.md) — step types, branching, and the rules on branches.
 
-Procedures are in Alpha and the content schema is still changing. On conflict, take online documentation as source of truth.
+## Authoring Rules
 
-## Key Takeaways
-
-- A procedure is a `name`, a `trigger`, and `content`. The `trigger` and `content` are what the agent reads.
-- Pick the type before writing, because a procedure cannot be converted later. `free_form` is natural-language guidance the agent interprets and adapts, and is the only type that can reference knowledge base documents. `deterministic` is an ordered list of typed steps that runs the same way every time — identity verification, taking a payment.
-- The trigger carries the routing decision on its own. Keep triggers concrete and non-overlapping, write them from the user's perspective rather than as agent actions, and cover the phrasings users actually use: `When the user asks to refund, return, or get money back for an order` routes better than `When the user requests a refund`.
+- A procedure has a `name`, a `trigger`, and `content`. The agent uses the trigger for routing and reads the content when the procedure starts.
+- Use `free_form` for natural-language guidance that the agent can adapt. Only free-form procedures can reference knowledge base documents.
+- Use `deterministic` for ordered, typed steps that must run consistently, such as identity verification or payment collection.
+- Preserve the procedure type during routine updates unless the user explicitly requests a conversion.
+- Write concrete, non-overlapping triggers from the user's perspective. Cover likely phrasing: `When the user asks to refund, return, or get money back for an order` routes better than `When the user requests a refund`.
 - An empty `trigger` marks a sub-procedure that runs only when another procedure references it. Omit `trigger` entirely to derive one from the content.
 - Content is capped at 50,000 characters for both types.
-- Keep one procedure to one task, put tone and refusal policy in the system prompt, and extract steps shared across procedures into a procedure of their own.
+- Keep each procedure focused on one task. Put tone and refusal policy in the system prompt.
+- Extract steps shared across procedures into a separate procedure.
 
 ## Free-Form Content
 
-Write `content` as markdown: numbered steps for sequential actions, bullets for requirements within a step. Use the imperative, and say why a step matters where the reason generalizes to cases the steps do not enumerate.
+Write `content` as markdown. Use numbered steps for sequences and bullets for requirements within a step. Use the imperative. Explain a step's rationale only when it helps the agent handle cases the procedure does not enumerate.
 
-Reference a tool, knowledge base document, or another procedure inline. The `id` binds the reference and `name` is a readable label. An inline reference auto-attaches the resource; naming a tool in prose works only if it is already attached to the agent, so prefer the markup.
+Reference a tool, knowledge base document, or another procedure inline. The `id` binds the resource; `name` provides a readable label.
+
+An inline reference attaches the resource automatically. Naming a tool in prose works only when it is already attached to the agent, so prefer the markup.
 
 ```markdown
 1. Ask the user for their order ID.
@@ -32,24 +35,15 @@ Reference a tool, knowledge base document, or another procedure inline. The `id`
 6. Once the caller has no further questions, use [system_tool id="end_call" name="End call"].
 ```
 
-A reference in the `trigger` fires the procedure on a resource's output, for example `When get_user returns tier 'gold'`.
+A trigger can reference a resource's output, for example `When get_user returns tier 'gold'`.
 
 ## Structured Content
 
-Set `content` to a JSON string holding a `trigger` and a non-empty `steps` array. Each step is an object discriminated by `type`. Every type enforces its own behavior, so the instruction text rarely needs to restate it.
+Set `content` to a serialized JSON object containing a `trigger` and a non-empty `steps` array. Each step is an object discriminated by `type`. The step type defines its behavior, so its instruction rarely needs to restate that behavior.
 
-| `type` | Dashboard | Fields | What it does |
-|--------|-----------|--------|--------------|
-| `ask` | Ask | `instruction` | Asks the user and waits for an answer. |
-| `tell` | Tell | `instruction` | Agent composes one message conveying the instruction. |
-| `say` | Say | `message` | Agent speaks the message verbatim. |
-| `tool_call` | Tool | `tool_id`, `tool_name`, optional `instruction` | Runs one tool. |
-| `branch` | If | `branches`, optional `fallback` | First-match-wins conditional. |
-| `system_tool` | — | `system_tool_name` | Runs a system tool, such as `end_call`. |
+Each entry in `branches` pairs a `condition` with its own `steps`. A condition is either an LLM condition such as `{"type": "llm", "condition": "the caller has no order ID"}` or an expression over dynamic variables such as `{"type": "expression", "expression": ...}`.
 
-Each entry in `branches` pairs a `condition` with its own `steps`. A condition is either natural language, `{"type": "llm", "condition": "the caller has no order ID"}`, or an expression over dynamic variables, `{"type": "expression", "expression": ...}`.
-
-Which steps may follow which, and how they may be combined, is documented on the structured procedures page and enforced when you compile. Read that page rather than guessing. When you are writing against a live agent, save the draft and let compile find what the schema rejects — `SKILL.md` has that loop.
+Use the structured procedures documentation for current step types, fields, and valid combinations. To validate against a live agent, save the draft and compile it. Fix every reported error before publishing; `SKILL.md` describes the loop.
 
 ```json
 {
@@ -74,7 +68,7 @@ Which steps may follow which, and how they may be combined, is documented on the
 
 ## Building the Content String
 
-`content` carries the JSON as a string, so serialize an object rather than hand-escaping quotes.
+Serialize the object before assigning it to `content`; do not hand-escape quotes.
 
 ### Python
 
