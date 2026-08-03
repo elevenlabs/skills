@@ -446,9 +446,10 @@ def run_functional_eval_for_skill(
         t0 = time.time()
         response_text = ""
         try:
-            # Popen + killpg instead of subprocess.run: cursor-agent can leave grandchildren
+            # Popen + group kill instead of subprocess.run: cursor-agent can leave grandchildren
             # holding the stdout pipe, and subprocess.run's timeout path then blocks forever
-            # in communicate(). start_new_session lets us kill the whole process group.
+            # in communicate(). On POSIX, start_new_session lets us kill the whole process
+            # group; on Windows, taskkill /T kills the process tree instead.
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -456,15 +457,21 @@ def run_functional_eval_for_skill(
                 text=True,
                 cwd=str(eval_dir),
                 env=env,
-                start_new_session=True,
+                start_new_session=(os.name != "nt"),
             )
             try:
                 stdout_text, stderr_text = process.communicate(timeout=timeout)
             except subprocess.TimeoutExpired:
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except (ProcessLookupError, PermissionError):
-                    process.kill()
+                if os.name == "nt":
+                    subprocess.run(
+                        ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                        capture_output=True,
+                    )
+                else:
+                    try:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    except (ProcessLookupError, PermissionError):
+                        process.kill()
                 try:
                     process.communicate(timeout=10)
                 except subprocess.TimeoutExpired:
