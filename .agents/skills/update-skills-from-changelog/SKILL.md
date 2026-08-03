@@ -52,7 +52,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `text-to-speech` | New/deprecated models, new TTS parameters, voice settings changes, output format changes, SDK method signature changes for `text_to_speech.convert()` |
 | `speech-to-text` | New transcription models, new parameters, changed response schemas, SDK method changes |
 | `agents` | New LLM providers/models, new tool types, new agent config fields, conversation config schema changes, new CLI commands, widget changes |
-| `agent-procedures` | New or changed procedure endpoints, procedure request/response fields, procedure types, structured procedure validation rules, compile or publish behavior |
+| `agent-procedures` | New or changed procedure endpoints, procedure request/response fields, procedure types, structured procedure validation rules, compile or publish behavior, SDK method changes under `conversational_ai.agents.procedures` or `conversationalAi.agents.procedures` |
 | `sound-effects` | New generation parameters, model changes, SDK method changes |
 | `music` | New endpoints, new parameters, model changes |
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |

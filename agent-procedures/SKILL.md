@@ -1,14 +1,14 @@
 ---
 name: agent-procedures
-description: Manage ElevenLabs Agents Platform procedures through the public REST API. Use when creating, listing, reading, updating, discarding, compiling, publishing, versioning, or removing free-form or structured agent procedures.
+description: Manage ElevenLabs Agents Platform procedures through the Python and JavaScript SDKs or the public REST API. Use when creating, listing, reading, updating, discarding, compiling, publishing, versioning, or removing free-form or structured agent procedures.
 license: MIT
-compatibility: Requires internet access, curl, jq, and an ElevenLabs API key (ELEVENLABS_API_KEY).
+compatibility: Requires internet access, an ElevenLabs API key (ELEVENLABS_API_KEY), and either an ElevenLabs SDK (2.60.0 or newer) or curl and jq.
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
 ---
 
 # ElevenLabs Agent Procedures
 
-Procedures are reusable instruction blocks that an agent starts when a trigger matches. Create, edit, compile, and publish them over the public REST API with `curl`. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent starts when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or over the public REST API with `curl`. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 Procedures are in Alpha. The feature set and the content schema are still changing, and some changes may break. Check the reference pages above before relying on a detail here.
 
@@ -26,14 +26,158 @@ AUTH_HEADER="xi-api-key: $ELEVENLABS_API_KEY"
 
 Never print or persist the API key.
 
+## SDKs
+
+Procedures reached both SDKs in `2.60.0`. Earlier versions have no `procedures` client at all, so install at or above that version:
+
+```bash
+pip install "elevenlabs>=2.60.0"
+npm install @elevenlabs/elevenlabs-js@^2.60.0
+```
+
+For JavaScript, use `@elevenlabs/elevenlabs-js`. The unscoped `elevenlabs` npm package is the deprecated v1.x and has no procedures client at any version.
+
+Both clients read `ELEVENLABS_API_KEY` from the environment; never pass a literal key.
+
+Every procedure endpoint has a method. Python nests them under `client.conversational_ai.agents`, JavaScript under `client.conversationalAi.agents`:
+
+| Operation | Endpoint | Method |
+|-----------|----------|--------|
+| List | `GET .../procedures` | `procedures.list` |
+| Create | `POST .../procedures` | `procedures.create` |
+| Read branch HEAD | `GET .../procedures/{procedure_id}` | `procedures.get` |
+| Read draft | `GET .../procedures/{procedure_id}/draft` | `procedures.drafts.get` |
+| Update draft | `PATCH .../procedures/{procedure_id}/draft` | `procedures.drafts.update` |
+| Discard draft | `DELETE .../procedures/{procedure_id}/draft` | `procedures.drafts.delete` |
+| Remove | `DELETE .../procedures/{procedure_id}` | `procedures.remove` |
+| Compile | `POST .../procedures/compile` | `procedures.compile` |
+| Publish | `PATCH /v1/convai/agents/{agent_id}?branch_id=...` | `agents.update` |
+
+How arguments are passed differs by language, and in Python by method:
+
+- JavaScript takes the IDs positionally, then a body object. Python takes keyword arguments — except `procedures.create`, which takes its body as `request=CreateProcedureRequestModel(...)`. Flat keywords on `create` raise `TypeError`.
+- `procedures.drafts.update` omits `trigger` from the request when you leave it out, and the PATCH is a full replacement. Send `name`, `type`, `trigger`, and `content` on every call.
+- Read one historical version with `procedures.get(..., version_id=...)` or `procedures.get(agentId, branchId, procedureId, { versionId })`.
+- Publish with `agents.update`, passing the compile response's `workflow` straight through.
+
+The flow below creates a free-form procedure, edits its draft, and publishes it.
+
+### Python
+
+```python
+from elevenlabs import ElevenLabs
+from elevenlabs.types import CreateProcedureRequestModel
+
+client = ElevenLabs()
+procedures = client.conversational_ai.agents.procedures
+
+created = procedures.create(
+    agent_id=AGENT_ID,
+    branch_id=BRANCH_ID,
+    request=CreateProcedureRequestModel(
+        name="Refund requests",
+        type="free_form",
+        trigger="When the user asks for a refund",
+        content="Confirm the order number, check eligibility, and explain the next step.",
+    ),
+)
+
+draft = procedures.drafts.get(
+    agent_id=AGENT_ID, branch_id=BRANCH_ID, procedure_id=created.procedure_id
+)
+procedures.drafts.update(
+    agent_id=AGENT_ID,
+    branch_id=BRANCH_ID,
+    procedure_id=created.procedure_id,
+    name=draft.name,
+    type="free_form",
+    trigger=draft.trigger,
+    content="Confirm the order number. Check refund eligibility. Explain the refund timeline.",
+)
+
+client.conversational_ai.agents.update(
+    agent_id=AGENT_ID,
+    branch_id=BRANCH_ID,
+    version_description="Publish refund procedure",
+)
+```
+
+When the publish changed structured procedures, compile first and pass the result:
+
+```python
+from elevenlabs.errors import BadRequestError
+
+try:
+    compiled = procedures.compile(agent_id=AGENT_ID, branch_id=BRANCH_ID)
+except BadRequestError as error:
+    print(f"Compile failed, nothing published: {error.body}")
+    raise
+
+client.conversational_ai.agents.update(
+    agent_id=AGENT_ID,
+    branch_id=BRANCH_ID,
+    workflow=compiled.workflow,
+    version_description="Publish refund procedure",
+)
+```
+
+### JavaScript
+
+```javascript
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient();
+const procedures = client.conversationalAi.agents.procedures;
+
+const created = await procedures.create(agentId, branchId, {
+  name: "Refund requests",
+  type: "free_form",
+  trigger: "When the user asks for a refund",
+  content: "Confirm the order number, check eligibility, and explain the next step.",
+});
+
+const draft = await procedures.drafts.get(agentId, branchId, created.procedureId);
+await procedures.drafts.update(agentId, branchId, created.procedureId, {
+  name: draft.name,
+  type: "free_form",
+  trigger: draft.trigger,
+  content: "Confirm the order number. Check refund eligibility. Explain the refund timeline.",
+});
+
+await client.conversationalAi.agents.update(agentId, {
+  branchId,
+  versionDescription: "Publish refund procedure",
+});
+```
+
+When the publish changed structured procedures, compile first and pass the result:
+
+```javascript
+import { ElevenLabsError } from "@elevenlabs/elevenlabs-js";
+
+try {
+  const compiled = await procedures.compile(agentId, branchId);
+  await client.conversationalAi.agents.update(agentId, {
+    branchId,
+    workflow: compiled.workflow,
+    versionDescription: "Publish refund procedure",
+  });
+} catch (error) {
+  if (error instanceof ElevenLabsError && error.statusCode === 400) {
+    console.error("Compile or publish failed, nothing published:", error.body);
+  }
+  throw error;
+}
+```
+
 ## Key Facts
 
 - Procedures belong to an agent branch. Drafts are per user: you only ever read and write your own.
 - Create, update, discard, and remove act on your draft working set. Nothing reaches the live agent until you publish.
 - Publishing is not a procedure endpoint. It is `PATCH /v1/convai/agents/{agent_id}?branch_id=...`, and it versions every changed procedure draft on the branch at once.
 - Each branch pins every `procedure_id` to one published `version_id`, or to nothing while only a draft exists. That mapping is what `version_id` and `has_draft` report, and it is why a branch-HEAD read returns `404` until the procedure's first publish.
-- Compile before every publish that changed procedures. See Compile and Publish.
-- Structured content has no public dry-run endpoint. Save the draft first; compile is what validates it.
+- Compile before a publish that changed structured procedures. Free-form-only changes publish without it. See Compile and Publish.
+- Structured content has no dry-run. Save the draft, compile to validate it, and repair what compile reports. See Compile and Publish.
 - Draft writes are last-write-wins. Read the draft immediately before editing and avoid concurrent writers.
 
 Reads resolve against different sources:
@@ -43,61 +187,6 @@ Reads resolve against different sources:
 | `GET .../procedures/{procedure_id}` | Branch HEAD. `404` until the procedure's first publish. |
 | `GET .../procedures/{procedure_id}/draft` | Your draft, falling back to branch HEAD when you have none. |
 | `GET .../procedures/{procedure_id}?version_id=...` | One pinned, immutable historical version. |
-
-## Writing Procedures
-
-A procedure has a `name`, a `trigger`, and `content`. The `name` is a dashboard label and is never sent to the model, so it has no effect on behavior. The `trigger` and `content` are what the agent actually reads.
-
-Pick the type before writing, because a procedure cannot be converted later:
-
-- `free_form` — natural-language guidance the agent interprets and adapts. Use when wording and order can flex to the situation. Only this type can reference knowledge base documents.
-- `deterministic` — an ordered list of typed steps that runs the same way every time. Use when the steps must not vary, such as identity verification or taking a payment.
-
-Content is capped at 50,000 characters for both types.
-
-### Triggers
-
-The trigger is the only thing the agent sees when deciding whether to start a procedure, so it carries the routing decision on its own.
-
-- Keep triggers concrete and non-overlapping. `When the user asks to cancel a subscription` routes better than `When the user has a question about their account`.
-- Write from the user's perspective — what they ask for, not what the agent should do.
-- Cover the phrasings users actually use: `When the user asks to refund, return, or get money back for an order` beats `When the user requests a refund`.
-
-An empty `trigger` marks a sub-procedure that only runs when another procedure references it. Omit `trigger` entirely to derive one from the content instead.
-
-### Free-Form Content
-
-Write `content` as markdown — numbered steps for sequential actions, bullets for requirements within a step. To use a tool, knowledge base document, or another procedure, reference it inline:
-
-```markdown
-1. Ask the user for their order ID.
-2. Look it up with [tool id="tool_abc123" name="Get order"].
-3. Check the policy in [kb id="kb_def456" name="Refund policy"].
-4. If the caller needs a human, run [procedure id="agtprc_xyz789" name="Escalate"].
-5. When finished, use [system_tool id="end_call" name="End call"].
-```
-
-The `id` binds the reference; `name` is a readable label. An inline reference auto-attaches the resource. Naming a tool in plain prose only works if it is already attached to the agent, so prefer the markup.
-
-### Structured Steps
-
-Set `content` to a JSON string with a `trigger` and a non-empty `steps` array. Each step is an object discriminated by `type`:
-
-| `type` | Fields | Behavior |
-|--------|--------|----------|
-| `ask` | `instruction` | Asks the user and waits for a usable answer before advancing. |
-| `tell` | `instruction` | Agent composes one message conveying the instruction. |
-| `say` | `message` | Agent speaks the message verbatim. |
-| `tool_call` | `tool_id`, `tool_name`, optional `instruction` | Runs one tool. The agent does not speak during this step. |
-| `system_tool` | `system_tool_name` | Only `end_call` is supported, and it must be the last step. |
-| `branch` | `branches`, optional `fallback` | First-match-wins conditional. The dashboard calls this an If step. |
-
-Each entry in `branches` is `{"condition": ..., "steps": [...]}` with at least one step. A condition is either natural language, `{"type": "llm", "condition": "the caller has no order ID"}`, or an expression over dynamic variables, `{"type": "expression", "expression": ...}`. Conditions within one `branch` must all be the same kind; the API rejects a mix.
-
-- A `tool_call` only calls the tool. To speak about the result or branch on it, add a separate step after it. If the tool fails, the procedure stops there — add a `branch` when a failure needs handling.
-- A procedure cannot open with a `branch`, two `branch` steps cannot sit back to back, and a `branch` cannot nest inside another one.
-
-See [Writing Procedures](references/writing-procedures.md) for worked examples, a `jq` recipe for building the JSON, and guidance on writing content the agent follows reliably.
 
 ## List Procedures
 
@@ -113,9 +202,7 @@ Each entry carries `procedure_id`, `version_id`, `name`, `type`, `trigger`, and 
 
 The list does not include procedure content. Read a body with `GET .../procedures/{procedure_id}` or its `/draft` variant.
 
-## Free-Form Procedures
-
-### Create
+## Create
 
 ```bash
 CREATE_RESPONSE=$(
@@ -135,9 +222,9 @@ PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
 
 Fail if `procedure_id` is empty or null.
 
-See Writing Procedures for what belongs in `trigger` and `content`.
+A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](references/writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
 
-### Read and Update the Draft
+## Read and Update the Draft
 
 ```bash
 curl -fsS \
@@ -160,30 +247,30 @@ The draft update body is a full replacement. Send `name`, `type`, `trigger`, and
 
 Publish with the flow under Compile and Publish.
 
-## Structured Procedures
-
-Structured procedures use `type: "deterministic"` and carry their steps as a JSON string in `content`. The step schema and a `jq` recipe for building that string are in [Writing Procedures](references/writing-procedures.md). There is no public way to validate the JSON before it is saved; save the draft, then validate by compiling.
-
-### Create or Update
-
-Use the same create and draft-update endpoints as free-form procedures, with the steps JSON encoded as a string:
-
-```json
-{
-  "name": "Structured refund",
-  "type": "deterministic",
-  "trigger": "When the user asks for a refund",
-  "content": "{\"trigger\":\"When the user asks for a refund\",\"steps\":[{\"type\":\"ask\",\"instruction\":\"Ask for the order ID.\"},{\"type\":\"say\",\"message\":\"Your refund is on its way.\"}]}"
-}
-```
-
 ## Compile and Publish
 
-Publishing versions every changed procedure draft on the branch in a single call. Compile first.
+Publishing versions every changed procedure draft on the branch in a single call:
 
-Compiling turns the branch's current procedure set into the workflow the agent runs. Compile before every publish that changed procedures — including a publish that only touched free-form ones, and including the publish that removes your last structured procedure. Compiling is safe when the branch has no structured procedures and leaves a workflow you authored yourself intact, so there is no case where skipping it is the safer choice.
+```bash
+curl -fsS -X PATCH \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  "$API_BASE/agents/$AGENT_ID?branch_id=$BRANCH_ID" \
+  -d '{"version_description": "Publish refund procedure"}'
+```
+
+Compiling is the structured-procedure step, and only structured procedures need it. It turns the branch's structured drafts into workflow nodes and merges them into the agent's workflow, leaving a workflow you authored yourself in place. Free-form procedures are never compiled; the agent loads them from the published version at the start of a conversation, so a branch that only saw free-form edits publishes with the call above and no `workflow` in the body.
+
+Compile when the branch's structured procedures changed, including the publish that removes your last structured procedure — compiling is what strips the nodes an earlier compile generated for it.
 
 Compile needs a pending draft on the branch. With nothing staged it fails with `no_draft_to_compile`, which also means there is nothing to publish.
+
+Compiling is also the only way to validate structured content, and it validates what is saved rather than what you hand it, so author against saved drafts:
+
+1. Save the content as a draft. A draft that does not validate still saves.
+2. Compile. On `400`, `errors` is keyed by procedure ID, and each entry carries the `path` of the offending field and a message naming the step, such as `steps[0].ask.instruction` and `Step 1: Ask step requires an instruction`.
+3. Repair every entry and compile again. One compile reports all the failures it reached, but clearing field-level errors can expose structural ones behind them, which report against the procedure rather than a field. Iterate until compile returns a workflow.
+4. Publish, sending that `workflow` with the publish.
 
 ```bash
 COMPILE_RESPONSE=$(
@@ -195,9 +282,11 @@ COMPILE_ERRORS=$(printf '%s' "$COMPILE_RESPONSE" | jq -c '.errors // empty')
 WORKFLOW=$(printf '%s' "$COMPILE_RESPONSE" | jq -c '.workflow')
 ```
 
-A successful compile returns `200` with `workflow`. Validation failure returns `400` with `errors` keyed by procedure ID and no workflow. If `COMPILE_ERRORS` is non-empty, report the errors and stop. Otherwise fail if `workflow` is null.
+A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow. Do not publish while `COMPILE_ERRORS` is non-empty — repair and recompile — and fail if `workflow` is null.
 
-Publish the compiled workflow and the procedure drafts together:
+Through an SDK the same failure raises rather than handing back a body to inspect, so the check becomes a `try`/`except` around `procedures.compile`. See SDKs for that flow and Error Handling for what the exception carries.
+
+Publish the compiled workflow and the structured drafts together:
 
 ```bash
 PUBLISH_BODY=$(
@@ -214,7 +303,7 @@ curl -fsS -X PATCH \
   -d "$PUBLISH_BODY"
 ```
 
-Send `workflow` on every publish that changed procedures. Omit it and the compile result is thrown away — the new version keeps the previously published workflow, which is the stale one the recompile was meant to replace.
+Send `workflow` on every publish that changed structured procedures. Omit it and the compile result is thrown away — the new version keeps the previously published workflow, which is the stale one the recompile was meant to replace.
 
 Verify a published procedure and record its `version_id`:
 
@@ -248,7 +337,7 @@ curl -fsS -X DELETE \
 
 This removes the procedure from the branch working set. It does not erase versions still referenced by agent history.
 
-The removal is staged, not live. Publish it with the flow under Compile and Publish, then confirm the procedure is absent from the list and that a branch-HEAD lookup of it returns `404`.
+The removal is staged, not live. Publish it as described under Compile and Publish — removing a structured procedure needs a compile, since that is what strips the nodes it generated — then confirm the procedure is absent from the list and that a branch-HEAD lookup of it returns `404`.
 
 ## Error Handling
 
@@ -258,6 +347,8 @@ Common errors:
 - **401**: `ELEVENLABS_API_KEY` is unset or invalid.
 - **403**: the key lacks `CONVAI_READ`/`CONVAI_WRITE`, the agent role is too low, or the branch is protected and only admins may publish to it.
 - **404**: verify that the agent, branch, and procedure IDs belong together. Before a procedure's first publish, read the draft endpoint rather than branch HEAD.
+
+The SDKs raise on every one of these instead of returning a body to inspect. The payload is on `error.body`, and the status on `error.status_code` in Python or `error.statusCode` in JavaScript.
 
 Do not blindly retry create, update, delete, or publish requests. Read current state before deciding whether a retry is safe.
 
