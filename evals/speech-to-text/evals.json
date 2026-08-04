@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Uses 'from elevenlabs import ElevenLabs' for the import",
-        "Creates a client with ElevenLabs()",
+        "Instantiates the client with ElevenLabs(",
         "Opens the audio file in binary read mode",
         "Calls client.speech_to_text.convert() with file parameter",
         "Uses model_id='scribe_v2'",

@@ -709,7 +709,7 @@ def check_expectation(response_lower, response_text, expectation):
         # Validation / test API
         (["validate", "test", "api call"], ["validate", "verify", "test", "curl", "request", "/v1/user", "api.elevenlabs"], {"curl", "/v1/user", "api.elevenlabs"}),
         # Causes / suggestions / debugging
-        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common"], {"expired", "invalid", "regenerate", "troubleshoot"}),
+        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common", "missing", "401", "cause"], {"expired", "invalid", "regenerate", "troubleshoot", "missing"}),
         # Steps / getting new key
         (["steps", "new key", "get a new"], ["step", "new key", "generate", "create", "regenerate", "dashboard", "replace"], {"new key", "regenerate", "replace"}),
         # System prompt

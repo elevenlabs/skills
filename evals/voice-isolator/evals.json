@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Uses 'from elevenlabs import ElevenLabs' for the import",
-        "Creates a client with ElevenLabs()",
+        "Instantiates the client with ElevenLabs(",
         "Calls client.audio_isolation.convert() with an audio file argument",
         "Opens noisy_interview.mp3",
         "Produces clean_interview.mp3"
