@@ -23,11 +23,11 @@ Before asking the user for a key, check for an existing `ELEVENLABS_API_KEY`:
    GET https://api.elevenlabs.io/v1/user
    Header: xi-api-key: <existing-api-key>
    ```
-4. **If existing key validation succeeds:**
+5. **If existing key validation succeeds:**
    - Tell the user ElevenLabs is already configured and working
    - Skip the setup flow
    - Ask whether they want to replace/rotate the key; if not, stop
-5. **If existing key validation fails:**
+6. **If existing key validation fails:**
    - Tell the user the existing key appears invalid or expired
    - Continue to Step 1
 

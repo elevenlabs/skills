@@ -1,6 +1,6 @@
 ---
 name: agents
-description: Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience.
+description: Build voice AI agents with ElevenLabs. Use when creating voice assistants, voice-based customer service bots, interactive voice characters, or any real-time voice conversation experience. Not for text-only chatbots with no voice component.
 license: MIT
 compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY).
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}

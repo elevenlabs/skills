@@ -4,7 +4,7 @@
   {"query": "set up a voice agent with the elevenlabs CLI for a restaurant reservation system that can check table availability", "should_trigger": true},
   {"query": "help me build an interactive voice character for my RPG game that responds to player questions in character", "should_trigger": true},
   {"query": "I need a voice assistant that can look up order status from our database and talk to customers about shipping", "should_trigger": true},
-  {"query": "configure an agent with gpt-4o as the LLM and add a webhook tool that calls our inventory API", "should_trigger": true},
+  {"query": "configure a voice agent with gpt-4o as the LLM and add a webhook tool that calls our inventory API", "should_trigger": true},
   {"query": "embed a voice chat widget on my website so visitors can talk to our AI assistant — using elevenlabs", "should_trigger": true},
   {"query": "make outbound calls to sales leads using an AI voice agent, need to integrate with our HubSpot", "should_trigger": true},
   {"query": "how do I add client-side tools to my elevenlabs agent so it can control the browser UI during a call", "should_trigger": true},

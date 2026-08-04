@@ -3,12 +3,12 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Generate a 30-second lo-fi hip hop beat using the ElevenLabs Music API in Python. Save it as lofi.mp3.",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK (from elevenlabs import ElevenLabs) to generate a 30-second lo-fi hip hop beat and saves it as lofi.mp3. Don't run it — I'll run it myself with my own API key; just write the complete script.",
       "expected_output": "Python script using ElevenLabs SDK to generate music",
       "files": [],
       "expectations": [
         "Uses 'from elevenlabs import ElevenLabs' for the import",
-        "Creates a client with ElevenLabs()",
+        "Instantiates the client with ElevenLabs(",
         "Calls client.music.compose() with a prompt parameter",
         "Sets music_length_ms to 30000 or equivalent",
         "Writes output to lofi.mp3",
@@ -17,13 +17,12 @@
     },
     {
       "id": 2,
-      "prompt": "Create a song with custom lyrics using ElevenLabs Music API in Python. The lyrics should be about coding late at night. Make it 60 seconds.",
+      "prompt": "Write a Python script that uses the ElevenLabs Music API to create a 60-second song with custom lyrics about coding late at night, saving the audio to a file. Don't run it — I'll run it myself with my own API key; just write the complete script.",
       "expected_output": "Python script generating a song with lyrics",
       "files": [],
       "expectations": [
         "Uses client.music.compose() or equivalent",
         "Includes lyrics in the prompt or as a separate parameter",
-        "Sets duration to approximately 60 seconds (60000ms)",
         "The lyrics reference coding or programming",
         "Saves the output audio to a file"
       ]

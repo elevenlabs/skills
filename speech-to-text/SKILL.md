@@ -184,8 +184,8 @@ Common errors:
 Monitor usage via `request-id` response header:
 
 ```python
-response = client.speech_to_text.convert.with_raw_response(file=audio_file, model_id="scribe_v2")
-result = response.parse()
+response = client.speech_to_text.with_raw_response.convert(file=audio_file, model_id="scribe_v2")
+result = response.data
 print(f"Request ID: {response.headers.get('request-id')}")
 ```
 
