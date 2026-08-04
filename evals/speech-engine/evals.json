@@ -27,7 +27,7 @@
         "Does NOT import from the deprecated 'elevenlabs' npm package",
         "Creates or uses a Node HTTP server",
         "Calls elevenlabs.speechEngine.attach or engine.attach with a speech engine ID and path /ws",
-        "Defines async onTranscript(transcript, signal, session)",
+        "Defines an async onTranscript callback receiving transcript and signal and session",
         "Passes the provided signal to the LLM/OpenAI request",
         "Calls session.sendResponse to return the reply to the session",
         "Starts listening on port 3001 or clearly shows where the HTTP server listens"

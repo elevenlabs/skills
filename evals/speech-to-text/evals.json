@@ -12,7 +12,7 @@
         "Opens the audio file in binary read mode",
         "Calls client.speech_to_text.convert() with file parameter",
         "Uses model_id='scribe_v2'",
-        "Prints or returns result.text"
+        "Prints the resulting text with print("
       ]
     },
     {

@@ -22,7 +22,6 @@
       "expectations": [
         "Checks the current ELEVENLABS_API_KEY environment variable or .env value without printing it",
         "Reports that ELEVENLABS_API_KEY is not configured and offers to validate the key after the user saves it in .env",
-        "Suggests common causes (expired key, wrong key, environment not loaded)",
         "Walks through creating a key at the ElevenLabs API keys page and saving it in .env",
         "Explicitly tells the user not to paste the API key into chat"
       ]
