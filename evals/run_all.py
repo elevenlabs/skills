@@ -49,6 +49,9 @@ EVALS_DIR = Path(__file__).parent
 CURSOR_AGENT_BIN = os.environ.get("CURSOR_AGENT", "cursor-agent")
 # Default GPT-5.4 tier (see `cursor-agent --list-models`).
 DEFAULT_CURSOR_MODEL = "gpt-5.4-medium"
+AUDIO_FILENAME_RE = re.compile(
+    r"(?<![\w.-])[\w.-]+\.(?:mp3|wav|mp4|m4a|flac|ogg|webm|aac)(?![\w.-])"
+)
 
 
 def _ensure_cursor_agent_available() -> None:
@@ -636,6 +639,14 @@ def check_expectation(response_lower, response_text, expectation):
         forbidden_match = find_forbidden_reference(response_text, term)
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
+
+    filename_terms = list(dict.fromkeys(AUDIO_FILENAME_RE.findall(exp_lower)))
+    if filename_terms:
+        missing_filenames = [
+            filename for filename in filename_terms if filename not in response_lower
+        ]
+        if missing_filenames:
+            return False, "Missing filename(s): %s" % ", ".join(missing_filenames)
 
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
