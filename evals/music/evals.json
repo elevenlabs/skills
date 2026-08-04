@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Write a Python script that generates a 30-second lo-fi hip hop beat using the ElevenLabs Music API and saves it as lofi.mp3. Don't run it — I'll run it myself with my own API key; just write the complete script.",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK (from elevenlabs import ElevenLabs) to generate a 30-second lo-fi hip hop beat and saves it as lofi.mp3. Don't run it — I'll run it myself with my own API key; just write the complete script.",
       "expected_output": "Python script using ElevenLabs SDK to generate music",
       "files": [],
       "expectations": [

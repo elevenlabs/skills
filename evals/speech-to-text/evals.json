@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Write a Python script to transcribe the audio file at ~/meeting.mp3 using ElevenLabs. I need the full text output.",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK (from elevenlabs import ElevenLabs) to transcribe the audio file at ~/meeting.mp3. I need the full text output.",
       "expected_output": "Python script using ElevenLabs SDK to transcribe audio",
       "files": [],
       "expectations": [
@@ -17,7 +17,7 @@
     },
     {
       "id": 2,
-      "prompt": "Write a Python script that transcribes a call recording (call.mp3) with speaker diarization using ElevenLabs. I need to know who said what — there were 3 people on the call.",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK to transcribe a call recording (call.mp3) with speaker diarization. I need to know who said what — there were 3 people on the call.",
       "expected_output": "Python script with diarization enabled that outputs speaker-labeled text",
       "files": [],
       "expectations": [
@@ -29,7 +29,7 @@
     },
     {
       "id": 3,
-      "prompt": "Write a Node.js script to transcribe an audio file using ElevenLabs and get word-level timestamps.",
+      "prompt": "Write a Node.js script that uses the ElevenLabs JS SDK (@elevenlabs/elevenlabs-js) to transcribe an audio file and get word-level timestamps.",
       "expected_output": "JavaScript script using ElevenLabs JS SDK with timestamp support",
       "files": [],
       "expectations": [

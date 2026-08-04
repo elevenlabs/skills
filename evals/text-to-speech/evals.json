@@ -18,7 +18,7 @@
     },
     {
       "id": 2,
-      "prompt": "Write a Node.js script that converts the text 'Bonjour le monde, bienvenue chez ElevenLabs' to French speech using ElevenLabs. Use their multilingual model. Save as bonjour.mp3.",
+      "prompt": "Write a Node.js script that uses the ElevenLabs JS SDK (@elevenlabs/elevenlabs-js) to convert the text 'Bonjour le monde, bienvenue chez ElevenLabs' to French speech. Use their multilingual model. Save as bonjour.mp3.",
       "expected_output": "A JavaScript/TypeScript script using the ElevenLabs JS SDK with multilingual model",
       "files": [],
       "expectations": [
