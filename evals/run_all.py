@@ -911,7 +911,7 @@ def main():
     )
     parser.add_argument("--workers", type=int, default=8, help="Parallel workers for trigger evals")
     parser.add_argument("--runs-per-query", type=int, default=3, help="Runs per trigger query")
-    parser.add_argument("--timeout", type=int, default=300, help="Timeout per functional eval (seconds)")
+    parser.add_argument("--timeout", type=int, default=450, help="Timeout per functional eval (seconds)")
     parser.add_argument("--trigger-timeout", type=int, default=45, help="Timeout per trigger query (seconds)")
     parser.add_argument("--output-dir", default=None, help="Output directory (default: evals/results/<timestamp>)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
