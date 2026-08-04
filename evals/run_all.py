@@ -442,6 +442,8 @@ def run_functional_eval_for_skill(
         ]
 
         env = dict(os.environ)
+        # Keep functional evals deterministic and avoid exposing a real user key to the nested agent.
+        env.pop("ELEVENLABS_API_KEY", None)
 
         t0 = time.time()
         response_text = ""
