@@ -10,9 +10,9 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 Dub audio or video into other languages while preserving the original speakers' voices. Create a project from a file or URL, review and edit the source transcript, add one or more target languages, refine translations per segment, and regenerate outputs.
 
-> **Important:** Use direct REST calls (shown below) — do **not** use the SDK's legacy `client.dubbing` methods, which target the older `/v1/dubbing` (v1) API, not `/v1/dubbing/project`.
+> **Important:** Use the Dubbing Projects API — `elevenlabs.dubbing.project.*` in the SDKs, or the `/v1/dubbing/project` REST endpoints. Do **not** use the legacy v1 dubbing surface (`client.dubbing.create()`, `client.dubbing.get()`, `client.dubbing.audio.get()`, or bare `/v1/dubbing` routes) — that is the older dubbing API, now under Legacy in the API reference.
 
-> **Setup:** See [Installation Guide](references/installation.md). Base URL is `https://api.elevenlabs.io`; send your API key in the `xi-api-key` header on every request.
+> **Setup:** See [Installation Guide](references/installation.md). REST base URL is `https://api.elevenlabs.io` with your API key in the `xi-api-key` header; the SDKs read `ELEVENLABS_API_KEY` automatically.
 
 ## Concepts
 
@@ -25,6 +25,8 @@ Dub audio or video into other languages while preserving the original speakers' 
 
 **Recommended order of operations:** finalize the source transcript **before** adding any languages. Translations are produced from the source, so correcting the source first means every language starts from the right text — editing the source after a language completes marks it `stale` and requires a (charged) regeneration.
 
+> **Enterprise:** Transcript editing and regeneration are available to enterprise workspaces only. Creating projects, adding languages, and downloading dubs work on all plans.
+
 ## Workflow
 
 1. **Create** the project from a file or URL → `queued`
@@ -35,6 +37,97 @@ Dub audio or video into other languages while preserving the original speakers' 
 6. **Refine** translations per segment if needed → the language goes `stale`
 7. **Regenerate** the language → `completed` again with fresh output
 
+## Quick Start (Python)
+
+```python
+import os
+import time
+import requests
+from elevenlabs.client import ElevenLabs
+
+elevenlabs = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+
+# 1. Create a project from a local file (or pass source_url=... instead of file)
+with open("promo.mp4", "rb") as f:
+    project = elevenlabs.dubbing.project.create(
+        file=f,
+        source_language="en",
+        reference="Q3 marketing video",
+    )
+
+# 2. Wait for the source media to be transcribed
+while True:
+    project = elevenlabs.dubbing.project.get(project.project_id)
+    if project.status == "ready":
+        break
+    if project.status == "failed":
+        raise RuntimeError("Project preparation failed")
+    time.sleep(5)
+
+# 3. Add a Spanish language target
+language = elevenlabs.dubbing.project.language.create(
+    project.project_id,
+    target_language="es",
+)
+
+# 4. Wait for the dub to finish generating
+while True:
+    language = elevenlabs.dubbing.project.language.get(
+        project.project_id, language.language_id
+    )
+    if language.status == "completed":
+        break
+    if language.status == "failed":
+        raise RuntimeError("Dub generation failed")
+    time.sleep(5)
+
+# 5. Download the dubbed audio (signed URL, valid ~1 hour — re-fetch the language for a fresh one)
+audio = requests.get(language.outputs.lossless_audio)
+with open("promo_es.wav", "wb") as f:
+    f.write(audio.content)
+```
+
+## Quick Start (JavaScript)
+
+```typescript
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { writeFile } from "fs/promises";
+
+const elevenlabs = new ElevenLabsClient();
+
+// 1. Create a project (sourceUrl shown; file upload is also supported)
+let project = await elevenlabs.dubbing.project.create({
+  sourceUrl: "https://example.com/promo.mp4",
+  sourceLanguage: "en",
+  reference: "Q3 marketing video",
+});
+
+// 2. Wait for the source media to be transcribed
+while (true) {
+  project = await elevenlabs.dubbing.project.get(project.projectId);
+  if (project.status === "ready") break;
+  if (project.status === "failed") throw new Error("Project preparation failed");
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+}
+
+// 3. Add a Spanish language target
+let language = await elevenlabs.dubbing.project.language.create(project.projectId, {
+  targetLanguage: "es",
+});
+
+// 4. Wait for the dub to finish generating
+while (true) {
+  language = await elevenlabs.dubbing.project.language.get(project.projectId, language.languageId);
+  if (language.status === "completed") break;
+  if (language.status === "failed") throw new Error("Dub generation failed");
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+}
+
+// 5. Download the dubbed audio from the signed URL
+const response = await fetch(language.outputs!.losslessAudio!);
+await writeFile("promo_es.wav", Buffer.from(await response.arrayBuffer()));
+```
+
 ## Quick Start (cURL)
 
 ```bash
@@ -42,8 +135,7 @@ Dub audio or video into other languages while preserving the original speakers' 
 curl -X POST "https://api.elevenlabs.io/v1/dubbing/project" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -F "file=@promo.mp4" \
-  -F "source_language=en" \
-  -F "reference=Q3 marketing video"
+  -F "source_language=en"
 # → {"project_id": "proj_...", "status": "queued", ...}
 
 # 2. Poll until status is "ready"
@@ -55,92 +147,10 @@ curl -X POST "https://api.elevenlabs.io/v1/dubbing/project/proj_.../language" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"target_language": "es"}'
-# → {"language_id": "lang_...", "status": "queued", ...}
 
 # 4. Poll the language until "completed", then download outputs.lossless_audio
 curl "https://api.elevenlabs.io/v1/dubbing/project/proj_.../language/lang_..." \
   -H "xi-api-key: $ELEVENLABS_API_KEY"
-```
-
-## Quick Start (Python, end-to-end)
-
-```python
-import os
-import time
-import requests
-
-API = "https://api.elevenlabs.io"
-HEADERS = {"xi-api-key": os.environ["ELEVENLABS_API_KEY"]}
-
-# 1. Create a project from a local file
-with open("promo.mp4", "rb") as f:
-    project = requests.post(
-        f"{API}/v1/dubbing/project",
-        headers=HEADERS,
-        files={"file": f},
-        data={"source_language": "en", "reference": "Q3 marketing video"},
-    ).json()
-project_id = project["project_id"]
-
-# 2. Poll until the project is ready (source fetched + transcribed)
-while True:
-    project = requests.get(f"{API}/v1/dubbing/project/{project_id}", headers=HEADERS).json()
-    if project["status"] == "ready":
-        break
-    if project["status"] == "failed":
-        raise RuntimeError("Project preparation failed")
-    time.sleep(5)
-
-# 3. Add a target language
-language = requests.post(
-    f"{API}/v1/dubbing/project/{project_id}/language",
-    headers=HEADERS,
-    json={"target_language": "es"},
-).json()
-language_id = language["language_id"]
-
-# 4. Poll the language until the dub completes
-while True:
-    language = requests.get(
-        f"{API}/v1/dubbing/project/{project_id}/language/{language_id}", headers=HEADERS
-    ).json()
-    if language["status"] == "completed":
-        break
-    if language["status"] == "failed":
-        raise RuntimeError("Dub generation failed")
-    time.sleep(5)
-
-# 5. Download the dubbed audio (signed URL, valid ~1 hour — re-fetch the language for a fresh one)
-audio = requests.get(language["outputs"]["lossless_audio"])
-with open("promo_es.wav", "wb") as f:
-    f.write(audio.content)
-```
-
-## Quick Start (JavaScript)
-
-```javascript
-import { readFileSync } from "fs";
-
-const API = "https://api.elevenlabs.io";
-const HEADERS = { "xi-api-key": process.env.ELEVENLABS_API_KEY };
-
-const form = new FormData();
-form.append("file", new Blob([readFileSync("promo.mp4")]), "promo.mp4");
-form.append("source_language", "en");
-
-const project = await fetch(`${API}/v1/dubbing/project`, {
-  method: "POST",
-  headers: HEADERS,
-  body: form,
-}).then((r) => r.json());
-
-// Poll project until ready, then add a language:
-const language = await fetch(`${API}/v1/dubbing/project/${project.project_id}/language`, {
-  method: "POST",
-  headers: { ...HEADERS, "Content-Type": "application/json" },
-  body: JSON.stringify({ target_language: "es" }),
-}).then((r) => r.json());
-// Poll the language until completed, then download outputs.lossless_audio
 ```
 
 ## Create Options
@@ -154,41 +164,83 @@ const language = await fetch(`${API}/v1/dubbing/project/${project.project_id}/la
 | `source_language` | no | ISO 639 code (e.g. `en`). Omit to auto-detect — the detected language is reported on the source transcript's `language` field |
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
 | `model_id` | no | `dubbing_v2` (default) |
+| `target_language` | no | Optionally queue the first language target at creation; add more with `language.create` |
 | `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 100 terms of 200 chars each; repeat the field once per term in multipart |
 
 ## Editing the Source Transcript
 
-Once the project is `ready`, read the transcript, then correct it before adding languages. Every edit bumps the project's `revision` (returned in each response). Each segment has a stable `id` used to edit or delete it.
+Once the project is `ready`, read the transcript, then correct it before adding languages. Every edit bumps the project's `revision`. Each segment has a stable `id` used to edit or delete it. (Enterprise workspaces only.)
+
+```python
+# Read the source transcript
+transcript = elevenlabs.dubbing.project.transcript.get(project_id)
+
+# Correct a segment's text — send only the fields to change (text, speaker_id, start_s, end_s)
+elevenlabs.dubbing.project.transcript.update_segment(
+    project_id,
+    segment_id=transcript.segments[0].id,
+    text="Welcome to our latest product demo.",
+)
+
+# Add a segment (reuse an existing speaker_id so it's dubbed with that speaker's voice)
+added = elevenlabs.dubbing.project.transcript.create_segment(
+    project_id,
+    text="Thanks for watching.",
+    speaker_id=transcript.segments[0].speaker_id,
+    start_s=40.0,
+    end_s=42.0,
+)
+
+# Delete a segment
+elevenlabs.dubbing.project.transcript.delete_segment(project_id, segment_id=added.segment.id)
+```
+
+Via REST: `GET /v1/dubbing/project/{project_id}/transcript`, then `PATCH .../transcript/segment/{segment_id}` with only the changed fields:
 
 ```bash
-# Read
-curl "https://api.elevenlabs.io/v1/dubbing/project/{project_id}/transcript" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY"
-
-# Edit a segment — send only the fields to change (text, speaker_id, start_s, end_s)
 curl -X PATCH "https://api.elevenlabs.io/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
   -d '{"text": "Welcome to our latest product demo."}'
 ```
 
-Add segments with `POST .../transcript/segment` (all of `text`, `speaker_id`, `start_s`, `end_s` required — reuse an existing `speaker_id` so the new line is dubbed with that speaker's voice) and delete with `DELETE .../transcript/segment/{segment_id}`.
-
 ## Refining Translations and Regenerating
 
-A language's transcript pairs each source segment with its `translation` (`null` = not yet translated). Edit a single translation, then regenerate:
+A language's transcript pairs each source segment with its `translation` (`null` = not yet translated; segment ids match the source). Edit a single translation, then regenerate. (Enterprise workspaces only.)
 
-```bash
-# Fix one translated segment (pass null to clear it and mark it for re-translation)
-curl -X PATCH "https://api.elevenlabs.io/v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"translation": "Bienvenido a nuestra última demostración de producto."}'
+```python
+# Read the language's translations
+target = elevenlabs.dubbing.project.language.transcript.get(project_id, language_id)
 
-# Regenerate the dub from the current transcript (charged like a generation) → 202 Accepted
-curl -X POST "https://api.elevenlabs.io/v1/dubbing/project/{project_id}/language/{language_id}/transcript/regenerate" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY"
+# Refine a single translation (pass translation=None to clear it and mark for re-translation)
+elevenlabs.dubbing.project.language.transcript.update_segment(
+    project_id,
+    language_id,
+    segment_id=target.segments[0].id,
+    translation="Bienvenido a nuestra última demostración de producto.",
+)
+
+# Regenerate the dub from the current transcript (charged like a generation)
+elevenlabs.dubbing.project.language.transcript.regenerate(project_id, language_id)
 ```
 
+Via REST: `PATCH /v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}` with `{"translation": "..."}`, then `POST .../language/{language_id}/transcript/regenerate` (returns `202 Accepted`).
+
 A translation edit affects only that language. After the edit, a `completed` language becomes `stale` — it keeps serving its previous output until you regenerate. Poll until `completed`; `output_revision` then equals `revision` and `outputs.lossless_audio` reflects the current transcript.
+
+## Dubbing into Multiple Languages
+
+Add one language target per language — each generates independently. Track them all with `language.list` instead of polling one by one:
+
+```python
+for lang in ["es", "fr", "de", "ja"]:
+    elevenlabs.dubbing.project.language.create(project_id, target_language=lang)
+
+while True:
+    result = elevenlabs.dubbing.project.language.list(project_id)
+    if not any(l.status in ("queued", "processing") for l in result.languages):
+        break
+    time.sleep(5)
+```
 
 ## States
 
@@ -211,15 +263,16 @@ A translation edit affects only that language. After the edit, a `completed` lan
 | `stale` | Previously completed, but the transcript changed; keeps the last output until regenerated |
 | `failed` | Generation failed |
 
-You can add a language before the project is `ready` — it stays `queued` and starts automatically once the project becomes `ready`. Adding a language accepts optional `model_id` (defaults to the project's) and `voice_settings` (e.g. `{"cloning_strength": 7}`, range 0–10).
+You can add a language before the project is `ready` — it stays `queued` and starts automatically once the project becomes `ready`. Adding a language accepts optional `model_id` (defaults to the project's) and `voice_settings` (e.g. `{"cloning_strength": 7}`, range 0–10, default 7 — controls how strongly dubbed speakers clone the source voices).
 
 ## Error Handling
 
 - **401**: Invalid API key
 - **409 Conflict** on regenerate: The project isn't `ready` or the language isn't settled (e.g. already generating) — wait and retry
 - **Expired download URL**: `outputs.lossless_audio` is signed and valid ~1 hour; re-fetch the language for a fresh URL
+- **Transcript editing / regeneration unavailable**: These endpoints are enterprise-only — on other plans, create the project with a finalized source and add languages directly
 
 ## References
 
 - [Installation Guide](references/installation.md)
-- [API Reference](references/api-reference.md) — every endpoint with full request/response schemas
+- [API Reference](references/api-reference.md) — every endpoint with full request/response schemas and SDK method names

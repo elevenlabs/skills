@@ -1,6 +1,41 @@
 # Installation
 
-Call the Dubbing Projects API endpoints directly over REST rather than using SDK helper methods — the SDK's existing `client.dubbing` methods target the older v1 `/v1/dubbing` API, not `/v1/dubbing/project`.
+The Dubbing Projects API is available in the official SDKs under `dubbing.project.*` and via REST at `/v1/dubbing/project`. The older `client.dubbing.*` methods (`create`, `get`, `audio.get`) are the **legacy v1 dubbing API** — do not use them for new work.
+
+## Python
+
+```bash
+pip install --upgrade elevenlabs requests
+```
+
+(`requests` is used to download the dubbed audio from the signed output URL.)
+
+```python
+import os
+from elevenlabs.client import ElevenLabs
+
+# Reads ELEVENLABS_API_KEY from the environment
+elevenlabs = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+
+page = elevenlabs.dubbing.project.list(page_size=20)
+```
+
+## JavaScript / TypeScript
+
+```bash
+npm install @elevenlabs/elevenlabs-js@latest
+```
+
+> **Important:** Always use `@elevenlabs/elevenlabs-js`. The old `elevenlabs` npm package (v1.x) is deprecated and should not be used.
+
+```javascript
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+
+// Reads ELEVENLABS_API_KEY from the environment
+const elevenlabs = new ElevenLabsClient();
+
+const page = await elevenlabs.dubbing.project.list({ pageSize: 20 });
+```
 
 ## cURL / REST API
 
@@ -17,32 +52,6 @@ curl -X POST "https://api.elevenlabs.io/v1/dubbing/project" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" \
   -F "file=@promo.mp4" \
   -F "source_language=en"
-```
-
-## Python
-
-Use `requests` (or `httpx`) against the REST API:
-
-```bash
-pip install requests
-```
-
-```python
-import os
-import requests
-
-HEADERS = {"xi-api-key": os.environ["ELEVENLABS_API_KEY"]}
-resp = requests.get("https://api.elevenlabs.io/v1/dubbing/project", headers=HEADERS)
-```
-
-## JavaScript / TypeScript
-
-Use the built-in `fetch` (Node 18+):
-
-```javascript
-const resp = await fetch("https://api.elevenlabs.io/v1/dubbing/project", {
-  headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY },
-});
 ```
 
 ## Getting an API Key

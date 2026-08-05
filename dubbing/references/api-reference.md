@@ -3,9 +3,11 @@
 Full endpoint-by-endpoint reference for the Dubbing Projects API.
 
 - **Base URL:** `https://api.elevenlabs.io`
-- **Authentication:** `xi-api-key` header on every request
+- **Authentication:** `xi-api-key` header on every request (the SDKs read `ELEVENLABS_API_KEY`)
+- **SDK:** `elevenlabs.dubbing.project.*` in Python and JavaScript (camelCase methods in JS). The older `client.dubbing.*` methods are the legacy v1 API — do not use them
 - **Model:** `dubbing_v2` (default)
 - **Source size limit:** up to 3 GiB per source (upload or URL)
+- **Enterprise:** transcript editing and regeneration endpoints are available to enterprise workspaces only
 
 ## Contents
 
@@ -19,23 +21,25 @@ Full endpoint-by-endpoint reference for the Dubbing Projects API.
 
 ## Endpoint quick reference
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/v1/dubbing/project` | Create a project (file or URL) |
-| GET | `/v1/dubbing/project` | List projects (paginated) |
-| GET | `/v1/dubbing/project/{project_id}` | Get a project |
-| DELETE | `/v1/dubbing/project/{project_id}` | Delete a project and its languages |
-| GET | `/v1/dubbing/project/{project_id}/transcript` | Get the source transcript |
-| PATCH | `/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}` | Edit a source segment |
-| POST | `/v1/dubbing/project/{project_id}/transcript/segment` | Add a source segment |
-| DELETE | `/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}` | Delete a source segment |
-| POST | `/v1/dubbing/project/{project_id}/language` | Add a language target |
-| GET | `/v1/dubbing/project/{project_id}/language` | List language targets (paginated) |
-| GET | `/v1/dubbing/project/{project_id}/language/{language_id}` | Get a language target |
-| DELETE | `/v1/dubbing/project/{project_id}/language/{language_id}` | Delete a language target |
-| GET | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript` | Get a language's transcript (translations) |
-| PATCH | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}` | Edit a translation |
-| POST | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript/regenerate` | Regenerate a language from its edited transcript |
+| Method | Path | Python SDK method | Purpose |
+|--------|------|-------------------|---------|
+| POST | `/v1/dubbing/project` | `dubbing.project.create` | Create a project (file or URL) |
+| GET | `/v1/dubbing/project` | `dubbing.project.list` | List projects (paginated) |
+| GET | `/v1/dubbing/project/{project_id}` | `dubbing.project.get` | Get a project |
+| DELETE | `/v1/dubbing/project/{project_id}` | `dubbing.project.delete` | Delete a project and its languages |
+| GET | `/v1/dubbing/project/{project_id}/transcript` | `dubbing.project.transcript.get` | Get the source transcript |
+| PATCH | `/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}` | `dubbing.project.transcript.update_segment` | Edit a source segment |
+| POST | `/v1/dubbing/project/{project_id}/transcript/segment` | `dubbing.project.transcript.create_segment` | Add a source segment |
+| DELETE | `/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}` | `dubbing.project.transcript.delete_segment` | Delete a source segment |
+| POST | `/v1/dubbing/project/{project_id}/language` | `dubbing.project.language.create` | Add a language target |
+| GET | `/v1/dubbing/project/{project_id}/language` | `dubbing.project.language.list` | List language targets (paginated) |
+| GET | `/v1/dubbing/project/{project_id}/language/{language_id}` | `dubbing.project.language.get` | Get a language target |
+| DELETE | `/v1/dubbing/project/{project_id}/language/{language_id}` | `dubbing.project.language.delete` | Delete a language target |
+| GET | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript` | `dubbing.project.language.transcript.get` | Get a language's transcript (translations) |
+| PATCH | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}` | `dubbing.project.language.transcript.update_segment` | Edit a translation |
+| POST | `/v1/dubbing/project/{project_id}/language/{language_id}/transcript/regenerate` | `dubbing.project.language.transcript.regenerate` | Regenerate a language from its edited transcript |
+
+JS methods are the same paths in camelCase (e.g. `dubbing.project.transcript.updateSegment`).
 
 ## Projects
 
@@ -50,6 +54,7 @@ Full endpoint-by-endpoint reference for the Dubbing Projects API.
 | `source_language` | no | ISO 639 code (e.g. `en`). Omit to auto-detect |
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
 | `model_id` | no | `dubbing_v2` (default) |
+| `target_language` | no | Optionally queue the first language target at creation; add more with `language.create` |
 | `keyterms` | no | Terms to bias transcription/translation toward (e.g. product or brand names), up to 100 terms of 200 characters each. In multipart, repeat the field once per term |
 
 **Auto-detected source language:** if `source_language` is omitted, the project's `source_language` stays `null`; the detected language is reported as the `language` field on the source transcript.
@@ -128,7 +133,7 @@ Pass `next_cursor` back as `cursor` to fetch the next page; `null` means the end
 
 ## Source transcript
 
-Every source edit bumps the project's `revision`; each edit response returns the new value. Editing the source after a language exists marks that language's output `stale` and requires a regeneration — finalize the source **before** adding languages.
+Transcript editing (and regeneration) is available to **enterprise workspaces only**. Every source edit bumps the project's `revision`; each edit response returns the new value. Editing the source after a language exists marks that language's output `stale` and requires a regeneration — finalize the source **before** adding languages.
 
 ### Get the source transcript
 
@@ -199,7 +204,7 @@ JSON body:
 |-------|----------|-------|
 | `target_language` | yes | ISO 639 code (e.g. `es`) |
 | `model_id` | no | Defaults to the project's model |
-| `voice_settings` | no | e.g. `{"cloning_strength": 7}` — `cloning_strength` accepts values between 0 and 10 inclusive |
+| `voice_settings` | no | e.g. `{"cloning_strength": 7}` — `cloning_strength` accepts values between 0 and 10 inclusive (default 7); controls how strongly dubbed speakers clone the source voices |
 
 **Response (`201 Created`)** — starts `queued`:
 
@@ -218,7 +223,7 @@ JSON body:
 }
 ```
 
-A language can be added to a project that isn't `ready` yet — it stays `queued` and starts automatically once the project becomes `ready`.
+A language can be added to a project that isn't `ready` yet — it stays `queued` and starts automatically once the project becomes `ready`. You can also queue the first language when creating the project by passing `target_language` to `project.create`.
 
 **Language states:**
 
