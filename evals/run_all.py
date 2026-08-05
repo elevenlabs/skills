@@ -598,7 +598,14 @@ def extract_negative_terms(expectation: str) -> list[str]:
 
 ADVISORY_REFERENCE_RE = re.compile(
     r"\b(?:do\W+not|don't|does\W+not|not\W+us(?:e|ing)|avoid|"
-    r"deprecated|legacy|older?|instead\W+of)\b",
+    r"deprecated|legacy|old(?:er)?|instead\W+of)\b",
+    flags=re.IGNORECASE,
+)
+
+
+ADVISORY_SCOPE_BREAK_RE = re.compile(
+    r"(?:[.;]|—|--|\s-\s|\b(?:but|however|instead|rather)\b|"
+    r",\s*(?:use|prefer|recommend|try|switch|call)\b)",
     flags=re.IGNORECASE,
 )
 
@@ -607,7 +614,15 @@ def is_advisory_reference(response_text: str, match_start: int) -> bool:
     """Return true for negated prose that mentions a forbidden term as a warning."""
     line_start = response_text.rfind("\n", 0, match_start) + 1
     before_match = response_text[line_start:match_start]
-    return bool(ADVISORY_REFERENCE_RE.search(before_match))
+    for advisory_match in ADVISORY_REFERENCE_RE.finditer(before_match):
+        between = before_match[advisory_match.end():]
+        if ADVISORY_SCOPE_BREAK_RE.search(between):
+            continue
+        if advisory_match.group(0).lower() in {"deprecated", "legacy", "old", "older"}:
+            if re.match(r"\s*=", between):
+                continue
+        return True
+    return False
 
 
 def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple = ()) -> str | None:
