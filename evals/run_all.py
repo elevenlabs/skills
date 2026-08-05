@@ -565,19 +565,27 @@ def extract_negative_terms(expectation: str) -> list[str]:
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
 
 
-def find_forbidden_reference(response_text: str, term: str) -> str | None:
+def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple = ()) -> str | None:
     """Detect exact forbidden package, endpoint, or SDK method references.
 
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
     package names — those are forbidden as literal substrings anywhere in the response,
     since import-context matching can't catch SDK method usage. Terms starting with
-    '/' are API paths and match exact endpoints, not child routes."""
+    '/' are API paths — forbidden including their child routes, except child routes
+    under any of ``allowed_paths`` (quoted paths from the same expectation that
+    extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
+    quoted elsewhere as the allowed exception)."""
     escaped = re.escape(term)
     if term.startswith("/"):
-        if term == "/v1/dubbing":
-            match = re.search(rf"(?i){escaped}(?!/project(?:[/?#]|$))(?![\w-])", response_text)
-            return match.group(0) if match else None
-        match = re.search(rf"(?i){escaped}(?![\w/-])", response_text)
+        # Each exemption allows the term when continued by an allowed child segment
+        # (itself at a segment boundary, so '/project' exempts '/project' and
+        # '/project/...' but not '/projects').
+        exemptions = "".join(
+            rf"(?!{re.escape(p[len(term):])}(?![\w-]))"
+            for p in allowed_paths
+            if p.startswith(term + "/")
+        )
+        match = re.search(rf"(?i){escaped}{exemptions}(?![\w-])", response_text)
         return match.group(0) if match else None
     if "." in term:
         match = re.search(rf"(?i){escaped}", response_text)
@@ -600,6 +608,10 @@ def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
     negative_terms = extract_negative_terms(expectation)
+    # Quoted API paths that are not themselves forbidden act as allowed exceptions
+    # for path-based NOT terms (see find_forbidden_reference).
+    quoted_strings = [m[1] for m in re.findall(r"([\"'])(.+?)\1", expectation)]
+    allowed_paths = tuple(q for q in quoted_strings if q.startswith("/") and q not in negative_terms)
 
     # Negative deprecation checks must run before generic "from elevenlabs import" pattern
     # matching; otherwise expectations that quote the forbidden import pass incorrectly.
@@ -614,13 +626,13 @@ def check_expectation(response_lower, response_text, expectation):
         if found_deprecated:
             return False, "Found deprecated pattern: %s" % found_deprecated[0]
         for term in negative_terms:
-            forbidden_match = find_forbidden_reference(response_text, term)
+            forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
             if forbidden_match:
                 return False, "Found forbidden reference: %s" % forbidden_match
         return True, "No deprecated patterns found"
 
     for term in negative_terms:
-        forbidden_match = find_forbidden_reference(response_text, term)
+        forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
 
