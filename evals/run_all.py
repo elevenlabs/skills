@@ -596,16 +596,31 @@ def extract_negative_terms(expectation: str) -> list[str]:
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
 
 
+ADVISORY_REFERENCE_RE = re.compile(
+    r"\b(?:do\W+not|don't|does\W+not|not\W+us(?:e|ing)|avoid|"
+    r"deprecated|legacy|older?|instead\W+of)\b",
+    flags=re.IGNORECASE,
+)
+
+
+def is_advisory_reference(response_text: str, match_start: int) -> bool:
+    """Return true for negated prose that mentions a forbidden term as a warning."""
+    line_start = response_text.rfind("\n", 0, match_start) + 1
+    before_match = response_text[line_start:match_start]
+    return bool(ADVISORY_REFERENCE_RE.search(before_match))
+
+
 def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple = ()) -> str | None:
     """Detect exact forbidden package, endpoint, or SDK method references.
 
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
-    package names — those are forbidden as literal substrings anywhere in the response,
-    since import-context matching can't catch SDK method usage. Terms starting with
-    '/' are API paths — forbidden including their child routes, except child routes
+    package names — those are forbidden as literal substrings when used, since
+    import-context matching can't catch SDK method usage. Terms starting with '/'
+    are API paths — forbidden including their child routes, except child routes
     under any of ``allowed_paths`` (quoted paths from the same expectation that
     extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
-    quoted elsewhere as the allowed exception)."""
+    quoted elsewhere as the allowed exception). Negated advisory prose may mention
+    either form without counting as usage."""
     escaped = re.escape(term)
     if term.startswith("/"):
         # Each exemption allows the term when continued by an allowed child segment
@@ -616,11 +631,15 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
             for p in allowed_paths
             if p.startswith(term + "/")
         )
-        match = re.search(rf"(?i){escaped}{exemptions}(?![\w-])", response_text)
-        return match.group(0) if match else None
+        for match in re.finditer(rf"(?i){escaped}{exemptions}(?![\w-])", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
     if "." in term:
-        match = re.search(rf"(?i){escaped}", response_text)
-        return match.group(0) if match else None
+        for match in re.finditer(rf"(?i){escaped}", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
     patterns = [
         rf"(?im)^\s*import\s+(?:[\w*\s{{}},$]+\s+from\s+)?[\"']{escaped}[\"']\s*;?\s*$",
         rf"(?i)\brequire\(\s*[\"']{escaped}[\"']\s*\)",
