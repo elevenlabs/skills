@@ -263,6 +263,23 @@ Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaul
 `agents` array. Each entry requires `agent_id` and `description`; `branch_id` and a JSON-schema
 `parameters` object are optional.
 
+`knowledge_base` is a system tool for letting the model choose how to inspect attached knowledge.
+Add it to `conversation_config.agent.prompt.tools` with `type: "system"`, a `name`, and
+`params.system_tool_type: "knowledge_base"`. Use `enabled_strategies` to expose any combination of
+`cat`, `keyword`, `semantic`, and `ls`:
+
+```json
+{
+  "type": "system",
+  "name": "knowledge_base",
+  "description": "Search the attached knowledge base.",
+  "params": {
+    "system_tool_type": "knowledge_base",
+    "enabled_strategies": ["semantic", "keyword"]
+  }
+}
+```
+
 ### Integration Tools
 
 Pre-built connectors managed by the platform. Create a connection with credentials, then attach via `tool_ids`:
@@ -396,6 +413,10 @@ Run selected tests with `POST /v1/convai/agents/{agent_id}/run-tests`. The reque
 body requires `tests` and accepts `repeat_count` from `1` to `50` for repeated runs.
 Simulation tests can define up to 30 `success_conditions` prompts; all criteria are
 evaluated and merged into the final result.
+Simulation tests can also define `tool_mock_overrides`, keyed by tool ID, to replace shared response
+mocks for one test. Each override is an array of mocks with a required `mock_result`; set
+`is_error: true` to exercise a tool-failure path. Overrides only apply to tools enabled for mocking
+through `tool_mock_config`.
 For completed conversations, rerun one evaluation criterion with `POST /v1/convai/conversations/{conversation_id}/analysis/evaluations/run` and a request body containing `evaluation_id`.
 
 ## Widget Embedding
