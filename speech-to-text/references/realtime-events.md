@@ -53,6 +53,7 @@ Connection established successfully.
     "language_code": "en",
     "model_id": "scribe_v2_realtime",
     "commit_strategy": "manual",
+    "enable_logging": true,
     "include_timestamps": true
   }
 }
@@ -118,6 +119,35 @@ Final transcription with word-level timing. Sent after `committed_transcript` wh
 | `words[].end` | number | End time in seconds |
 | `words[].type` | string | `"word"`, `"spacing"`, or `"audio_event"` |
 | `words[].speaker_id` | string | Speaker identifier (if diarization enabled) |
+
+### committed_transcript_entities
+
+Entities detected in a committed segment when the connection includes `entity_detection`.
+
+```json
+{
+  "message_type": "committed_transcript_entities",
+  "text": "My name is Alice.",
+  "entities": [
+    {
+      "text": "Alice",
+      "entity_type": "name_given",
+      "start_char": 11,
+      "end_char": 16
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message_type` | string | `"committed_transcript_entities"` |
+| `text` | string | Committed transcript segment scanned for entities |
+| `entities` | array | Detected entities; empty when none are found |
+| `entities[].text` | string | Text identified as an entity |
+| `entities[].entity_type` | string | Detected entity type |
+| `entities[].start_char` | integer | Start character offset in `text` |
+| `entities[].end_char` | integer | End character offset in `text` |
 
 ## Error Events
 

@@ -229,7 +229,7 @@ conversation_config={
                 "url": "https://your-llm-endpoint.com/v1/chat/completions",
                 "model_id": "your-model-id",
                 "api_key": {"secret_id": "your-secret-id"},
-                "api_type": "chat_completions"  # or "responses"
+                "api_type": "chat_completions"  # "chat_completions", "responses", or "websocket"
             }
         }
     }
@@ -379,6 +379,7 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `show_conversation_id` | bool | `true` | Whether to show the conversation ID after disconnection |
 | `strip_audio_tags` | bool | `true` | Whether to strip audio markup from messages |
 | `syntax_highlight_theme` | string | auto | Code block syntax highlighting theme (`light` or `dark`); omit it to let the widget auto-detect |
+| `show_resize_button` | bool | `true` | Whether to show the expand and collapse control in the widget header |
 
 ### conversation (inside conversation_config)
 
@@ -402,7 +403,8 @@ and must be enabled in `client_events`.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `enabled` | bool | `true` | Allows end users to attach images or PDFs in chat when the selected LLM supports multimodal input |
-| `max_files_per_conversation` | int | `10` | Maximum number of uploaded files allowed in a single conversation |
+| `max_files_in_memory` | int | `10` | Number of most-recent files kept in memory (1-30); older files are summarized and released |
+| `max_files_per_conversation` | int | `10` | Total upload limit; use `-1` for no limit or a value at least as large as `max_files_in_memory` |
 
 **background_sound:**
 

@@ -299,6 +299,21 @@ additional languages:
 wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&keyterms=ElevenLabs&keyterms=Scribe&secondary_languages=es&secondary_languages=fr&no_verbatim=true
 ```
 
+### Entity Detection
+
+Add `entity_detection` to detect entities in committed segments. It accepts `all`, one entity type
+or category, or a comma-separated list. Categories include `pii`, `phi`, `pci`, `other`, and
+`offensive_language`:
+
+```
+wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&entity_detection=pii,pci
+```
+
+Each committed segment is followed by a `committed_transcript_entities` event containing the
+detected entity text, type, and character offsets. See the
+[entity detection guide](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/entity-detection)
+for specific entity types.
+
 ### Message Format
 
 ```json

@@ -51,6 +51,7 @@ show a message entry point, and multimodal agents show both.
 | `server-location` | Server region (`us`, `eu-residency`, `in-residency`, `global`) | `us` |
 | `dismissible` | Allow the user to minimize the widget | `false` |
 | `disable-banner` | Hide "Powered by ElevenLabs" | `false` |
+| `show-resize-button` | Show the expand and collapse control in the widget header | `true` |
 
 ## Examples
 
