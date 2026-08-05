@@ -16,5 +16,5 @@
   {"query": "build a conversational voice agent that can take customer support calls", "should_trigger": false},
   {"query": "how do I set up my ELEVENLABS_API_KEY environment variable on macOS?", "should_trigger": false},
   {"query": "pitch-shift my vocal recording up by 3 semitones using ffmpeg", "should_trigger": false},
-  {"query": "clone a new voice from this 30 second sample of my grandma speaking", "should_trigger": false}
+  {"query": "clone a new voice from this 30 second sample of my grandma speaking so I can generate new text-to-speech messages in her voice", "should_trigger": false}
 ]

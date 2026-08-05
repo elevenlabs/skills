@@ -54,6 +54,8 @@ curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
 |----------|-------------|----------|
 | `scribe_v2` | State-of-the-art accuracy, 90+ languages | Batch transcription, subtitles, long-form audio |
 | `scribe_v2_realtime` | Low latency (~150ms) | Live transcription, voice agents |
+| `scribe_v2_realtime_turbo` | Realtime transcription variant | Live transcription |
+| `scribe_v2_realtime_lite` | Realtime transcription variant | Live transcription |
 
 ## Transcription with Timestamps
 
@@ -182,8 +184,8 @@ Common errors:
 Monitor usage via `request-id` response header:
 
 ```python
-response = client.speech_to_text.convert.with_raw_response(file=audio_file, model_id="scribe_v2")
-result = response.parse()
+response = client.speech_to_text.with_raw_response.convert(file=audio_file, model_id="scribe_v2")
+result = response.data
 print(f"Request ID: {response.headers.get('request-id')}")
 ```
 

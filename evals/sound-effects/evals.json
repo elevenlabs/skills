@@ -3,26 +3,27 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Generate a thunder and rain sound effect using the ElevenLabs API in Python. Save it as storm.mp3.",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK to generate a thunder and rain sound effect and saves it as storm.mp3. Don't run it — I'll run it myself with my own API key.",
       "expected_output": "Python script generating a weather sound effect",
       "files": [],
       "expectations": [
         "Uses 'from elevenlabs import ElevenLabs' for the import",
-        "Creates a client with ElevenLabs()",
+        "Instantiates the client with ElevenLabs(",
         "Calls client.text_to_sound_effects.convert() with a descriptive text prompt",
         "Writes output chunks to storm.mp3",
-        "Uses a descriptive prompt like 'thunder rumbling with rain'"
+        "Uses a descriptive text prompt such as thunder rumbling with rain"
       ]
     },
     {
       "id": 2,
-      "prompt": "Create a looping ambient forest sound using ElevenLabs in Python. Make it 8 seconds long with high prompt adherence. Save as forest_loop.mp3.",
-      "expected_output": "Python script with duration and prompt influence parameters",
+      "prompt": "Write a Python script that uses the ElevenLabs Python SDK (from elevenlabs import ElevenLabs) to generate a looping ambient forest sound effect, 8 seconds long with high prompt adherence, and saves it as forest_loop.mp3. Don't run it — I'll run it myself with my own API key.",
+      "expected_output": "Python script with duration, looping, and prompt influence parameters",
       "files": [],
       "expectations": [
         "Uses client.text_to_sound_effects.convert()",
         "Sets duration_seconds or equivalent duration parameter to 8 or similar",
-        "Sets prompt_influence or equivalent parameter for high adherence",
+        "Sets the prompt_influence parameter",
+        "Sets loop=True for a seamless looping sound",
         "Describes a forest soundscape in the text prompt",
         "Saves to forest_loop.mp3"
       ]

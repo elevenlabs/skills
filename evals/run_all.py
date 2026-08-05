@@ -32,6 +32,7 @@ import os
 import queue
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -48,6 +49,9 @@ EVALS_DIR = Path(__file__).parent
 CURSOR_AGENT_BIN = os.environ.get("CURSOR_AGENT", "cursor-agent")
 # Default GPT-5.4 tier (see `cursor-agent --list-models`).
 DEFAULT_CURSOR_MODEL = "gpt-5.4-medium"
+AUDIO_FILENAME_RE = re.compile(
+    r"(?<![\w.-])[\w.-]+\.(?:mp3|wav|mp4|m4a|flac|ogg|webm|aac)(?![\w.-])"
+)
 
 
 def _ensure_cursor_agent_available() -> None:
@@ -442,40 +446,67 @@ def run_functional_eval_for_skill(
         ]
 
         env = dict(os.environ)
+        # Keep functional evals deterministic and avoid exposing a real user key to the nested agent.
+        env.pop("ELEVENLABS_API_KEY", None)
 
         t0 = time.time()
         response_text = ""
         try:
-            result = subprocess.run(
+            # Popen + group kill instead of subprocess.run: cursor-agent can leave grandchildren
+            # holding the stdout pipe, and subprocess.run's timeout path then blocks forever
+            # in communicate(). On POSIX, start_new_session lets us kill the whole process
+            # group; on Windows, taskkill /T kills the process tree instead.
+            process = subprocess.Popen(
                 cmd,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=timeout,
                 cwd=str(eval_dir),
                 env=env,
+                start_new_session=(os.name != "nt"),
             )
+            try:
+                stdout_text, stderr_text = process.communicate(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                if os.name == "nt":
+                    subprocess.run(
+                        ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                        capture_output=True,
+                    )
+                else:
+                    try:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    except (ProcessLookupError, PermissionError):
+                        process.kill()
+                try:
+                    process.communicate(timeout=10)
+                except subprocess.TimeoutExpired:
+                    pass
+                raise
             elapsed = time.time() - t0
-            success = result.returncode == 0
+            success = process.returncode == 0
 
-            response_text = result.stdout
+            response_text = stdout_text
 
             # Save full response
             (eval_dir / "response.md").write_text(response_text)
-            if result.stderr:
-                (eval_dir / "stderr.txt").write_text(result.stderr)
+            if stderr_text:
+                (eval_dir / "stderr.txt").write_text(stderr_text)
 
             # Include output files in grading context
             grading_text = response_text
             outputs_dir = eval_dir / "outputs"
             if outputs_dir.is_dir():
-                for out_file in sorted(outputs_dir.iterdir()):
+                # Recursive: agents legitimately nest configs (e.g. outputs/agent_configs/*.json)
+                # and a top-level-only scan hides them from grading.
+                for out_file in sorted(outputs_dir.rglob("*")):
                     if out_file.is_file() and out_file.suffix in (
                         ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
                         ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
-                            grading_text += f"\n\n--- {out_file.name} ---\n{content}"
+                            grading_text += f"\n\n--- {out_file.relative_to(outputs_dir)} ---\n{content}"
                         except Exception:
                             pass
 
@@ -636,6 +667,14 @@ def check_expectation(response_lower, response_text, expectation):
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
 
+    filename_terms = list(dict.fromkeys(AUDIO_FILENAME_RE.findall(exp_lower)))
+    if filename_terms:
+        missing_filenames = [
+            filename for filename in filename_terms if filename not in response_lower
+        ]
+        if missing_filenames:
+            return False, "Missing filename(s): %s" % ", ".join(missing_filenames)
+
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
         # SDK imports (specifically `from elevenlabs import ElevenLabs`)
@@ -708,7 +747,7 @@ def check_expectation(response_lower, response_text, expectation):
         # Validation / test API
         (["validate", "test", "api call"], ["validate", "verify", "test", "curl", "request", "/v1/user", "api.elevenlabs"], {"curl", "/v1/user", "api.elevenlabs"}),
         # Causes / suggestions / debugging
-        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common"], {"expired", "invalid", "regenerate", "troubleshoot"}),
+        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common", "missing", "401", "cause"], {"expired", "invalid", "regenerate", "troubleshoot", "missing"}),
         # Steps / getting new key
         (["steps", "new key", "get a new"], ["step", "new key", "generate", "create", "regenerate", "dashboard", "replace"], {"new key", "regenerate", "replace"}),
         # System prompt
@@ -914,8 +953,10 @@ def main():
     # Set up output directory
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     if args.output_dir:
-        # Honor user-specified directory and allow reuse
-        output_dir = Path(args.output_dir)
+        # Honor user-specified directory and allow reuse. Resolve to an absolute path:
+        # functional evals pass eval_dir as both cwd and --workspace to cursor-agent,
+        # and a relative workspace would be re-resolved against that cwd (doubled path).
+        output_dir = Path(args.output_dir).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
     else:
         # Create a unique default directory to avoid mixing results from concurrent runs

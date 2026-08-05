@@ -11,7 +11,7 @@
         "Provides instructions to find the API key in the ElevenLabs dashboard",
         "Tells the user to add ELEVENLABS_API_KEY to a local .env file",
         "Explicitly tells the user not to paste the API key into chat",
-        "Tells the user to confirm once the key is saved locally so it can be validated in the next step"
+        "Tells the user to reply once the key is saved in the local .env"
       ]
     },
     {
@@ -21,10 +21,9 @@
       "files": [],
       "expectations": [
         "Checks the current ELEVENLABS_API_KEY environment variable or .env value without printing it",
-        "Attempts to validate the configured key against the ElevenLabs API",
-        "Suggests common causes (expired key, wrong key, environment not loaded)",
-        "Provides steps to get a new key and save it in .env if the current one is invalid",
-        "Does not ask the user to paste the API key into chat"
+        "Reports that ELEVENLABS_API_KEY is not configured and offers to validate the key after the user saves it in .env",
+        "Walks through creating a key at the ElevenLabs API keys page and saving it in .env",
+        "Explicitly tells the user not to paste the API key into chat"
       ]
     }
   ]

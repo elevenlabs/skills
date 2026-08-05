@@ -56,6 +56,7 @@ play_stream(audio_stream)
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { createWriteStream } from "fs";
+import { Readable } from "stream";
 
 const client = new ElevenLabsClient();
 
@@ -64,9 +65,8 @@ const audioStream = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   modelId: "eleven_flash_v2_5",
 });
 
-// Write to file
-const writeStream = createWriteStream("output.mp3");
-audioStream.pipe(writeStream);
+// Write to file (convert() returns a web ReadableStream — bridge to a Node stream first)
+Readable.fromWeb(audioStream).pipe(createWriteStream("output.mp3"));
 
 // Or process chunks
 for await (const chunk of audioStream) {

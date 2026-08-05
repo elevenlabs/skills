@@ -86,7 +86,7 @@ conversation_config={
 | `expressive_mode` | bool | `true` | Enable expressive voice generation |
 | `agent_output_audio_format` | string | - | Output audio codec format |
 | `pronunciation_dictionary_locators` | array | - | Pronunciation overrides |
-| `enable_phoneme_tags` | bool | `false` | Parse inline and pronunciation-dictionary SSML phoneme tags into IPA for V3 models |
+| `enable_phoneme_tags` | bool | `true` | Parse inline and pronunciation-dictionary SSML phoneme tags into IPA for V3 models |
 
 **Available TTS models for agents:**
 
@@ -183,7 +183,7 @@ conversation_config={
 | `llm` | string | - | Model ID (see LLM providers below) |
 | `temperature` | float | `0` | 0-1, higher = more creative |
 | `max_tokens` | int | `-1` | Max tokens for LLM response (-1 = unlimited) |
-| `reasoning_effort` | string | - | Reasoning depth: `none`, `minimal`, `low`, `medium`, `high`, or `xhigh` (model-dependent) |
+| `reasoning_effort` | string | - | Reasoning depth: `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max` (model-dependent) |
 | `thinking_budget` | int | - | Max thinking tokens for reasoning models |
 | `enable_reasoning_summary` | bool | `false` | Request provider reasoning summaries when supported; keep disabled for lower time-to-first-byte |
 | `tools` | array | - | Webhook and client tool definitions |
@@ -193,7 +193,7 @@ conversation_config={
 | `custom_llm` | object | - | Custom LLM endpoint config |
 | `timezone` | string | - | IANA timezone (e.g., `America/New_York`) |
 | `backup_llm_config` | object | - | Fallback LLM configuration |
-| `cascade_timeout_seconds` | number | `8` | Seconds before cascading to backup LLM (2-15) |
+| `cascade_timeout_seconds` | number | `4` | Seconds before cascading to backup LLM (2-15) |
 | `mcp_server_ids` | array | - | MCP server IDs to connect |
 | `native_mcp_server_ids` | array | - | Native MCP server IDs |
 | `ignore_default_personality` | bool | - | Skip default personality instructions |
@@ -207,7 +207,7 @@ to resolve per-environment auth connections at runtime.
 
 | Provider | Model IDs |
 |----------|-----------|
-| OpenAI | `gpt-5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
+| OpenAI | `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
 | Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
 | Google | `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` (hosted, ultra-low latency) |
@@ -265,6 +265,7 @@ platform_settings={
 |-------|------|-------------|
 | `summary_language` | string | Language for conversation analysis outputs such as summaries, titles, evaluation rationales, and data collection rationales. If omitted, ElevenLabs infers it from the conversation. |
 | `auto_translate_transcript_to_app_language` | bool | Automatically translate a transcript to the viewer's application language when they open it |
+| `analysis_items` | object or null | Evaluation criteria and data-collection items attached to the agent by reference |
 | `widget` | object | Hosted widget and shareable page configuration. See the widget table below for selected options. |
 | `auth` | object | Authentication and origin restrictions for agent access |
 | `call_limits` | object | Concurrency and daily usage limits |
@@ -313,6 +314,7 @@ Use `platform_settings.guardrails` to configure built-in safety controls for use
 | `model` | string | LLM model used for custom guardrail evaluation, such as `gemini-2.5-flash-lite`, `claude-sonnet-4-6`, or `gpt-5.4-mini`. |
 | `history_message_count` | integer | Number of recent customer messages to include in guardrail history; `0` includes none. |
 | `trigger_action` | object | Action when triggered, such as retrying with feedback or ending the call. |
+| `evaluate_full_response_only` | bool | Evaluate the complete non-TTS response once. Requires `execution_mode` set to `blocking`; defaults to `false`. |
 
 **focus / prompt_injection:**
 
@@ -451,6 +453,20 @@ agent = client.conversational_ai.agents.create(
 Set `conversation_config.conversation.source_attribution` to `true` when you want the agent to
 report which knowledge base sources it used in responses.
 
+### Knowledge Base Management
+
+Use a [crawl job](https://elevenlabs.io/docs/api-reference/knowledge-base/create-crawl-job) to
+ingest a website into the knowledge base. A crawl requires a `url` and can control crawl depth,
+page count, URL matching, sitemaps, folder placement, and automatic synchronization. List,
+inspect, or cancel crawl jobs while ingestion is running.
+
+Before deleting several documents or folders, use the
+[bulk dependency check](https://elevenlabs.io/docs/api-reference/knowledge-base/dependent-agents-multiple)
+to find affected agents. The
+[bulk delete endpoint](https://elevenlabs.io/docs/api-reference/knowledge-base/bulk-delete)
+returns an independent result for each document ID. Use `force` only when you intend to remove
+agent dependencies and recursively delete the contents of non-empty folders.
+
 ## CRUD Operations
 
 ### Using CLI (Recommended)
@@ -543,6 +559,11 @@ const conversations = await client.conversationalAi.conversations.list({
 });
 ```
 
+Conversation listing and message search can filter by `visited_agent_ids` and
+`visited_agent_branch_ids`. For a listing that includes selected analysis results, pass
+`data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
+`data_collection_results` or `evaluation_criteria_results`.
+
 ### SDK: Get Agent
 
 ```python
@@ -616,7 +637,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
-| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
+| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
