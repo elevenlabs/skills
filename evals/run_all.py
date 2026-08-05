@@ -574,6 +574,9 @@ def find_forbidden_reference(response_text: str, term: str) -> str | None:
     '/' are API paths and match exact endpoints, not child routes."""
     escaped = re.escape(term)
     if term.startswith("/"):
+        if term == "/v1/dubbing":
+            match = re.search(rf"(?i){escaped}(?!/project(?:[/?#]|$))(?![\w-])", response_text)
+            return match.group(0) if match else None
         match = re.search(rf"(?i){escaped}(?![\w/-])", response_text)
         return match.group(0) if match else None
     if "." in term:
