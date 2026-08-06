@@ -32,6 +32,7 @@ import os
 import queue
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -48,6 +49,9 @@ EVALS_DIR = Path(__file__).parent
 CURSOR_AGENT_BIN = os.environ.get("CURSOR_AGENT", "cursor-agent")
 # Default GPT-5.4 tier (see `cursor-agent --list-models`).
 DEFAULT_CURSOR_MODEL = "gpt-5.4-medium"
+AUDIO_FILENAME_RE = re.compile(
+    r"(?<![\w.-])[\w.-]+\.(?:mp3|wav|mp4|m4a|flac|ogg|webm|aac)(?![\w.-])"
+)
 
 
 def _ensure_cursor_agent_available() -> None:
@@ -117,6 +121,7 @@ ALL_SKILLS = [
     "music",
     "voice-changer",
     "voice-isolator",
+    "dubbing",
     "setup-api-key",
 ]
 
@@ -441,40 +446,67 @@ def run_functional_eval_for_skill(
         ]
 
         env = dict(os.environ)
+        # Keep functional evals deterministic and avoid exposing a real user key to the nested agent.
+        env.pop("ELEVENLABS_API_KEY", None)
 
         t0 = time.time()
         response_text = ""
         try:
-            result = subprocess.run(
+            # Popen + group kill instead of subprocess.run: cursor-agent can leave grandchildren
+            # holding the stdout pipe, and subprocess.run's timeout path then blocks forever
+            # in communicate(). On POSIX, start_new_session lets us kill the whole process
+            # group; on Windows, taskkill /T kills the process tree instead.
+            process = subprocess.Popen(
                 cmd,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=timeout,
                 cwd=str(eval_dir),
                 env=env,
+                start_new_session=(os.name != "nt"),
             )
+            try:
+                stdout_text, stderr_text = process.communicate(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                if os.name == "nt":
+                    subprocess.run(
+                        ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                        capture_output=True,
+                    )
+                else:
+                    try:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    except (ProcessLookupError, PermissionError):
+                        process.kill()
+                try:
+                    process.communicate(timeout=10)
+                except subprocess.TimeoutExpired:
+                    pass
+                raise
             elapsed = time.time() - t0
-            success = result.returncode == 0
+            success = process.returncode == 0
 
-            response_text = result.stdout
+            response_text = stdout_text
 
             # Save full response
             (eval_dir / "response.md").write_text(response_text)
-            if result.stderr:
-                (eval_dir / "stderr.txt").write_text(result.stderr)
+            if stderr_text:
+                (eval_dir / "stderr.txt").write_text(stderr_text)
 
             # Include output files in grading context
             grading_text = response_text
             outputs_dir = eval_dir / "outputs"
             if outputs_dir.is_dir():
-                for out_file in sorted(outputs_dir.iterdir()):
+                # Recursive: agents legitimately nest configs (e.g. outputs/agent_configs/*.json)
+                # and a top-level-only scan hides them from grading.
+                for out_file in sorted(outputs_dir.rglob("*")):
                     if out_file.is_file() and out_file.suffix in (
                         ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
                         ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
-                            grading_text += f"\n\n--- {out_file.name} ---\n{content}"
+                            grading_text += f"\n\n--- {out_file.relative_to(outputs_dir)} ---\n{content}"
                         except Exception:
                             pass
 
@@ -564,9 +596,65 @@ def extract_negative_terms(expectation: str) -> list[str]:
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
 
 
-def find_forbidden_reference(response_text: str, term: str) -> str | None:
-    """Detect an exact forbidden package reference in JS/package-manager contexts."""
+ADVISORY_REFERENCE_RE = re.compile(
+    r"\b(?:do\W+not|don't|does\W+not|not\W+us(?:e|ing)|avoid|"
+    r"deprecated|legacy|old(?:er)?|instead\W+of)\b",
+    flags=re.IGNORECASE,
+)
+
+
+ADVISORY_SCOPE_BREAK_RE = re.compile(
+    r"(?:[.;]|—|--|\s-\s|\b(?:but|however|instead|rather)\b|"
+    r",\s*(?:use|prefer|recommend|try|switch|call)\b)",
+    flags=re.IGNORECASE,
+)
+
+
+def is_advisory_reference(response_text: str, match_start: int) -> bool:
+    """Return true for negated prose that mentions a forbidden term as a warning."""
+    line_start = response_text.rfind("\n", 0, match_start) + 1
+    before_match = response_text[line_start:match_start]
+    for advisory_match in ADVISORY_REFERENCE_RE.finditer(before_match):
+        between = before_match[advisory_match.end():]
+        if ADVISORY_SCOPE_BREAK_RE.search(between):
+            continue
+        if advisory_match.group(0).lower() in {"deprecated", "legacy", "old", "older"}:
+            if re.match(r"\s*=", between):
+                continue
+        return True
+    return False
+
+
+def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple = ()) -> str | None:
+    """Detect exact forbidden package, endpoint, or SDK method references.
+
+    Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
+    package names — those are forbidden as literal substrings when used, since
+    import-context matching can't catch SDK method usage. Terms starting with '/'
+    are API paths — forbidden including their child routes, except child routes
+    under any of ``allowed_paths`` (quoted paths from the same expectation that
+    extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
+    quoted elsewhere as the allowed exception). Negated advisory prose may mention
+    either form without counting as usage."""
     escaped = re.escape(term)
+    if term.startswith("/"):
+        # Each exemption allows the term when continued by an allowed child segment
+        # (itself at a segment boundary, so '/project' exempts '/project' and
+        # '/project/...' but not '/projects').
+        exemptions = "".join(
+            rf"(?!{re.escape(p[len(term):])}(?![\w-]))"
+            for p in allowed_paths
+            if p.startswith(term + "/")
+        )
+        for match in re.finditer(rf"(?i){escaped}{exemptions}(?![\w-])", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
+    if "." in term:
+        for match in re.finditer(rf"(?i){escaped}", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
     patterns = [
         rf"(?im)^\s*import\s+(?:[\w*\s{{}},$]+\s+from\s+)?[\"']{escaped}[\"']\s*;?\s*$",
         rf"(?i)\brequire\(\s*[\"']{escaped}[\"']\s*\)",
@@ -585,6 +673,10 @@ def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
     negative_terms = extract_negative_terms(expectation)
+    # Quoted API paths that are not themselves forbidden act as allowed exceptions
+    # for path-based NOT terms (see find_forbidden_reference).
+    quoted_strings = [m[1] for m in re.findall(r"([\"'])(.+?)\1", expectation)]
+    allowed_paths = tuple(q for q in quoted_strings if q.startswith("/") and q not in negative_terms)
 
     # Negative deprecation checks must run before generic "from elevenlabs import" pattern
     # matching; otherwise expectations that quote the forbidden import pass incorrectly.
@@ -599,15 +691,23 @@ def check_expectation(response_lower, response_text, expectation):
         if found_deprecated:
             return False, "Found deprecated pattern: %s" % found_deprecated[0]
         for term in negative_terms:
-            forbidden_match = find_forbidden_reference(response_text, term)
+            forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
             if forbidden_match:
                 return False, "Found forbidden reference: %s" % forbidden_match
         return True, "No deprecated patterns found"
 
     for term in negative_terms:
-        forbidden_match = find_forbidden_reference(response_text, term)
+        forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
+
+    filename_terms = list(dict.fromkeys(AUDIO_FILENAME_RE.findall(exp_lower)))
+    if filename_terms:
+        missing_filenames = [
+            filename for filename in filename_terms if filename not in response_lower
+        ]
+        if missing_filenames:
+            return False, "Missing filename(s): %s" % ", ".join(missing_filenames)
 
     # Direct pattern checks — look for specific API patterns in the response
     pattern_checks = [
@@ -681,7 +781,7 @@ def check_expectation(response_lower, response_text, expectation):
         # Validation / test API
         (["validate", "test", "api call"], ["validate", "verify", "test", "curl", "request", "/v1/user", "api.elevenlabs"], {"curl", "/v1/user", "api.elevenlabs"}),
         # Causes / suggestions / debugging
-        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common"], {"expired", "invalid", "regenerate", "troubleshoot"}),
+        (["suggests", "causes", "expired", "debug"], ["expired", "invalid", "wrong", "rotate", "regenerate", "check", "verify", "troubleshoot", "common", "missing", "401", "cause"], {"expired", "invalid", "regenerate", "troubleshoot", "missing"}),
         # Steps / getting new key
         (["steps", "new key", "get a new"], ["step", "new key", "generate", "create", "regenerate", "dashboard", "replace"], {"new key", "regenerate", "replace"}),
         # System prompt
@@ -872,7 +972,7 @@ def main():
     )
     parser.add_argument("--workers", type=int, default=8, help="Parallel workers for trigger evals")
     parser.add_argument("--runs-per-query", type=int, default=3, help="Runs per trigger query")
-    parser.add_argument("--timeout", type=int, default=300, help="Timeout per functional eval (seconds)")
+    parser.add_argument("--timeout", type=int, default=450, help="Timeout per functional eval (seconds)")
     parser.add_argument("--trigger-timeout", type=int, default=45, help="Timeout per trigger query (seconds)")
     parser.add_argument("--output-dir", default=None, help="Output directory (default: evals/results/<timestamp>)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
@@ -887,8 +987,10 @@ def main():
     # Set up output directory
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     if args.output_dir:
-        # Honor user-specified directory and allow reuse
-        output_dir = Path(args.output_dir)
+        # Honor user-specified directory and allow reuse. Resolve to an absolute path:
+        # functional evals pass eval_dir as both cwd and --workspace to cursor-agent,
+        # and a relative workspace would be re-resolved against that cwd (doubled path).
+        output_dir = Path(args.output_dir).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
     else:
         # Create a unique default directory to avoid mixing results from concurrent runs

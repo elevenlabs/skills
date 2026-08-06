@@ -8,11 +8,11 @@
       "files": [],
       "expectations": [
         "Uses 'from elevenlabs import ElevenLabs' for the import",
-        "Creates a client with ElevenLabs()",
+        "Instantiates the client with ElevenLabs(",
         "Calls client.speech_to_speech.convert() with voice_id and audio arguments",
         "Passes model_id='eleven_multilingual_sts_v2'",
-        "Opens scratch_take.mp3 as the input audio",
-        "Writes the chunks to a file named converted.mp3"
+        "Opens scratch_take.mp3",
+        "Produces converted.mp3"
       ]
     },
     {
@@ -25,7 +25,7 @@
         "Creates a client with ElevenLabsClient",
         "Calls speechToSpeech.convert with a voiceId and audio input",
         "Passes modelId 'eleven_multilingual_sts_v2'",
-        "Writes output to a file named converted.mp3",
+        "Produces converted.mp3",
         "Does not use the deprecated 'elevenlabs' npm package"
       ]
     }

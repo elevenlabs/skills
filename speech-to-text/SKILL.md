@@ -184,8 +184,8 @@ Common errors:
 Monitor usage via `request-id` response header:
 
 ```python
-response = client.speech_to_text.convert.with_raw_response(file=audio_file, model_id="scribe_v2")
-result = response.parse()
+response = client.speech_to_text.with_raw_response.convert(file=audio_file, model_id="scribe_v2")
+result = response.data
 print(f"Request ID: {response.headers.get('request-id')}")
 ```
 
@@ -301,6 +301,7 @@ const connection = await client.speechToText.realtime.connect({
 | `partial_transcript` | Live interim results |
 | `committed_transcript` | Final results after commit |
 | `committed_transcript_with_timestamps` | Final with word timing |
+| `committed_transcript_entities` | Entities detected in a committed segment |
 | `error` | Error occurred |
 
 See real-time references for complete documentation.

@@ -229,7 +229,7 @@ conversation_config={
                 "url": "https://your-llm-endpoint.com/v1/chat/completions",
                 "model_id": "your-model-id",
                 "api_key": {"secret_id": "your-secret-id"},
-                "api_type": "chat_completions"  # or "responses"
+                "api_type": "chat_completions"  # "chat_completions", "responses", or "websocket"
             }
         }
     }
@@ -265,6 +265,7 @@ platform_settings={
 |-------|------|-------------|
 | `summary_language` | string | Language for conversation analysis outputs such as summaries, titles, evaluation rationales, and data collection rationales. If omitted, ElevenLabs infers it from the conversation. |
 | `auto_translate_transcript_to_app_language` | bool | Automatically translate a transcript to the viewer's application language when they open it |
+| `analysis_items` | object or null | Evaluation criteria and data-collection items attached to the agent by reference |
 | `widget` | object | Hosted widget and shareable page configuration. See the widget table below for selected options. |
 | `auth` | object | Authentication and origin restrictions for agent access |
 | `call_limits` | object | Concurrency and daily usage limits |
@@ -378,6 +379,7 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `show_conversation_id` | bool | `true` | Whether to show the conversation ID after disconnection |
 | `strip_audio_tags` | bool | `true` | Whether to strip audio markup from messages |
 | `syntax_highlight_theme` | string | auto | Code block syntax highlighting theme (`light` or `dark`); omit it to let the widget auto-detect |
+| `show_resize_button` | bool | `true` | Whether to show the expand and collapse control in the widget header |
 
 ### conversation (inside conversation_config)
 
@@ -401,7 +403,8 @@ and must be enabled in `client_events`.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `enabled` | bool | `true` | Allows end users to attach images or PDFs in chat when the selected LLM supports multimodal input |
-| `max_files_per_conversation` | int | `10` | Maximum number of uploaded files allowed in a single conversation |
+| `max_files_in_memory` | int | `10` | Number of most-recent files kept in memory (1-30); older files are summarized and released |
+| `max_files_per_conversation` | int | `10` | Total upload limit; use `-1` for no limit or a value at least as large as `max_files_in_memory` |
 
 **background_sound:**
 
@@ -451,6 +454,20 @@ agent = client.conversational_ai.agents.create(
 
 Set `conversation_config.conversation.source_attribution` to `true` when you want the agent to
 report which knowledge base sources it used in responses.
+
+### Knowledge Base Management
+
+Use a [crawl job](https://elevenlabs.io/docs/api-reference/knowledge-base/create-crawl-job) to
+ingest a website into the knowledge base. A crawl requires a `url` and can control crawl depth,
+page count, URL matching, sitemaps, folder placement, and automatic synchronization. List,
+inspect, or cancel crawl jobs while ingestion is running.
+
+Before deleting several documents or folders, use the
+[bulk dependency check](https://elevenlabs.io/docs/api-reference/knowledge-base/dependent-agents-multiple)
+to find affected agents. The
+[bulk delete endpoint](https://elevenlabs.io/docs/api-reference/knowledge-base/bulk-delete)
+returns an independent result for each document ID. Use `force` only when you intend to remove
+agent dependencies and recursively delete the contents of non-empty folders.
 
 ## CRUD Operations
 
@@ -544,6 +561,11 @@ const conversations = await client.conversationalAi.conversations.list({
 });
 ```
 
+Conversation listing and message search can filter by `visited_agent_ids` and
+`visited_agent_branch_ids`. For a listing that includes selected analysis results, pass
+`data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
+`data_collection_results` or `evaluation_criteria_results`.
+
 ### SDK: Get Agent
 
 ```python
@@ -617,7 +639,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
-| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
+| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |

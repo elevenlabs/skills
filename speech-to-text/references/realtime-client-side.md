@@ -196,3 +196,5 @@ scribe.commit();
 - Never expose your API key to the client
 - Always generate single-use tokens on your backend
 - Use authentication middleware to protect token endpoints
+- For enterprise zero-retention sessions, set `enableLogging: false` in `Scribe.connect` or
+  `useScribe`; this disables history features for the session

@@ -3,14 +3,14 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Create a voice AI agent using the ElevenLabs CLI that acts as a restaurant reservation assistant. It should be able to check availability, book tables, and confirm reservations.",
-      "expected_output": "CLI commands and agent configuration for a restaurant reservation voice agent",
+      "prompt": "Using the ElevenLabs CLI project conventions, scaffold the local project files and agent configuration for a restaurant reservation assistant. It should be able to check availability, book tables, and confirm reservations. Do not authenticate with or call the ElevenLabs API and do not deploy — produce the agents.json and agent config files only, and document the 'elevenlabs agents push' deploy step in a README.",
+      "expected_output": "CLI-convention project files and agent configuration for a restaurant reservation voice agent",
       "files": [],
       "expectations": [
         "Uses 'elevenlabs agents init' or equivalent CLI command to set up the project",
-        "Uses 'elevenlabs agents add' to create the agent",
-        "Defines a system prompt appropriate for a restaurant reservation assistant",
-        "Uses 'elevenlabs agents push' to deploy",
+        "Uses 'elevenlabs agents add' or registers the agent in agents.json with a config under agent_configs",
+        "Defines a persona prompt for the restaurant reservation assistant in the agent config",
+        "Documents 'elevenlabs agents push' as the deploy step",
         "Configures at least one tool for checking availability or booking"
       ]
     },
@@ -21,7 +21,7 @@
       "files": [],
       "expectations": [
         "Uses the elevenlabs-convai web component or React wrapper",
-        "Includes the agent-id attribute set to 'abc123'",
+        "Sets abc123 as the agent id value",
         "Shows proper script tag or npm package import for the widget",
         "Provides a working HTML or React component example"
       ]
@@ -33,7 +33,7 @@
       "files": [],
       "expectations": [
         "Defines a tool with type 'webhook' or equivalent",
-        "Configures the webhook URL to https://api.example.com/inventory",
+        "Configures the request URL as https://api.example.com/inventory",
         "Includes a description for the tool that the LLM can understand",
         "Defines appropriate parameters/schema for the tool"
       ]
