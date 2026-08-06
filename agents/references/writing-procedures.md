@@ -43,7 +43,7 @@ Set `content` to a serialized JSON object containing a `trigger` and a non-empty
 
 Each entry in `branches` pairs a `condition` with its own `steps`. A condition is either an LLM condition such as `{"type": "llm", "condition": "the caller has no order ID"}` or an expression over dynamic variables such as `{"type": "expression", "expression": ...}`.
 
-Use the structured procedures documentation for current step types, fields, and valid combinations. To validate against a live agent, save the draft and compile it. Fix every reported error before publishing; `SKILL.md` describes the loop.
+Use the structured procedures documentation for current step types, fields, and valid combinations. To validate against a live agent, save the draft and compile it. Fix every reported error before publishing; [Using the Procedure API](using-procedure-api.md) describes the loop.
 
 ```json
 {

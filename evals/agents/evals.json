@@ -37,6 +37,58 @@
         "Includes a description for the tool that the LLM can understand",
         "Defines appropriate parameters/schema for the tool"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Using the ElevenLabs REST API and curl, show me how to add a structured (deterministic) procedure to agent agent_abc123 on branch agtbranch_xyz789 and get it live. Do not run anything.",
+      "expected_output": "Curl commands covering structured create, compile, and publish",
+      "files": [],
+      "expectations": [
+        "Sets type to deterministic and passes JSON-encoded content rather than a raw object",
+        "Sends the xi-api-key header populated from the ELEVENLABS_API_KEY environment variable, never a literal key",
+        "POSTs to the procedures/compile endpoint after saving the draft and before publishing, and repairs the draft and compiles again rather than publishing when compile returns errors",
+        "PATCHes the agent with branch_id and the compiled workflow"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "On my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, I only edited the wording of one free-form procedure. The branch also has a structured (deterministic) procedure that I did not touch. Do I need to compile before publishing, or can I just PATCH the agent? Do not run anything.",
+      "expected_output": "Explanation that no compile is needed, because compiling only concerns structured procedures",
+      "files": [],
+      "expectations": [
+        "Explains that compilation produces workflow nodes from deterministic procedures, while free-form content is read from its published version instead",
+        "Notes that the unchanged deterministic procedure does not force a compile"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I created a procedure on my ElevenLabs agent a minute ago, but GET /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id} returns 404. Explain why and show me the curl call that reads what I actually have.",
+      "expected_output": "Explanation of draft versus branch HEAD reads, plus the draft endpoint call",
+      "files": [],
+      "expectations": [
+        "Explains that the plain procedure endpoint reads branch HEAD and a newly created procedure is still an unpublished draft",
+        "Shows a GET against the /draft suffix of the procedure endpoint"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "With the ElevenLabs JavaScript SDK, I want to change only the content of an existing procedure agtprc_abc on agent agent_abc123, branch agtbranch_xyz789. Show me the call. Do not run it.",
+      "expected_output": "A drafts.update call sending the full procedure body",
+      "files": [],
+      "expectations": [
+        "Sends the current name, type, and trigger with the new content to preserve behavior during the replacement update",
+        "Reads the current draft before writing the update"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm adding procedures to my ElevenLabs agent over the API. One handles refunds and one handles general account questions, but the agent keeps running the wrong one. How should I write the triggers?",
+      "expected_output": "Trigger-writing guidance emphasizing concrete, non-overlapping triggers",
+      "files": [],
+      "expectations": [
+        "Advises making triggers concrete and non-overlapping, and identifies the broad account-questions trigger as the cause of the misrouting",
+        "Recommends wording each trigger to cover the phrasings a caller would actually use"
+      ]
     }
   ]
 }

@@ -1,14 +1,8 @@
----
-name: agent-procedures
-description: Manage ElevenLabs Agents Platform procedures through the Python and JavaScript SDKs or the public REST API. Use when creating, listing, reading, updating, discarding, compiling, publishing, versioning, or removing free-form or structured agent procedures.
-license: MIT
-compatibility: Requires internet access, an ElevenLabs API key (ELEVENLABS_API_KEY), and either an ElevenLabs SDK (2.60.0 or newer) or curl and jq.
-metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
----
-
-# ElevenLabs Agent Procedures
+# Using the Procedure API
 
 Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or over the public REST API with `curl`. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+
+For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
 Procedures are in Alpha. The feature set and the content schema are still changing, and some changes may break. Check the reference pages above before relying on a detail here.
 
@@ -175,8 +169,8 @@ try {
 - Create, update, discard, and remove act on your draft working set. Nothing reaches the live agent until you publish.
 - Publishing is not a procedure endpoint. Use `PATCH /v1/convai/agents/{agent_id}?branch_id=...` to version all changed procedure drafts on the branch.
 - Each branch maps every `procedure_id` to a published `version_id`, or to no version while only a draft exists. A branch-HEAD read therefore returns `404` until the first publish.
-- Compile structured-procedure changes before publishing. Publish free-form-only changes without compiling. See Compile and Publish.
-- Structured content has no dry-run. Save the draft, compile to validate it, and repair what compile reports. See Compile and Publish.
+- Compile structured-procedure changes before publishing. Publish free-form-only changes without compiling. See [Compile and Publish](#compile-and-publish).
+- Structured content has no dry-run. Save the draft, compile to validate it, and repair what compile reports. See [Compile and Publish](#compile-and-publish).
 - Draft writes are last-write-wins. Read the draft immediately before editing and avoid concurrent writers.
 
 Reads resolve against different sources:
@@ -221,7 +215,7 @@ PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
 
 Fail if `procedure_id` is empty or null.
 
-A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](references/writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
+A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
 
 ## Read and Update the Draft
 
@@ -244,7 +238,7 @@ curl -fsS -X PATCH \
 
 Treat the draft update body as a full replacement. Read the current draft, preserve `name`, `type`, and `trigger` unless the user requested changes to them, and send them with the new `content`. The API accepts an omitted `trigger` and then derives it from `content`; omit it only when that is intentional. Preserve `type` unless the user explicitly requests a conversion.
 
-Publish with the flow under Compile and Publish.
+Publish with the flow under [Compile and Publish](#compile-and-publish).
 
 ## Compile and Publish
 
@@ -283,7 +277,7 @@ WORKFLOW=$(printf '%s' "$COMPILE_RESPONSE" | jq -c '.workflow')
 
 A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow. Do not publish while `COMPILE_ERRORS` is non-empty — repair and recompile — and fail if `workflow` is null.
 
-SDK methods raise on compile failure. Catch the error around `procedures.compile`; see SDKs for the flow and Error Handling for the response fields.
+SDK methods raise on compile failure. Catch the error around `procedures.compile`; see [SDKs](#sdks) for the flow and [Error Handling](#error-handling) for the response fields.
 
 Publish the drafts with the compiled workflow:
 
@@ -350,7 +344,3 @@ Common errors:
 The SDKs raise for these responses. The payload is on `error.body`, and the status is on `error.status_code` in Python or `error.statusCode` in JavaScript.
 
 Do not blindly retry create, update, delete, or publish requests. Read current state before deciding whether a retry is safe.
-
-## References
-
-- [Writing Procedures](references/writing-procedures.md)
