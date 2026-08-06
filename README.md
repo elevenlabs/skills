@@ -22,6 +22,7 @@ npx skills add elevenlabs/skills
 | [music](./music) | Generate music tracks using AI composition |
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
 | [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
+| [dubbing](./dubbing) | Dub audio/video into other languages while preserving the original speakers' voices |
 | [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
 
 ## Configuration

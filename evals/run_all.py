@@ -121,6 +121,7 @@ ALL_SKILLS = [
     "music",
     "voice-changer",
     "voice-isolator",
+    "dubbing",
     "setup-api-key",
 ]
 
@@ -595,9 +596,65 @@ def extract_negative_terms(expectation: str) -> list[str]:
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
 
 
-def find_forbidden_reference(response_text: str, term: str) -> str | None:
-    """Detect an exact forbidden package reference in JS/package-manager contexts."""
+ADVISORY_REFERENCE_RE = re.compile(
+    r"\b(?:do\W+not|don't|does\W+not|not\W+us(?:e|ing)|avoid|"
+    r"deprecated|legacy|old(?:er)?|instead\W+of)\b",
+    flags=re.IGNORECASE,
+)
+
+
+ADVISORY_SCOPE_BREAK_RE = re.compile(
+    r"(?:[.;]|—|--|\s-\s|\b(?:but|however|instead|rather)\b|"
+    r",\s*(?:use|prefer|recommend|try|switch|call)\b)",
+    flags=re.IGNORECASE,
+)
+
+
+def is_advisory_reference(response_text: str, match_start: int) -> bool:
+    """Return true for negated prose that mentions a forbidden term as a warning."""
+    line_start = response_text.rfind("\n", 0, match_start) + 1
+    before_match = response_text[line_start:match_start]
+    for advisory_match in ADVISORY_REFERENCE_RE.finditer(before_match):
+        between = before_match[advisory_match.end():]
+        if ADVISORY_SCOPE_BREAK_RE.search(between):
+            continue
+        if advisory_match.group(0).lower() in {"deprecated", "legacy", "old", "older"}:
+            if re.match(r"\s*=", between):
+                continue
+        return True
+    return False
+
+
+def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple = ()) -> str | None:
+    """Detect exact forbidden package, endpoint, or SDK method references.
+
+    Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
+    package names — those are forbidden as literal substrings when used, since
+    import-context matching can't catch SDK method usage. Terms starting with '/'
+    are API paths — forbidden including their child routes, except child routes
+    under any of ``allowed_paths`` (quoted paths from the same expectation that
+    extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
+    quoted elsewhere as the allowed exception). Negated advisory prose may mention
+    either form without counting as usage."""
     escaped = re.escape(term)
+    if term.startswith("/"):
+        # Each exemption allows the term when continued by an allowed child segment
+        # (itself at a segment boundary, so '/project' exempts '/project' and
+        # '/project/...' but not '/projects').
+        exemptions = "".join(
+            rf"(?!{re.escape(p[len(term):])}(?![\w-]))"
+            for p in allowed_paths
+            if p.startswith(term + "/")
+        )
+        for match in re.finditer(rf"(?i){escaped}{exemptions}(?![\w-])", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
+    if "." in term:
+        for match in re.finditer(rf"(?i){escaped}", response_text):
+            if not is_advisory_reference(response_text, match.start()):
+                return match.group(0)
+        return None
     patterns = [
         rf"(?im)^\s*import\s+(?:[\w*\s{{}},$]+\s+from\s+)?[\"']{escaped}[\"']\s*;?\s*$",
         rf"(?i)\brequire\(\s*[\"']{escaped}[\"']\s*\)",
@@ -616,6 +673,10 @@ def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
     negative_terms = extract_negative_terms(expectation)
+    # Quoted API paths that are not themselves forbidden act as allowed exceptions
+    # for path-based NOT terms (see find_forbidden_reference).
+    quoted_strings = [m[1] for m in re.findall(r"([\"'])(.+?)\1", expectation)]
+    allowed_paths = tuple(q for q in quoted_strings if q.startswith("/") and q not in negative_terms)
 
     # Negative deprecation checks must run before generic "from elevenlabs import" pattern
     # matching; otherwise expectations that quote the forbidden import pass incorrectly.
@@ -630,13 +691,13 @@ def check_expectation(response_lower, response_text, expectation):
         if found_deprecated:
             return False, "Found deprecated pattern: %s" % found_deprecated[0]
         for term in negative_terms:
-            forbidden_match = find_forbidden_reference(response_text, term)
+            forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
             if forbidden_match:
                 return False, "Found forbidden reference: %s" % forbidden_match
         return True, "No deprecated patterns found"
 
     for term in negative_terms:
-        forbidden_match = find_forbidden_reference(response_text, term)
+        forbidden_match = find_forbidden_reference(response_text, term, allowed_paths)
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
 

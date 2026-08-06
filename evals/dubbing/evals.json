@@ -1,0 +1,46 @@
+{
+  "skill_name": "dubbing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script that dubs the video at ~/videos/promo.mp4 into Spanish using ElevenLabs. It should upload the file, wait for processing to finish, and download the final dubbed audio when it's done.",
+      "expected_output": "Python script driving the Dubbing Projects API end-to-end: create project, poll until ready, add Spanish, poll until completed, download output",
+      "files": [],
+      "expectations": [
+        "Creates a dubbing project from the video file using dubbing.project.create or POST /v1/dubbing/project",
+        "Does not use the deprecated legacy /v1/dubbing endpoint or its child routes (NOT '/v1/dubbing'; calls under '/v1/dubbing/project' are allowed)",
+        "Does not call the deprecated legacy v1 dubbing SDK methods (NOT 'dubbing.create(', NOT 'dubbing.get(', NOT 'dubbing.audio', NOT 'dubbing.dub_a_video')",
+        "Authenticates using the ELEVENLABS_API_KEY environment variable",
+        "Waits for the project status to become ready before adding a language",
+        "Adds a Spanish language target with target_language set to es",
+        "Waits until the language status is completed",
+        "Downloads the dubbed audio from the outputs.lossless_audio URL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an ElevenLabs dubbing project (id proj_1601kwkyxp0hfzvtmyxwqxx6mcy3) that just finished transcribing. Before I add any languages I want to fix a recurring transcription mistake: the product name should be 'Acme Cloud', not 'Acme Crowd'. Write a Python script that fetches the source transcript, finds every segment containing 'Acme Crowd', and corrects it.",
+      "expected_output": "Python script that reads the source transcript and updates each offending segment's text",
+      "files": [],
+      "expectations": [
+        "Fetches the source transcript using project.transcript.get or GET /v1/dubbing/project/{project_id}/transcript",
+        "Loops over the transcript segments and finds the ones whose text contains Acme Crowd",
+        "Updates each matching segment by its id, via transcript.update_segment or a PATCH to the transcript segment endpoint",
+        "Replaces Acme Crowd with Acme Cloud in the segment text",
+        "Authenticates using the ELEVENLABS_API_KEY environment variable"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The Spanish dub of my ElevenLabs project has one bad translation. Project id is proj_1601kwkyxp0hfzvtmyxwqxx6mcy3, language id is lang_1001kwkyxp0je6ktn4knsfrasx5s, segment id is 0199a3f0-1c2d-7abc-8def-0123456789ab. Write a script that replaces that segment's translation with 'Bienvenido a nuestra última demostración de producto.', regenerates the dub, waits for it to finish, and downloads the new audio.",
+      "expected_output": "Script that edits the translation, triggers a regeneration, polls until complete, and downloads the fresh output",
+      "files": [],
+      "expectations": [
+        "Updates the segment translation using language.transcript.update_segment or a PATCH request",
+        "Calls the transcript regenerate endpoint for the language after updating the translation",
+        "Polls the language status until it is completed rather than using a single fixed sleep",
+        "Downloads the refreshed outputs.lossless_audio URL only after completion (the signed URL comes from re-fetching the language)"
+      ]
+    }
+  ]
+}
