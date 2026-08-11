@@ -274,6 +274,7 @@ platform_settings={
 | `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
 | `topic_discovery` | object | Per-agent topic discovery configuration |
 | `sentiment_analysis` | object | Per-agent post-call sentiment analysis configuration |
+| `alerting` | object or null | Per-agent monitor thresholds, auto-resolution timing, and webhook notification settings |
 
 ### auth
 
@@ -562,9 +563,11 @@ const conversations = await client.conversationalAi.conversations.list({
 ```
 
 Conversation listing and message search can filter by `visited_agent_ids` and
-`visited_agent_branch_ids`. For a listing that includes selected analysis results, pass
-`data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
-`data_collection_results` or `evaluation_criteria_results`.
+`visited_agent_branch_ids`. List conversations also accepts `parent_conversation_id`,
+`guardrail_types`, and `custom_guardrail_names` to narrow results by hierarchy or triggered
+guardrails. For a listing that includes selected analysis results, pass `data_collection_ids` or
+`evaluation_criteria_ids`; matching summaries include `data_collection_results` or
+`evaluation_criteria_results`.
 
 ### SDK: Get Agent
 
@@ -639,7 +642,7 @@ curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
-| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis` |
+| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis`, `alerting` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |

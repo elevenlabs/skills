@@ -263,8 +263,8 @@ function TranscriptionComponent() {
 | **Manual** | You call `commit()` when ready - use for file processing or when you control the audio segments |
 | **VAD** | Voice Activity Detection auto-commits when silence is detected - use for live microphone input |
 
-Set `includeLanguageDetection: true` to receive the detected language code on committed transcript
-events that include timestamps.
+Set `includeLanguageDetection: true` to receive the detected language code in delayed final
+transcript events.
 
 ```typescript
 // React: set commitStrategy on the hook (recommended for mic input)
@@ -299,9 +299,12 @@ const connection = await client.speechToText.realtime.connect({
 | Event | Description |
 |-------|-------------|
 | `partial_transcript` | Live interim results |
+| `final_transcript` | Stable segment result sent before the segment is committed |
+| `final_transcript_with_timestamps` | Delayed final result with timestamps and/or detected language |
 | `committed_transcript` | Final results after commit |
 | `committed_transcript_with_timestamps` | Final with word timing |
 | `committed_transcript_entities` | Entities detected in a committed segment |
+| `invalid_request` | Connection parameters were rejected and the session closes |
 | `error` | Error occurred |
 
 See real-time references for complete documentation.
