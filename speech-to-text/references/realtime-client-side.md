@@ -159,7 +159,14 @@ async function startTranscription() {
 }
 ```
 
-`keyterms` biases realtime recognition toward important terms. `noVerbatim` removes filler words, false starts, and disfluencies from committed transcripts. `includeLanguageDetection` returns the detected language code on committed transcript events that include timestamps.
+`keyterms` biases realtime recognition toward important terms. `noVerbatim` removes filler words,
+false starts, and disfluencies from committed transcripts. `includeLanguageDetection` returns the
+detected language code in a delayed final transcript event.
+
+Both `Scribe.connect` and `useScribe` accept `secondaryLanguages` for expected additional
+languages, `entityDetection` for entity events, and `filterBackgroundAudio` to reduce false
+activation from background speech and ambient noise. Do not combine `filterBackgroundAudio` with
+`includeTimestamps`. Enterprise zero-retention sessions can set `enableLogging: false`.
 
 ## Manual Audio Chunking
 

@@ -132,6 +132,13 @@ const response = await client.conversationalAi.twilio.outboundCall({
 | `stability` | number | Voice stability (0.0-1.0) |
 | `similarity_boost` | number | Voice similarity boost (0.0-1.0) |
 | `speed` | number | Speech speed multiplier |
+| `pronunciation_dictionary_locators` | array | Pronunciation dictionaries for the call; each locator requires `pronunciation_dictionary_id` and `version_id` |
+
+### Conversation Settings
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `max_duration_seconds` | integer | Maximum duration of this conversation in seconds |
 
 ### Telephony Call Configuration
 

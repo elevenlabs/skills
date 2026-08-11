@@ -187,6 +187,10 @@ MCP server configuration supports the same `pre_tool_speech`, `interruption_mode
 while retaining the server default for other tools. MCP timeouts default to 30 seconds and must be
 5-300 seconds.
 
+Set `request_meta` on an MCP server configuration to send entries in the MCP `_meta` field of
+`tools/call` requests. Values can be JSON scalars or references to workspace secrets, dynamic
+variables, or environment variables that resolve for each call.
+
 **Note:** The default `api_schema.method` is `GET`. Always set `"method": "POST"` explicitly for webhook tools that send request bodies.
 
 ### Server Implementation (Node.js)
@@ -402,6 +406,10 @@ Built-in tools provided by ElevenLabs. These are configured in `conversation_con
 ```
 
 Current API schemas also expose `agent_prompt_change`, `memory_entry_create`, `memory_entry_delete`, `memory_entry_search`, and `memory_entry_update` in `built_in_tools`.
+
+Set `only_at_conversation_start: true` on the `language_detection` tool to constrain language
+switching when no switch occurs in the first two user turns. Leave it `false` when the conversation
+must remain able to switch languages later.
 
 ### end_call
 

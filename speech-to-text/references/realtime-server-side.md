@@ -22,6 +22,20 @@ Store your API key in a `.env` file:
 ELEVENLABS_API_KEY=<your_api_key_here>
 ```
 
+## Realtime Session Options
+
+| Purpose | Python / WebSocket | JavaScript |
+|---------|--------------------|------------|
+| Limit language detection to expected additional languages | `secondary_languages` | `secondaryLanguages` |
+| Return detected language in delayed final events | `include_language_detection` | `includeLanguageDetection` |
+| Detect entities in committed segments | `entity_detection` | `entityDetection` |
+| Reduce false activation from background speech and noise | `filter_background_audio` | `filterBackgroundAudio` |
+| Disable history and logging for an enterprise zero-retention session | `enable_logging=False` | `enableLogging: false` |
+
+`secondary_languages` accepts additional ISO-639-1 or ISO-639-3 codes. Entity detection accepts
+`all`, a supported entity type or category, or a list of them. Background audio filtering cannot be
+combined with timestamp output.
+
 ## Stream from URL
 
 ### Python
