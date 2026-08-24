@@ -44,13 +44,10 @@ const audioStream = await client.audioIsolation.convert({
 audioStream.pipe(createWriteStream("clean.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/audio-isolation" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "audio=@noisy.mp3" \
-  --output clean.mp3
+elevenlabs audio-isolation convert --audio noisy.mp3 --output clean.mp3
 ```
 
 ## Parameters

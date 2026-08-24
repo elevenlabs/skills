@@ -48,24 +48,18 @@ const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
 });
 ```
 
-## cURL Example
+## CLI Example
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Testing different voice settings.",
-    "model_id": "eleven_v3",
-    "voice_settings": {
-      "stability": 0.5,
-      "similarity_boost": 0.75,
-      "style": 0.0,
-      "use_speaker_boost": true
-    }
-  }' \
+elevenlabs text-to-speech convert \
+  --voice-id JBFqnCBsd6RMkjVDRZzb \
+  --text "Testing different voice settings." \
+  --model-id eleven_v3 \
+  --params '{"voice_settings": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.0, "use_speaker_boost": true}}' \
   --output output.mp3
 ```
+
+The CLI reads `ELEVENLABS_API_KEY` from the environment automatically. Pass nested JSON objects like `voice_settings` via `--params`.
 
 ## Use Case Recommendations
 

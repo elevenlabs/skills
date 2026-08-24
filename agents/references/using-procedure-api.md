@@ -1,6 +1,6 @@
 # Using the Procedure API
 
-Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or over the public REST API with `curl`. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or from the shell with the ElevenLabs CLI. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
@@ -11,14 +11,14 @@ Procedures are in Alpha. The feature set and the content schema are still changi
 - `ELEVENLABS_API_KEY` is set, with the `CONVAI_READ` and `CONVAI_WRITE` scopes.
 - Reading requires the viewer role on the target agent. Creating, updating, removing, compiling, and publishing require the editor role. Publishing to a protected branch requires admin.
 - The target `agent_id` is known.
-- The target `branch_id` is known. If not, read `main_branch_id` from `GET /v1/convai/agents/{agent_id}`, or list branches with `GET /v1/convai/agents/{agent_id}/branches`.
+- The target `branch_id` is known. If not, read `main_branch_id` with `elevenlabs agents get --agent-id "$AGENT_ID" --query main_branch_id`, or list branches with `elevenlabs agents branches list --agent-id "$AGENT_ID"`.
 
 ```bash
-API_BASE="https://api.elevenlabs.io/v1/convai"
-AUTH_HEADER="xi-api-key: $ELEVENLABS_API_KEY"
+AGENT_ID="your-agent-id"
+BRANCH_ID="your-branch-id"
 ```
 
-Never print or persist the API key.
+The CLI reads `ELEVENLABS_API_KEY` from the environment automatically; never pass the key as a flag, and never print or persist it.
 
 ## SDKs
 
@@ -186,9 +186,8 @@ Reads resolve against different sources:
 List the effective working set:
 
 ```bash
-curl -fsS \
-  -H "$AUTH_HEADER" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures"
+elevenlabs agents procedures list \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID"
 ```
 
 Each entry carries `procedure_id`, `version_id`, `name`, `type`, `trigger`, and `has_draft`. `has_draft` is true when the procedure has unpublished draft changes on this branch, in which case its `name`, `type`, and `trigger` reflect that draft. `version_id` is the version published on this branch, and is null exactly when `has_draft` is true — including for a procedure that was published earlier and has since been edited.
@@ -199,11 +198,9 @@ The list does not include procedure content. Read a body with `GET .../procedure
 
 ```bash
 CREATE_RESPONSE=$(
-  curl -fsS -X POST \
-    -H "$AUTH_HEADER" \
-    -H "Content-Type: application/json" \
-    "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures" \
-    -d '{
+  elevenlabs agents procedures create \
+    --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
+    --json '{
       "name": "Refund requests",
       "type": "free_form",
       "trigger": "When the user asks for a refund",
@@ -220,15 +217,12 @@ A structured procedure uses the same endpoint with `type` set to `deterministic`
 ## Read and Update the Draft
 
 ```bash
-curl -fsS \
-  -H "$AUTH_HEADER" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/$PROCEDURE_ID/draft"
+elevenlabs agents procedures drafts get \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
 
-curl -fsS -X PATCH \
-  -H "$AUTH_HEADER" \
-  -H "Content-Type: application/json" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/$PROCEDURE_ID/draft" \
-  -d '{
+elevenlabs agents procedures drafts update \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID" \
+  --json '{
     "name": "Refund requests",
     "type": "free_form",
     "trigger": "When the user asks for a refund",
@@ -245,11 +239,9 @@ Publish with the flow under [Compile and Publish](#compile-and-publish).
 One publish versions every changed procedure draft on the branch:
 
 ```bash
-curl -fsS -X PATCH \
-  -H "$AUTH_HEADER" \
-  -H "Content-Type: application/json" \
-  "$API_BASE/agents/$AGENT_ID?branch_id=$BRANCH_ID" \
-  -d '{"version_description": "Publish refund procedure"}'
+elevenlabs agents update \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
+  --json '{"version_description": "Publish refund procedure"}'
 ```
 
 Compile only when structured procedures have changed. Compilation turns structured drafts into workflow nodes and merges them into the existing agent workflow. The agent loads free-form procedures from their published versions at the start of a conversation, so publish free-form-only changes without `workflow`.
@@ -258,7 +250,7 @@ Also compile after removing the last structured procedure; compilation removes t
 
 Compilation requires a pending draft on the branch. With nothing staged, it fails with `no_draft_to_compile`, which also means there is nothing to publish.
 
-The public API validates structured content during compilation, using saved drafts rather than an inline request body:
+Compilation validates structured content using saved drafts rather than an inline request body:
 
 1. Save the content as a draft. A draft that does not validate still saves.
 2. Compile. On `400`, `errors` is keyed by procedure ID, and each entry carries the `path` of the offending field and a message naming the step, such as `steps[0].ask.instruction` and `Step 1: Ask step requires an instruction`.
@@ -266,16 +258,14 @@ The public API validates structured content during compilation, using saved draf
 4. Publish, sending that `workflow` with the publish.
 
 ```bash
-COMPILE_RESPONSE=$(
-  curl -sS -X POST \
-    -H "$AUTH_HEADER" \
-    "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/compile"
+WORKFLOW=$(
+  elevenlabs agents procedures compile \
+    --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
+    | jq -c '.workflow'
 )
-COMPILE_ERRORS=$(printf '%s' "$COMPILE_RESPONSE" | jq -c '.errors // empty')
-WORKFLOW=$(printf '%s' "$COMPILE_RESPONSE" | jq -c '.workflow')
 ```
 
-A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow. Do not publish while `COMPILE_ERRORS` is non-empty — repair and recompile — and fail if `workflow` is null.
+A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow, and the CLI exits non-zero and prints that error payload. Do not publish while compile reports errors — repair and recompile — and fail if `WORKFLOW` is empty or null.
 
 SDK methods raise on compile failure. Catch the error around `procedures.compile`; see [SDKs](#sdks) for the flow and [Error Handling](#error-handling) for the response fields.
 
@@ -289,11 +279,9 @@ PUBLISH_BODY=$(
     '{workflow: $workflow, version_description: $description}'
 )
 
-curl -fsS -X PATCH \
-  -H "$AUTH_HEADER" \
-  -H "Content-Type: application/json" \
-  "$API_BASE/agents/$AGENT_ID?branch_id=$BRANCH_ID" \
-  -d "$PUBLISH_BODY"
+elevenlabs agents update \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
+  --json "$PUBLISH_BODY"
 ```
 
 Include `workflow` whenever publishing structured changes. Without it, the publish versions the procedure drafts but leaves the previously published workflow unchanged.
@@ -301,9 +289,8 @@ Include `workflow` whenever publishing structured changes. Without it, the publi
 Verify a published procedure and record its `version_id`:
 
 ```bash
-curl -fsS \
-  -H "$AUTH_HEADER" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/$PROCEDURE_ID"
+elevenlabs agents procedures get \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
 ```
 
 ## Discard Edits
@@ -311,9 +298,8 @@ curl -fsS \
 Discard only your own unpublished draft:
 
 ```bash
-curl -fsS -X DELETE \
-  -H "$AUTH_HEADER" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/$PROCEDURE_ID/draft"
+elevenlabs agents procedures drafts delete \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
 ```
 
 This restores the branch-HEAD version. For a procedure that was never published, it deletes the procedure. Read the draft afterwards to confirm what remains.
@@ -323,9 +309,8 @@ This restores the branch-HEAD version. For a procedure that was never published,
 Stage the removal:
 
 ```bash
-curl -fsS -X DELETE \
-  -H "$AUTH_HEADER" \
-  "$API_BASE/agents/$AGENT_ID/branches/$BRANCH_ID/procedures/$PROCEDURE_ID"
+elevenlabs agents procedures remove \
+  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
 ```
 
 This removes the procedure from the branch working set. It does not erase versions still referenced by agent history.

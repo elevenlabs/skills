@@ -1,5 +1,36 @@
 # Installation
 
+## CLI (Recommended)
+
+macOS / Linux (Homebrew):
+
+```bash
+brew install elevenlabs/tap/elevenlabs
+```
+
+Windows (Scoop):
+
+```bash
+scoop bucket add elevenlabs https://github.com/elevenlabs/scoop-bucket
+scoop install elevenlabs
+```
+
+Shell installer:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elevenlabs/cli/releases/latest/download/elevenlabs-cli-installer.sh | sh
+```
+
+Authenticate with either:
+
+```bash
+# Option 1: Environment variable (picked up automatically)
+export ELEVENLABS_API_KEY="your-api-key"
+
+# Option 2: OAuth login (stores credentials in the OS keyring)
+elevenlabs auth login
+```
+
 ## JavaScript / TypeScript
 
 ```bash
@@ -36,21 +67,14 @@ client = ElevenLabs()
 client = ElevenLabs(api_key="your-api-key")
 ```
 
-## cURL / REST API
+## CLI Usage
 
-Set your API key as an environment variable:
-
-```bash
-export ELEVENLABS_API_KEY="your-api-key"
-```
-
-Include in requests via the `xi-api-key` header:
+The CLI reads `ELEVENLABS_API_KEY` from your environment automatically — no flags or headers needed:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/sound-generation" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Thunder rumbling in the distance"}' --output output.mp3
+elevenlabs text-to-sound-effects convert \
+  --text "Thunder rumbling in the distance" \
+  --output output.mp3
 ```
 
 ## Getting an API Key

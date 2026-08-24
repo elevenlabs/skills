@@ -267,13 +267,15 @@ word timestamps, and completion signal incrementally.
 
 *Provide either `prompt` or `composition_plan`, not both.
 
-### cURL
+### CLI
 
 ```bash
-curl -N -X POST "https://api.elevenlabs.io/v1/music/detailed/stream?output_format=auto" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "A bright indie pop hook with warm guitars", "music_length_ms": 30000, "model_id": "music_v2", "with_timestamps": true}'
+elevenlabs music compose_detailed_stream \
+  --prompt "A bright indie pop hook with warm guitars" \
+  --music-length-ms 30000 \
+  --model-id music_v2 \
+  --with-timestamps true \
+  --output-format auto
 ```
 
 ## upload
@@ -320,13 +322,12 @@ const songId = response.songId;
 const compositionPlan = response.compositionPlan;
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/music/upload" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@<file1>" \
-  -F "extract_composition_plan=music_v2"
+elevenlabs music upload \
+  --file my-song.mp3 \
+  --extract-composition-plan music_v2
 ```
 
 ## video_to_music
@@ -378,18 +379,19 @@ const audio = await client.music.videoToMusic({
 audio.pipe(createWriteStream("video-score.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/music/video-to-music?output_format=mp3_44100_128" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "videos=@scene-1.mp4" \
-  -F "videos=@scene-2.mp4" \
-  -F "description=Cinematic ambient score with a gentle build" \
-  -F "tags=cinematic" \
-  -F "tags=ambient" \
+elevenlabs music video_to_music \
+  --videos scene-1.mp4 \
+  --description "Cinematic ambient score with a gentle build" \
+  --tags cinematic \
+  --output-format mp3_44100_128 \
   --output video-score.mp3
 ```
+
+The CLI currently accepts one `--videos` file and one `--tags` value per request; use the Python
+or TypeScript SDK to send multiple videos or tags.
 
 ## Inpainting
 

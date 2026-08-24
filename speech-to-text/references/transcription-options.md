@@ -37,13 +37,12 @@ Generate a batch Scribe token on a trusted backend, then pass it as the `token` 
 from the frontend. Do not expose the API key to the client.
 
 ```bash
-TOKEN=$(curl -s -X POST \
-  "https://api.elevenlabs.io/v1/single-use-token/batch_scribe" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" | jq -r '.token')
+TOKEN=$(elevenlabs tokens single-use create --token-type batch_scribe --query token --format raw)
 
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text?token=$TOKEN" \
-  -F "file=@audio.mp3" \
-  -F "model_id=scribe_v2"
+elevenlabs speech-to-text convert \
+  --file audio.mp3 \
+  --model-id scribe_v2 \
+  --token "$TOKEN"
 ```
 
 ## Python Example
@@ -82,16 +81,15 @@ const result = await client.speechToText.convert({
 });
 ```
 
-## cURL Example
+## CLI Example
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@audio.mp3" \
-  -F "model_id=scribe_v2" \
-  -F "language_code=eng" \
-  -F "timestamps_granularity=word" \
-  -F "diarize=true"
+elevenlabs speech-to-text convert \
+  --file audio.mp3 \
+  --model-id scribe_v2 \
+  --language-code eng \
+  --timestamps-granularity word \
+  --diarize true
 ```
 
 ## Agent and Customer Role Detection
@@ -127,16 +125,15 @@ for (const word of result.words ?? []) {
 }
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@call.mp3" \
-  -F "model_id=scribe_v2" \
-  -F "diarize=true" \
-  -F "detect_speaker_roles=true" \
-  -F "use_speaker_library=true"
+elevenlabs speech-to-text convert \
+  --file call.mp3 \
+  --model-id scribe_v2 \
+  --diarize true \
+  --detect-speaker-roles true \
+  --use-speaker-library true
 ```
 
 ## Cloud Storage URL
@@ -173,13 +170,12 @@ const result = await client.speechToText.convert({
 });
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "model_id=scribe_v2" \
-  -F "source_url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+elevenlabs speech-to-text convert \
+  --model-id scribe_v2 \
+  --source-url "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 ```
 
 ## Response Structure

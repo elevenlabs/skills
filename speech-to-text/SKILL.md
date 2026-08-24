@@ -41,11 +41,10 @@ const result = await client.speechToText.convert({
 console.log(result.text);
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -F "file=@audio.mp3" -F "model_id=scribe_v2"
+elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v2
 ```
 
 ## Models
@@ -91,13 +90,12 @@ For call recordings, the batch API can label diarized speakers as `agent` and `c
 If your workspace has registered speaker profiles, set `use_speaker_library=true` with `diarize=true` to match detected speakers against the speaker library.
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@call.mp3" \
-  -F "model_id=scribe_v2" \
-  -F "diarize=true" \
-  -F "detect_speaker_roles=true" \
-  -F "use_speaker_library=true"
+elevenlabs speech-to-text convert \
+  --file call.mp3 \
+  --model-id scribe_v2 \
+  --diarize true \
+  --detect-speaker-roles true \
+  --use-speaker-library true
 ```
 
 ## Multichannel Audio

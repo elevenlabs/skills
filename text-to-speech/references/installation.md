@@ -1,5 +1,35 @@
 # Installation
 
+## CLI (Recommended)
+
+The ElevenLabs CLI is the fastest way to call the API from the terminal or scripts.
+
+```bash
+# macOS / Linux (Homebrew)
+brew install elevenlabs/tap/elevenlabs
+```
+
+```powershell
+# Windows (Scoop)
+scoop bucket add elevenlabs https://github.com/elevenlabs/scoop-bucket
+scoop install elevenlabs
+```
+
+```bash
+# Shell installer (any platform)
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elevenlabs/cli/releases/latest/download/elevenlabs-cli-installer.sh | sh
+```
+
+Authenticate with either:
+
+```bash
+# Option 1: Environment variable (picked up automatically)
+export ELEVENLABS_API_KEY="your-api-key"
+
+# Option 2: OAuth login (stores credentials in the OS keyring)
+elevenlabs auth login
+```
+
 ## JavaScript / TypeScript
 
 ```bash
@@ -57,21 +87,13 @@ client = ElevenLabs()
 client = ElevenLabs(api_key="your-api-key")
 ```
 
-## cURL / REST API
+## CLI Usage
 
-Set your API key as an environment variable:
-
-```bash
-export ELEVENLABS_API_KEY="your-api-key"
-```
-
-Include in requests via the `xi-api-key` header:
+Once installed and authenticated, no headers or keys are needed on the command line:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Hello world", "model_id": "eleven_multilingual_v2"}'
+elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
+  --text "Hello world" --model-id eleven_multilingual_v2 --output output.mp3
 ```
 
 ## Getting an API Key

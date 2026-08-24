@@ -525,7 +525,7 @@ const agents = await client.conversationalAi.agents.list();
 ```
 
 ```bash
-curl -X GET "https://api.elevenlabs.io/v1/convai/agents" -H "xi-api-key: $ELEVENLABS_API_KEY"
+elevenlabs agents list
 ```
 
 ### SDK: Manage Conversation Tags
@@ -583,7 +583,7 @@ const agent = await client.conversationalAi.agents.get("your-agent-id");
 ```
 
 ```bash
-curl -X GET "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
+elevenlabs agents get --agent-id "your-agent-id"
 ```
 
 ### SDK: Update Agent
@@ -627,11 +627,9 @@ await client.conversationalAi.agents.update("id", {
 });
 ```
 
-**cURL:**
+**CLI:**
 ```bash
-curl -X PATCH "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"name": "New Name"}'
+elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}'
 ```
 
 #### Updatable Fields
@@ -661,7 +659,7 @@ await client.conversationalAi.agents.delete("your-agent-id");
 ```
 
 ```bash
-curl -X DELETE "https://api.elevenlabs.io/v1/convai/agents/your-agent-id" -H "xi-api-key: $ELEVENLABS_API_KEY"
+elevenlabs agents delete --agent-id "your-agent-id"
 ```
 
 ## CI/CD Integration

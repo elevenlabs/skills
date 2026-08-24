@@ -78,12 +78,13 @@ const agent = await client.conversationalAi.agents.create({
 });
 ```
 
-### cURL
+### CLI
+
+The CLI reads `ELEVENLABS_API_KEY` from the environment automatically:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/convai/agents/create" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
+elevenlabs agents create \
+  --json '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
 
 ## Starting Conversations
@@ -416,12 +417,11 @@ Three test types via `POST /v1/convai/agent-testing/create`, then attached with 
 
 Eval strategies: `exact`, `regex`, `llm`. Prompt evaluation criteria can use binary scoring or
 numeric scoring with `scoring_mode: "numeric_uniform"`, `max_score`, and `score_instructions`;
-numeric scores are normalized into the aggregate conversation success percentage. Attach via PATCH:
+numeric scores are normalized into the aggregate conversation success percentage. Attach via an agent update:
 
 ```bash
-curl -s -X PATCH "https://api.elevenlabs.io/v1/convai/agents/{agent_id}" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"platform_settings": {"testing": {"attached_tests": [{"test_id": "test_xxxx"}]}}}'
+elevenlabs agents update --agent-id "your-agent-id" \
+  --json '{"platform_settings": {"testing": {"attached_tests": [{"test_id": "test_xxxx"}]}}}'
 ```
 
 Run selected tests with `POST /v1/convai/agents/{agent_id}/run-tests`. The request
@@ -449,7 +449,7 @@ See [Widget Embedding Reference](references/widget-embedding.md) for all options
 
 Make outbound phone calls using your agent via Twilio or Exotel integration:
 
-The examples below use Twilio. See the reference for Exotel REST usage.
+The examples below use Twilio. See the reference for Exotel usage.
 
 ### Python
 
@@ -474,12 +474,14 @@ const response = await client.conversationalAi.twilio.outboundCall({
 });
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/convai/twilio/outbound-call" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"agent_id": "your-agent-id", "agent_phone_number_id": "your-phone-number-id", "to_number": "+1234567890", "call_recording_enabled": true}'
+elevenlabs agents twilio outbound_call \
+  --agent-id "your-agent-id" \
+  --agent-phone-number-id "your-phone-number-id" \
+  --to-number "+1234567890" \
+  --call-recording-enabled true
 ```
 
 See [Outbound Calls Reference](references/outbound-calls.md) for provider-specific endpoints, configuration overrides, and dynamic variables.

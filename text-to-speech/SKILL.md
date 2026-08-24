@@ -48,13 +48,14 @@ const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
 Readable.fromWeb(audio).pipe(createWriteStream("output.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"text": "Hello!", "model_id": "eleven_multilingual_v2"}' --output output.mp3
+elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
+  --text "Hello!" --model-id eleven_multilingual_v2 --output output.mp3
 ```
+
+The CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
 
 ## Models
 
