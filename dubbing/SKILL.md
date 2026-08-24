@@ -159,7 +159,7 @@ elevenlabs dubbing project language get --project-id proj_... --language-id lang
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
 | `model_id` | no | `dubbing_v2` (default) |
 | `target_language` | no | Optionally queue the first language target at creation; add more with `language.create` |
-| `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 100 terms of 200 chars each; repeat the field once per term in multipart |
+| `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 1000 terms; each at most 50 chars and 5 words; `<>{}[]\` not allowed. Repeat the field once per term in multipart |
 
 ## Editing the Source Transcript
 
