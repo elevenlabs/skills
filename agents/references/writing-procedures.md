@@ -98,9 +98,10 @@ const content = JSON.stringify({
 });
 ```
 
-### cURL
+### CLI
 
 ```bash
+# Build the JSON string to pass to `elevenlabs agents procedures create --json`
 CONTENT=$(jq -n '{
   trigger: "When the user asks for a refund",
   steps: [

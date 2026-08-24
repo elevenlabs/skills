@@ -334,7 +334,7 @@ For nested agent transfers, set `enable_nesting` on a `standalone_agent` node an
 
 ## Procedures
 
-Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). Procedures are in Alpha. See [Using the Procedure API](references/using-procedure-api.md) for the full REST and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
+Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). Procedures are in Alpha. See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
 
 Procedures live on an agent branch, and every write stages a per-user draft:
 
@@ -560,7 +560,7 @@ Common errors: **401** (invalid key), **404** (not found), **422** (invalid conf
 - [Installation Guide](references/installation.md) - SDK setup and migration
 - [Agent Configuration](references/agent-configuration.md) - All config options and CRUD examples
 - [Client Tools](references/client-tools.md) - Webhook, client, and system tools
-- [Using the Procedure API](references/using-procedure-api.md) - Procedure REST and SDK flow, compile and publish
+- [Using the Procedure API](references/using-procedure-api.md) - Procedure CLI and SDK flow, compile and publish
 - [Writing Procedures](references/writing-procedures.md) - Trigger and content authoring, step schema
 - [Widget Embedding](references/widget-embedding.md) - Website integration
 - [Outbound Calls](references/outbound-calls.md) - Phone call integrations

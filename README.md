@@ -41,7 +41,7 @@ Most skills include examples for:
 
 - **Python** - `pip install elevenlabs`
 - **JavaScript/TypeScript** - `npm install @elevenlabs/elevenlabs-js`
-- **cURL** - Direct REST API calls
+- **CLI** - `brew install elevenlabs/tap/elevenlabs` (wraps the REST API; reads `ELEVENLABS_API_KEY` automatically)
 
 > **JavaScript SDK Warning:** Always use `@elevenlabs/elevenlabs-js`. Do not use `npm install elevenlabs` (that's an outdated v1.x package).
 
