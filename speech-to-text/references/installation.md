@@ -1,5 +1,35 @@
 # Installation
 
+## CLI (Recommended)
+
+Install the ElevenLabs CLI:
+
+```bash
+# macOS / Linux (Homebrew)
+brew install elevenlabs/tap/elevenlabs
+```
+
+```powershell
+# Windows (Scoop)
+scoop bucket add elevenlabs https://github.com/elevenlabs/scoop-bucket
+scoop install elevenlabs
+```
+
+```bash
+# Shell installer (macOS / Linux)
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elevenlabs/cli/releases/latest/download/elevenlabs-cli-installer.sh | sh
+```
+
+Authenticate with either method:
+
+```bash
+# Option 1: Environment variable (picked up automatically)
+export ELEVENLABS_API_KEY="your-api-key"
+
+# Option 2: OAuth login (stores credentials in the OS keyring)
+elevenlabs auth login
+```
+
 ## JavaScript / TypeScript
 
 ```bash
@@ -59,21 +89,12 @@ client = ElevenLabs()
 client = ElevenLabs(api_key="your-api-key")
 ```
 
-## cURL / REST API
+## CLI Usage
 
-Set your API key as an environment variable:
-
-```bash
-export ELEVENLABS_API_KEY="your-api-key"
-```
-
-Include in requests via the `xi-api-key` header:
+The CLI reads `ELEVENLABS_API_KEY` automatically — no key flags or headers needed:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-text" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@audio.mp3" \
-  -F "model_id=scribe_v2"
+elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v2
 ```
 
 ## Getting an API Key

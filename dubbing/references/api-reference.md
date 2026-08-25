@@ -55,7 +55,7 @@ JS methods are the same paths in camelCase (e.g. `dubbing.project.transcript.upd
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
 | `model_id` | no | `dubbing_v2` (default) |
 | `target_language` | no | Optionally queue the first language target at creation; add more with `language.create` |
-| `keyterms` | no | Terms to bias transcription/translation toward (e.g. product or brand names), up to 100 terms of 200 characters each. In multipart, repeat the field once per term |
+| `keyterms` | no | Terms to bias transcription/translation toward (e.g. product or brand names), up to 1000 terms; each at most 50 characters and 5 words; `<>{}[]\` not allowed. In multipart, repeat the field once per term |
 
 **Auto-detected source language:** if `source_language` is omitted, the project's `source_language` stays `null`; the detected language is reported as the `language` field on the source transcript.
 

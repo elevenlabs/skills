@@ -58,13 +58,14 @@ const audioStream = await client.speechToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", 
 audioStream.pipe(createWriteStream("converted.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/speech-to-speech/JBFqnCBsd6RMkjVDRZzb?output_format=mp3_44100_128" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "audio=@source.mp3" \
-  -F "model_id=eleven_multilingual_sts_v2" \
+elevenlabs speech-to-speech convert \
+  --voice-id JBFqnCBsd6RMkjVDRZzb \
+  --audio source.mp3 \
+  --model-id eleven_multilingual_sts_v2 \
+  --output-format mp3_44100_128 \
   --output converted.mp3
 ```
 

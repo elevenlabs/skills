@@ -117,7 +117,7 @@ Good fits:
 
 - Add a new supported model row to an existing model table.
 - Add a new top-level parameter to an existing parameter table.
-- Update existing Python, JavaScript, and cURL examples when method signatures change.
+- Update existing Python, JavaScript, and CLI examples when method signatures change.
 
 Bad fits:
 
@@ -132,7 +132,7 @@ Apply the smallest useful change to the correct file and section. Match existing
 Update patterns:
 
 - **Model table:** add, remove, or modify rows in the relevant `SKILL.md` model table. Verify model IDs and descriptions.
-- **Code examples:** update method signatures, imports, and significant parameters. Keep Python, JavaScript, and cURL examples consistent when all exist.
+- **Code examples:** update method signatures, imports, and significant parameters. Keep Python, JavaScript, and CLI examples consistent when all exist.
 - **LLM provider table:** update `agents/SKILL.md` or `agents/references/agent-configuration.md`.
 - **Tools section:** update `agents/SKILL.md` with new tool types in the existing style.
 - **CLI section:** update existing CLI examples in `agents/` files.

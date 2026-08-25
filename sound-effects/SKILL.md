@@ -43,12 +43,11 @@ const audio = await client.textToSoundEffects.convert({
 audio.pipe(createWriteStream("thunder.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/sound-generation" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"text": "Thunder rumbling in the distance with light rain"}' \
+elevenlabs text-to-sound-effects convert \
+  --text "Thunder rumbling in the distance with light rain" \
   --output thunder.mp3
 ```
 
@@ -83,7 +82,7 @@ audio = client.text_to_sound_effects.convert(
 
 ## Output Formats
 
-Pass `output_format` as a query parameter (cURL) or SDK parameter:
+Pass `--output-format` (CLI) or `output_format` as an SDK parameter:
 
 | Format | Description |
 |--------|-------------|

@@ -10,7 +10,7 @@ Make outbound phone calls using your ElevenLabs agent via Twilio or Exotel integ
 
 ## Basic Usage
 
-See the [main agents skill](../SKILL.md#outbound-calls) for basic Twilio Python, JavaScript, and cURL examples.
+See the [main agents skill](../SKILL.md#outbound-calls) for basic Twilio Python, JavaScript, and CLI examples.
 
 ## Request Parameters
 
@@ -49,9 +49,10 @@ agent branch and `environment` to control how environment variables resolve for 
 Use the Exotel endpoint when the linked phone number uses the Exotel provider:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/convai/exotel/outbound-call" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"agent_id": "your-agent-id", "agent_phone_number_id": "your-phone-number-id", "to_number": "+1234567890"}'
+elevenlabs agents exotel outbound_call \
+  --agent-id "your-agent-id" \
+  --agent-phone-number-id "your-phone-number-id" \
+  --to-number "+1234567890"
 ```
 
 ## Customizing the Call

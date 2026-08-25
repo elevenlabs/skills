@@ -12,7 +12,7 @@ Dub audio or video into other languages while preserving the original speakers' 
 
 > **Important:** Use the Dubbing Projects API — `elevenlabs.dubbing.project.*` in the SDKs, or the `/v1/dubbing/project` REST endpoints. Do **not** use the legacy v1 dubbing surface (`client.dubbing.create()`, `client.dubbing.get()`, `client.dubbing.audio.get()`, or bare `/v1/dubbing` routes) — that is the older dubbing API, now under Legacy in the API reference.
 
-> **Setup:** See [Installation Guide](references/installation.md). REST base URL is `https://api.elevenlabs.io` with your API key in the `xi-api-key` header; the SDKs read `ELEVENLABS_API_KEY` automatically.
+> **Setup:** See [Installation Guide](references/installation.md). The `elevenlabs` CLI and the SDKs read `ELEVENLABS_API_KEY` automatically; REST base URL is `https://api.elevenlabs.io` with your API key in the `xi-api-key` header.
 
 ## Concepts
 
@@ -128,34 +128,28 @@ const response = await fetch(language.outputs!.losslessAudio!);
 await writeFile("promo_es.wav", Buffer.from(await response.arrayBuffer()));
 ```
 
-## Quick Start (cURL)
+## Quick Start (CLI)
+
+The `elevenlabs` CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
 
 ```bash
-# 1. Create a project (use -F "source_url=https://..." instead of file to dub from a URL)
-curl -X POST "https://api.elevenlabs.io/v1/dubbing/project" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "file=@promo.mp4" \
-  -F "source_language=en"
+# 1. Create a project (use --source-url "https://..." instead of --file to dub from a URL)
+elevenlabs dubbing project create --file promo.mp4 --source-language en
 # → {"project_id": "proj_...", "status": "queued", ...}
 
 # 2. Poll until status is "ready"
-curl "https://api.elevenlabs.io/v1/dubbing/project/proj_..." \
-  -H "xi-api-key: $ELEVENLABS_API_KEY"
+elevenlabs dubbing project get --project-id proj_...
 
 # 3. Add a target language
-curl -X POST "https://api.elevenlabs.io/v1/dubbing/project/proj_.../language" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"target_language": "es"}'
+elevenlabs dubbing project language create --project-id proj_... --target-language es
 
 # 4. Poll the language until "completed", then download outputs.lossless_audio
-curl "https://api.elevenlabs.io/v1/dubbing/project/proj_.../language/lang_..." \
-  -H "xi-api-key: $ELEVENLABS_API_KEY"
+elevenlabs dubbing project language get --project-id proj_... --language-id lang_...
 ```
 
 ## Create Options
 
-`POST /v1/dubbing/project` takes `multipart/form-data` with **either** `file` **or** `source_url` (not both):
+`elevenlabs dubbing project create` (REST: `POST /v1/dubbing/project`, `multipart/form-data`) takes **either** `file` **or** `source_url` (not both):
 
 | Field | Required | Notes |
 |-------|----------|-------|
@@ -165,7 +159,7 @@ curl "https://api.elevenlabs.io/v1/dubbing/project/proj_.../language/lang_..." \
 | `reference` | no | Free-form label to identify the project on your end (max 500 chars) |
 | `model_id` | no | `dubbing_v2` (default) |
 | `target_language` | no | Optionally queue the first language target at creation; add more with `language.create` |
-| `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 100 terms of 200 chars each; repeat the field once per term in multipart |
+| `keyterms` | no | Terms to bias transcription/translation toward (product/brand names). Up to 1000 terms; each at most 50 chars and 5 words; `<>{}[]\` not allowed. Repeat the field once per term in multipart |
 
 ## Editing the Source Transcript
 
@@ -195,12 +189,12 @@ added = elevenlabs.dubbing.project.transcript.create_segment(
 elevenlabs.dubbing.project.transcript.delete_segment(project_id, segment_id=added.segment.id)
 ```
 
-Via REST: `GET /v1/dubbing/project/{project_id}/transcript`, then `PATCH .../transcript/segment/{segment_id}` with only the changed fields:
+Via the CLI: `elevenlabs dubbing project transcript get --project-id proj_...`, then update a segment with only the changed fields (`--text`, `--speaker-id`, `--start-s`, `--end-s`):
 
 ```bash
-curl -X PATCH "https://api.elevenlabs.io/v1/dubbing/project/{project_id}/transcript/segment/{segment_id}" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"text": "Welcome to our latest product demo."}'
+elevenlabs dubbing project transcript update_segment \
+  --project-id proj_... --segment-id seg_... \
+  --text "Welcome to our latest product demo."
 ```
 
 ## Refining Translations and Regenerating
@@ -223,7 +217,7 @@ elevenlabs.dubbing.project.language.transcript.update_segment(
 elevenlabs.dubbing.project.language.transcript.regenerate(project_id, language_id)
 ```
 
-Via REST: `PATCH /v1/dubbing/project/{project_id}/language/{language_id}/transcript/segment/{segment_id}` with `{"translation": "..."}`, then `POST .../language/{language_id}/transcript/regenerate` (returns `202 Accepted`).
+Via the CLI: `elevenlabs dubbing project language transcript update_segment --project-id proj_... --language-id lang_... --segment-id seg_... --translation "..."`, then `elevenlabs dubbing project language transcript regenerate --project-id proj_... --language-id lang_...` (returns `202 Accepted`).
 
 A translation edit affects only that language. After the edit, a `completed` language becomes `stale` — it keeps serving its previous output until you regenerate. Poll until `completed`; `output_revision` then equals `revision` and `outputs.lossless_audio` reflects the current transcript.
 

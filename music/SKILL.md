@@ -49,12 +49,13 @@ const audio = await client.music.compose({
 audio.pipe(createWriteStream("output.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/music" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"prompt": "A chill lo-fi beat", "music_length_ms": 30000, "model_id": "music_v2"}' \
+elevenlabs music compose \
+  --prompt "A chill lo-fi beat" \
+  --music-length-ms 30000 \
+  --model-id music_v2 \
   --output output.mp3
 ```
 
@@ -139,19 +140,19 @@ const audio = await client.music.videoToMusic({
 audio.pipe(createWriteStream("video-score.mp3"));
 ```
 
-### cURL
+### CLI
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/music/video-to-music" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -F "videos=@trailer.mp4" \
-  -F "description=Build suspense, then resolve with a warm cinematic finish." \
-  -F "tags=cinematic" \
-  -F "tags=suspenseful" \
-  -F "tags=uplifting" \
-  -F "model_id=music_v2" \
+elevenlabs music video_to_music \
+  --videos trailer.mp4 \
+  --description "Build suspense, then resolve with a warm cinematic finish." \
+  --tags cinematic \
+  --model-id music_v2 \
   --output video-score.mp3
 ```
+
+The CLI currently accepts one `--videos` file and one `--tags` value per request; use the Python
+or TypeScript SDK to send multiple videos or tags.
 
 Constraints from the current API schema:
 
@@ -300,10 +301,12 @@ detailed compose, streams `text/event-stream`, and can include word timestamps w
 `with_timestamps`.
 
 ```bash
-curl -N -X POST "https://api.elevenlabs.io/v1/music/detailed/stream?output_format=auto" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "A bright indie pop hook with warm guitars", "music_length_ms": 30000, "model_id": "music_v2", "with_timestamps": true}'
+elevenlabs music compose_detailed_stream \
+  --prompt "A bright indie pop hook with warm guitars" \
+  --music-length-ms 30000 \
+  --model-id music_v2 \
+  --with-timestamps true \
+  --output-format auto
 ```
 
 ## Inpainting
