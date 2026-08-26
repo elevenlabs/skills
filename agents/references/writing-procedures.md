@@ -97,3 +97,16 @@ const content = JSON.stringify({
   ],
 });
 ```
+
+### CLI
+
+```bash
+# Build the JSON string to pass to `elevenlabs agents procedures create --json`
+CONTENT=$(jq -n '{
+  trigger: "When the user asks for a refund",
+  steps: [
+    { type: "ask", instruction: "Ask for the order ID." },
+    { type: "say", message: "Your refund is on its way." }
+  ]
+}')
+```

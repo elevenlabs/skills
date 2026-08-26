@@ -339,7 +339,7 @@ For nested agent transfers, set `enable_nesting` on a `standalone_agent` node an
 
 ## Procedures
 
-Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). See [Using the Procedure API](references/using-procedure-api.md) for the full API and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
+Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
 
 Procedures live on an agent branch, and every write stages a per-user draft:
 
