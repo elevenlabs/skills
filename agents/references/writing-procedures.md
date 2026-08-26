@@ -97,4 +97,3 @@ const content = JSON.stringify({
   ],
 });
 ```
-
