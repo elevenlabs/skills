@@ -1,6 +1,6 @@
 # Writing Procedures
 
-Check the current documentation before authoring procedure content. Procedures are in Alpha, and the content schema may change:
+Check the current documentation before authoring procedure content:
 
 - [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) — what a procedure is, and when to use one instead of a workflow or the system prompt.
 - [Free-form procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures/free-form-procedures.md) — anatomy, inline references, and how to write triggers and content.

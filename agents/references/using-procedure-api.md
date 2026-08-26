@@ -1,10 +1,10 @@
 # Using the Procedure API
 
-Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or from the shell with the ElevenLabs CLI. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK or the REST API. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
-Procedures are in Alpha. The feature set and the content schema are still changing, and some changes may break. Check the reference pages above before relying on a detail here.
+The dashboard is the recommended way to build procedures. Use the API for programmatic management or deployment tooling. The ElevenLabs CLI does not support procedure management.
 
 ## Prerequisites
 
@@ -51,6 +51,7 @@ SDK notes:
 
 - JavaScript takes the IDs positionally, then a body object. Python takes keyword arguments — except `procedures.create`, which takes its body as `request=CreateProcedureRequestModel(...)`. Flat keywords on `create` raise `TypeError`.
 - Read one historical version with `procedures.get(..., version_id=...)` or `procedures.get(agentId, branchId, procedureId, { versionId })`.
+- Pass `agent_version_id` to `procedures.list` or `procedures.get` to resolve the procedures attached to a specific agent version.
 - For structured changes, pass the `workflow` returned by `procedures.compile` to `agents.update`.
 
 The flow below creates a free-form procedure, edits its draft, and publishes it.
@@ -183,12 +184,9 @@ Reads resolve against different sources:
 
 ## List Procedures
 
-List the effective working set:
-
-```bash
-elevenlabs agents procedures list \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID"
-```
+Call `GET /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures` to list the effective
+working set. Pass `agent_version_id` when you need the procedure versions attached to one
+immutable agent version.
 
 Each entry carries `procedure_id`, `version_id`, `name`, `type`, `trigger`, and `has_draft`. `has_draft` is true when the procedure has unpublished draft changes on this branch, in which case its `name`, `type`, and `trigger` reflect that draft. `version_id` is the version published on this branch, and is null exactly when `has_draft` is true — including for a procedure that was published earlier and has since been edited.
 
@@ -196,38 +194,33 @@ The list does not include procedure content. Read a body with `GET .../procedure
 
 ## Create
 
-```bash
-CREATE_RESPONSE=$(
-  elevenlabs agents procedures create \
-    --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-    --json '{
-      "name": "Refund requests",
-      "type": "free_form",
-      "trigger": "When the user asks for a refund",
-      "content": "Confirm the order number, check eligibility, and explain the next step."
-    }'
-)
-PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
+Send this body to `POST /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures`:
+
+```json
+{
+  "name": "Refund requests",
+  "type": "free_form",
+  "trigger": "When the user asks for a refund",
+  "content": "Confirm the order number, check eligibility, and explain the next step."
+}
 ```
 
-Fail if `procedure_id` is empty or null.
+Record the `procedure_id` from the response.
 
 A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
 
 ## Read and Update the Draft
 
-```bash
-elevenlabs agents procedures drafts get \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
+Read the draft with `GET /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id}/draft`.
+Update it with `PATCH` on the same path:
 
-elevenlabs agents procedures drafts update \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID" \
-  --json '{
-    "name": "Refund requests",
-    "type": "free_form",
-    "trigger": "When the user asks for a refund",
-    "content": "Confirm the order number. Check refund eligibility. Explain the refund timeline."
-  }'
+```json
+{
+  "name": "Refund requests",
+  "type": "free_form",
+  "trigger": "When the user asks for a refund",
+  "content": "Confirm the order number. Check refund eligibility. Explain the refund timeline."
+}
 ```
 
 Treat the draft update body as a full replacement. Read the current draft, preserve `name`, `type`, and `trigger` unless the user requested changes to them, and send them with the new `content`. The API accepts an omitted `trigger` and then derives it from `content`; omit it only when that is intentional. Preserve `type` unless the user explicitly requests a conversion.
@@ -238,11 +231,13 @@ Publish with the flow under [Compile and Publish](#compile-and-publish).
 
 One publish versions every changed procedure draft on the branch:
 
-```bash
-elevenlabs agents update \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-  --json '{"version_description": "Publish refund procedure"}'
+```json
+{
+  "version_description": "Publish refund procedure"
+}
 ```
+
+Send the body to `PATCH /v1/convai/agents/{agent_id}?branch_id={branch_id}`.
 
 Compile only when structured procedures have changed. Compilation turns structured drafts into workflow nodes and merges them into the existing agent workflow. The agent loads free-form procedures from their published versions at the start of a conversation, so publish free-form-only changes without `workflow`.
 
@@ -257,61 +252,40 @@ Compilation validates structured content using saved drafts rather than an inlin
 3. Repair every entry and compile again. Each compile returns the errors detected in that pass; fixing field-level errors may reveal structural errors on the next pass. Continue until compile returns a workflow.
 4. Publish, sending that `workflow` with the publish.
 
-```bash
-WORKFLOW=$(
-  elevenlabs agents procedures compile \
-    --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-    | jq -c '.workflow'
-)
-```
+Call `POST /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/compile`.
 
-A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow, and the CLI exits non-zero and prints that error payload. Do not publish while compile reports errors — repair and recompile — and fail if `WORKFLOW` is empty or null.
+A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors`
+and no workflow. Do not publish while compile reports errors. Repair and recompile, and fail if
+the returned `workflow` is empty or null.
 
 SDK methods raise on compile failure. Catch the error around `procedures.compile`; see [SDKs](#sdks) for the flow and [Error Handling](#error-handling) for the response fields.
 
 Publish the drafts with the compiled workflow:
 
-```bash
-PUBLISH_BODY=$(
-  jq -n \
-    --argjson workflow "$WORKFLOW" \
-    --arg description "Publish refund procedure" \
-    '{workflow: $workflow, version_description: $description}'
-)
-
-elevenlabs agents update \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-  --json "$PUBLISH_BODY"
+```json
+{
+  "workflow": "<workflow returned by compile>",
+  "version_description": "Publish refund procedure"
+}
 ```
 
 Include `workflow` whenever publishing structured changes. Without it, the publish versions the procedure drafts but leaves the previously published workflow unchanged.
 
 Verify a published procedure and record its `version_id`:
 
-```bash
-elevenlabs agents procedures get \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
-```
+`GET /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id}`
 
 ## Discard Edits
 
-Discard only your own unpublished draft:
-
-```bash
-elevenlabs agents procedures drafts delete \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
-```
+Discard only your own unpublished draft with
+`DELETE /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id}/draft`.
 
 This restores the branch-HEAD version. For a procedure that was never published, it deletes the procedure. Read the draft afterwards to confirm what remains.
 
 ## Remove a Procedure
 
-Stage the removal:
-
-```bash
-elevenlabs agents procedures remove \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" --procedure-id "$PROCEDURE_ID"
-```
+Stage the removal with
+`DELETE /v1/convai/agents/{agent_id}/branches/{branch_id}/procedures/{procedure_id}`.
 
 This removes the procedure from the branch working set. It does not erase versions still referenced by agent history.
 
