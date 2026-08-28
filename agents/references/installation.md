@@ -5,6 +5,11 @@
 The ElevenLabs CLI is the recommended way to create and manage agents:
 
 ```bash
+# npm (any platform with Node.js)
+npm install -g @elevenlabs/cli
+```
+
+```bash
 # macOS / Linux (Homebrew)
 brew install elevenlabs/tap/elevenlabs
 ```
