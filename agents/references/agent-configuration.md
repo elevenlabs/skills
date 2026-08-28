@@ -382,6 +382,8 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `show_agent_status` | bool | `false` | Whether to show working, done, or error status while tools are running |
 | `show_conversation_id` | bool | `true` | Whether to show the conversation ID after disconnection |
 | `strip_audio_tags` | bool | `true` | Whether to strip audio markup from messages |
+| `mic_muting_enabled` | bool | `true` | Whether users can mute their microphone |
+| `transcript_enabled` | bool | `true` | Whether to show the live conversation transcript |
 | `syntax_highlight_theme` | string | auto | Code block syntax highlighting theme (`light` or `dark`); omit it to let the widget auto-detect |
 | `show_resize_button` | bool | `true` | Whether to show the expand and collapse control in the widget header |
 
@@ -399,8 +401,9 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `source_attribution` | bool | `false` | Instructs the LLM to report sources used when knowledge base content is present |
 
 Common client events include `agent_response_correction`, `agent_tool_response_full_payload`,
-and `agent_response_complete`. `agent_response_complete` fires when the agent is done responding
-and must be enabled in `client_events`.
+`agent_response_complete`, and `context_usage`. `agent_response_complete` fires when the agent is
+done responding. `context_usage` fires after each completed agent turn with `event_id`, `model`,
+`context_tokens`, and `context_limit_tokens`. Enable either event by adding it to `client_events`.
 
 **file_input:**
 
@@ -566,11 +569,11 @@ const conversations = await client.conversationalAi.conversations.list({
 ```
 
 Conversation listing and message search can filter by `visited_agent_ids` and
-`visited_agent_branch_ids`. List conversations also accepts `parent_conversation_id`,
-`guardrail_types`, and `custom_guardrail_names` to narrow results by hierarchy or triggered
-guardrails. For a listing that includes selected analysis results, pass `data_collection_ids` or
-`evaluation_criteria_ids`; matching summaries include `data_collection_results` or
-`evaluation_criteria_results`.
+`visited_agent_branch_ids`, `triggered_procedure_ids`, and `include_invalid_tool_calls`. List
+conversations also accepts `parent_conversation_id`, `guardrail_types`, `custom_guardrail_names`,
+and `sort_direction` to narrow or order results. For a listing that includes selected analysis
+results, pass `data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
+`data_collection_results` or `evaluation_criteria_results`.
 
 ### SDK: Get Agent
 
@@ -644,7 +647,7 @@ elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `interruption_ignore_term_languages`, `merge_with_default_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
 | `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis`, `alerting` |
-| `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `syntax_highlight_theme` |
+| `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `mic_muting_enabled`, `transcript_enabled`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
 

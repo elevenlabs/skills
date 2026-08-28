@@ -131,6 +131,8 @@ const conversation = await Conversation.startSession({
   onMessage: (msg) => console.log("Agent:", msg.message),
   onUserTranscript: (t) => console.log("User:", t.message),
   onPing: (event) => console.log("Estimated latency:", event.ping_ms),
+  onContextUsage: ({ model, context_tokens, context_limit_tokens }) =>
+    console.log(`${model}: ${context_tokens}/${context_limit_tokens} context tokens`),
   onError: (e) => console.error(e)
 });
 ```
@@ -166,6 +168,9 @@ function App({ signedUrl }: { signedUrl: string }) {
     <ConversationProvider
       onError={(error) => console.error("Conversation error:", error)}
       onPing={(event) => console.log("Estimated latency:", event.ping_ms)}
+      onContextUsage={({ model, context_tokens, context_limit_tokens }) =>
+        console.log(`${model}: ${context_tokens}/${context_limit_tokens} context tokens`)
+      }
     >
       <Agent signedUrl={signedUrl} />
     </ConversationProvider>
@@ -334,7 +339,7 @@ For nested agent transfers, set `enable_nesting` on a `standalone_agent` node an
 
 ## Procedures
 
-Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). Procedures are in Alpha. See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
+Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
 
 Procedures live on an agent branch, and every write stages a per-user draft:
 
@@ -353,6 +358,7 @@ Semantics worth knowing before writing any of these calls:
 - A draft update replaces the whole body. Read the draft first, then resend `name`, `type`, and `trigger` alongside the new `content`.
 - `content` is markdown for a `free_form` procedure, and a JSON-encoded object with a `trigger` and a `steps` array for a `deterministic` one. Serialize it; do not hand-escape quotes.
 - Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say.
+- To restrict the starting agent to selected procedures for one conversation, enable `platform_settings.overrides.enable_procedure_ids_from_client`, then pass their IDs as `procedure_ids` in conversation initiation data. An empty list disables all procedures for that starting agent.
 - Procedure APIs require `elevenlabs` (Python) or `@elevenlabs/elevenlabs-js` at `2.60.0` or newer.
 
 ## Guardrails

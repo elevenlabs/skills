@@ -1,10 +1,10 @@
 # Using the Procedure API
 
-Procedures are reusable instruction blocks that an agent runs when a trigger matches. Create, edit, compile, and publish them with the Python or JavaScript SDK, or from the shell with the ElevenLabs CLI. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent runs when a trigger matches. Use the ElevenLabs CLI by default to create, edit, compile, and publish them. Python and JavaScript SDKs are also available for application code. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
-Procedures are in Alpha. The feature set and the content schema are still changing, and some changes may break. Check the reference pages above before relying on a detail here.
+The CLI exposes the complete procedure lifecycle, including draft operations and structured procedure compilation.
 
 ## Prerequisites
 
@@ -19,6 +19,20 @@ BRANCH_ID="your-branch-id"
 ```
 
 The CLI reads `ELEVENLABS_API_KEY` from the environment automatically; never pass the key as a flag, and never print or persist it.
+
+## CLI
+
+Use these command groups for procedure management:
+
+| Operation | Command |
+|-----------|---------|
+| List, create, read, remove | `elevenlabs agents procedures ...` |
+| Read, update, discard draft | `elevenlabs agents procedures drafts ...` |
+| Compile structured procedures | `elevenlabs agents procedures compile` |
+| Publish pending changes | `elevenlabs agents update` |
+
+Use `--dry-run` to validate and inspect a generated request without sending it. Use `--schema`
+on any command to inspect its machine-readable input and output contract.
 
 ## SDKs
 
@@ -51,6 +65,7 @@ SDK notes:
 
 - JavaScript takes the IDs positionally, then a body object. Python takes keyword arguments — except `procedures.create`, which takes its body as `request=CreateProcedureRequestModel(...)`. Flat keywords on `create` raise `TypeError`.
 - Read one historical version with `procedures.get(..., version_id=...)` or `procedures.get(agentId, branchId, procedureId, { versionId })`.
+- Pass `agent_version_id` to `procedures.list` or `procedures.get` to resolve the procedures attached to a specific agent version.
 - For structured changes, pass the `workflow` returned by `procedures.compile` to `agents.update`.
 
 The flow below creates a free-form procedure, edits its draft, and publishes it.
@@ -190,6 +205,9 @@ elevenlabs agents procedures list \
   --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID"
 ```
 
+In the SDKs, pass `agent_version_id` when you need the procedure versions attached to one
+immutable agent version.
+
 Each entry carries `procedure_id`, `version_id`, `name`, `type`, `trigger`, and `has_draft`. `has_draft` is true when the procedure has unpublished draft changes on this branch, in which case its `name`, `type`, and `trigger` reflect that draft. `version_id` is the version published on this branch, and is null exactly when `has_draft` is true — including for a procedure that was published earlier and has since been edited.
 
 The list does not include procedure content. Read a body with `GET .../procedures/{procedure_id}` or its `/draft` variant.
@@ -265,7 +283,9 @@ WORKFLOW=$(
 )
 ```
 
-A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors` and no workflow, and the CLI exits non-zero and prints that error payload. Do not publish while compile reports errors — repair and recompile — and fail if `WORKFLOW` is empty or null.
+A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors`
+and no workflow, and the CLI exits non-zero and prints that error payload. Do not publish while
+compile reports errors. Repair and recompile, and fail if `WORKFLOW` is empty or null.
 
 SDK methods raise on compile failure. Catch the error around `procedures.compile`; see [SDKs](#sdks) for the flow and [Error Handling](#error-handling) for the response fields.
 
