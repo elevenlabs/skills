@@ -18,7 +18,7 @@ The ElevenLabs CLI is the recommended way to create and manage agents:
 
 ```bash
 # Install CLI and authenticate
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/elevenlabs/cli/releases/latest/download/elevenlabs-cli-installer.sh | sh
+npm install -g @elevenlabs/cli
 elevenlabs auth login
 
 # Initialize project and create an agent
