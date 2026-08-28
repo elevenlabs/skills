@@ -11,6 +11,7 @@
   {"query": "help me configure my AWS credentials and IAM roles", "should_trigger": false},
   {"query": "create a .env file for my project with DATABASE_URL and REDIS_URL", "should_trigger": false},
   {"query": "I need to rotate all my API keys for a security audit", "should_trigger": false},
+  {"query": "connect the hosted ElevenLabs MCP server to Claude Desktop", "should_trigger": false},
   {"query": "how do I set up my deepgram API key for my transcription project?", "should_trigger": false},
   {"query": "help me set up stripe API keys for payment processing", "should_trigger": false}
 ]
