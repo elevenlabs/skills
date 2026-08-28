@@ -5,6 +5,11 @@
 Install the ElevenLabs CLI:
 
 ```bash
+# npm (any platform with Node.js)
+npm install -g @elevenlabs/cli
+```
+
+```bash
 # macOS / Linux (Homebrew)
 brew install elevenlabs/tap/elevenlabs
 ```

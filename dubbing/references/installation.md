@@ -4,6 +4,12 @@ The Dubbing Projects API is available via the `elevenlabs` CLI under `elevenlabs
 
 ## CLI (Recommended)
 
+npm (any platform with Node.js):
+
+```bash
+npm install -g @elevenlabs/cli
+```
+
 macOS / Linux (Homebrew):
 
 ```bash

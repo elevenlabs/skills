@@ -2,6 +2,12 @@
 
 ## CLI (Recommended)
 
+npm (any platform with Node.js):
+
+```bash
+npm install -g @elevenlabs/cli
+```
+
 macOS / Linux (Homebrew):
 
 ```bash
