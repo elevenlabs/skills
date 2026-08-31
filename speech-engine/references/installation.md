@@ -41,20 +41,6 @@ npm install @elevenlabs/react
 npm install @elevenlabs/client
 ```
 
-### Temporary LiveKit WebRTC Pin
-
-There is a known LiveKit server compatibility issue where WebRTC startup may hit the underlying LiveKit WebSocket path `/rtc/v1` and return 404, causing delays or failed sessions in React, Next.js, Electron, and other browser clients. Until the upstream issue is resolved, pin `livekit-client` to `2.16.1` when logs mention `/rtc/v1`, `v1 RTC path not found`, or `could not establish pc connection`:
-
-```json
-{
-  "overrides": {
-    "livekit-client": "2.16.1"
-  }
-}
-```
-
-This belongs in the app's `package.json`. Remove the override once the ElevenLabs LiveKit server or SDK no longer requires the workaround.
-
 Always use `@elevenlabs/elevenlabs-js`, `@elevenlabs/react`, or `@elevenlabs/client`. Do not use the deprecated `elevenlabs` npm package.
 
 ## Python

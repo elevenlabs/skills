@@ -187,16 +187,6 @@ export function VoiceControls() {
 }
 ```
 
-If a WebRTC browser session stalls or logs `/rtc/v1` 404s, `v1 RTC path not found`, or `could not establish pc connection`, pin `livekit-client` to `2.16.1` in the app's `package.json` until the upstream LiveKit compatibility issue is resolved:
-
-```json
-{
-  "overrides": {
-    "livekit-client": "2.16.1"
-  }
-}
-```
-
 ## References
 
 - [Installation Guide](references/installation.md)

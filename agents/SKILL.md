@@ -89,20 +89,6 @@ elevenlabs agents create \
 
 ## Starting Conversations
 
-### Temporary LiveKit WebSocket Pin
-
-Until the ElevenLabs LiveKit server supports `/rtc/v1`, browser clients using WebRTC can fail or stall during the underlying LiveKit WebSocket handshake with `livekit-client` versions newer than `2.16.1`. For React, Next.js, Electron, or other `@elevenlabs/client` / `@elevenlabs/react` integrations that use `connectionType: "webrtc"` or hit `wss://livekit.rtc.elevenlabs.io/rtc/v1`, add this temporary pin to `package.json`:
-
-```json
-{
-  "overrides": {
-    "livekit-client": "2.16.1"
-  }
-}
-```
-
-Use the pin when the app logs `/rtc/v1` 404s, `v1 RTC path not found`, or `could not establish pc connection` during session startup. This is a LiveKit server compatibility workaround for WebRTC sessions, not the ElevenLabs `connectionType: "websocket"` transport. Remove it after the upstream LiveKit server or SDK issue is fixed.
-
 **Authenticated WebRTC:** Request a session token from your backend. The response includes both
 the token and the conversation ID:
 ```python
