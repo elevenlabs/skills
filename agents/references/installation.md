@@ -91,20 +91,6 @@ npm install @elevenlabs/client@latest  # Vanilla JavaScript in the browser
 npm install @elevenlabs/react@latest   # React on the web
 ```
 
-### Temporary LiveKit WebSocket pin
-
-There is a known LiveKit server compatibility issue where WebRTC startup may hit the underlying LiveKit WebSocket path `/rtc/v1` and return 404, causing delays or failed sessions in React, Next.js, Electron, and other browser clients. Until the upstream issue is resolved, pin `livekit-client` to `2.16.1` when using `connectionType: "webrtc"` or when logs mention `wss://livekit.rtc.elevenlabs.io/rtc/v1`:
-
-```json
-{
-  "overrides": {
-    "livekit-client": "2.16.1"
-  }
-}
-```
-
-This belongs in the app's `package.json`. Apply it when logs include `/rtc/v1` 404s, `v1 RTC path not found`, or `could not establish pc connection`. Remove the override once the ElevenLabs LiveKit server or SDK no longer requires the workaround.
-
 **Import changes:**
 ```javascript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
