@@ -394,6 +394,7 @@ Use `platform_settings.widget` to configure the hosted widget and shareable page
 | `max_duration_seconds` | int | `600` | Max conversation duration |
 | `text_only` | bool | `false` | Text-only mode (avoids audio pricing) |
 | `file_input` | object | - | Enables image and PDF uploads in chat for multimodal LLMs |
+| `dtmf_input_settings` | object or null | - | Collects phone keypad input; set to `null` to disable |
 | `monitoring_enabled` | bool | `false` | Enable real-time WebSocket monitoring |
 | `client_events` | array | - | Client events forwarded to the connected application |
 | `monitoring_events` | array | - | Events forwarded to monitoring WebSocket connections |
@@ -412,6 +413,17 @@ done responding. `context_usage` fires after each completed agent turn with `eve
 | `enabled` | bool | `true` | Allows end users to attach images or PDFs in chat when the selected LLM supports multimodal input |
 | `max_files_in_memory` | int | `10` | Number of most-recent files kept in memory (1-30); older files are summarized and released |
 | `max_files_per_conversation` | int | `10` | Total upload limit; use `-1` for no limit or a value at least as large as `max_files_in_memory` |
+
+**dtmf_input_settings:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `dtmf_input_timeout` | number | `2` | Seconds to wait after the last keypress before completing the sequence (0.5-10) |
+| `hash_terminator` | bool | `true` | Completes the sequence when the caller presses `#` |
+| `redact_input` | bool | `false` | Replaces keypad entries in stored transcripts, logs, and analysis; the live agent and tools still receive the digits |
+
+DTMF input accepts out-of-band keypad events during phone calls. Each completed sequence becomes
+one user turn.
 
 **background_sound:**
 
@@ -645,7 +657,7 @@ elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `interruption_ignore_term_languages`, `merge_with_default_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
-| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `monitoring_enabled`, `background_sound` |
+| `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `dtmf_input_settings`, `monitoring_enabled`, `background_sound` |
 | `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis`, `alerting` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `mic_muting_enabled`, `transcript_enabled`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |

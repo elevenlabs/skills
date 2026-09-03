@@ -196,6 +196,7 @@ Generate music while returning both the composition plan and metadata alongside 
 | `model_id` | string | No | Defaults to `music_v2` |
 | `store_for_inpainting` | boolean | No | If `true`, retains the generated audio under a `song_id` so it can be referenced by later inpainting plans |
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
+| `with_waveform_visual` | boolean | No | Include a low-resolution waveform preview; defaults to `false` |
 | `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`; high-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`. |
 
 *Provide either `prompt` or `composition_plan`, not both.
@@ -208,6 +209,7 @@ Generate music while returning both the composition plan and metadata alongside 
 | `filename` | Output file identifier |
 | `audio` | Audio bytes |
 | `song_id` | Identifier for the stored song (only when `store_for_inpainting=True`) |
+| `json.waveform_visual` | Optional integer array sampled four times per second, with values from -1000 to 1000 |
 
 ### Python
 
@@ -263,6 +265,7 @@ word timestamps, and completion signal incrementally.
 | `force_instrumental` | boolean | No | Guarantee an instrumental output (prompt mode only) |
 | `store_for_inpainting` | boolean | No | Store the generated song so it can be referenced by later inpainting plans |
 | `with_timestamps` | boolean | No | Include word timestamps in the streamed events |
+| `with_waveform_visual` | boolean | No | Include a low-resolution waveform preview in the streamed events |
 | `output_format` | string | No | Query parameter for output codec/sample-rate/bitrate. `auto` selects `mp3_44100_128` for `music_v1` and `mp3_48000_192` for `music_v2`. |
 
 *Provide either `prompt` or `composition_plan`, not both.
@@ -289,6 +292,7 @@ Upload a music file for later inpainting workflows. This endpoint is available t
 | `file` | file | Yes | The audio file to upload |
 | `extract_composition_plan` | boolean \| string | No | If `true` (or a model id such as `"music_v2"`), the response includes an extracted composition plan; passing a model id chooses the extraction model. The request may take longer to return. |
 | `with_timestamps` | boolean | No | Transcribe the uploaded song and include word-level timestamps in the response. The request may take longer to return. |
+| `with_waveform_visual` | boolean | No | Include a low-resolution waveform preview in the response |
 
 ### Returns
 
@@ -297,6 +301,7 @@ Upload a music file for later inpainting workflows. This endpoint is available t
 | `song_id` | Unique identifier for the uploaded song |
 | `composition_plan` | Extracted composition plan, or `null` when `extract_composition_plan` is not enabled |
 | `words_timestamps` | Word-level timestamps when `with_timestamps` is enabled |
+| `waveform_visual` | Integer array sampled four times per second, with values from -1000 to 1000, when `with_waveform_visual` is enabled |
 
 ### Python
 
