@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "ElevenLabs": {
+      "url": "https://api.us.elevenlabs.io/v1/mcp",
+      "auth": {
+        "CLIENT_ID": "0d057191-f2bd-4516-89f8-997e7bfe6bc6",
+        "scopes": [
+          "convai_read",
+          "convai_write",
+          "text_to_speech",
+          "speech_history_read",
+          "flows",
+          "image_video_generation",
+          "voice_generation"
+        ]
+      }
+    }
+  }
+}
