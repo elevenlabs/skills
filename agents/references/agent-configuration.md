@@ -587,6 +587,10 @@ and `sort_direction` to narrow or order results. For a listing that includes sel
 results, pass `data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
 `data_collection_results` or `evaluation_criteria_results`.
 
+Both operations accept repeatable `dynamic_variable_params` filters
+(`dynamicVariableParams` in JavaScript). Each value uses `name:op:value`, where `op` is `eq`,
+`gt`, `gte`, `lt`, or `lte`; comparison operators require a numeric value.
+
 ### SDK: Get Agent
 
 ```python
