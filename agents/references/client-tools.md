@@ -498,6 +498,11 @@ For optional tool parameters that should never be sent in the request payload, s
 `is_omitted: true` on the JSON schema property. Do not combine it with `description`,
 `dynamic_variable`, `is_system_provided`, or `constant_value`.
 
+For an LLM-supplied parameter that must match a runtime list, set
+`allowed_values: {"dynamic_variable": "allowed_ids"}`. The dynamic variable must resolve to a
+JSON array. Use `allowed_values` only with a `description`-sourced property; do not combine it with
+`dynamic_variable`, `is_system_provided`, `constant_value`, or `is_omitted`.
+
 ### Error Handling
 
 Configure how tool errors are shared with the agent using `tool_error_handling_mode`:

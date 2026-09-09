@@ -146,6 +146,13 @@ const response = await client.conversationalAi.twilio.outboundCall({
 | Option | Type | Description |
 |--------|------|-------------|
 | `ringing_timeout_secs` | integer | How long to ring the recipient before giving up (default: `60`) |
+| `twilio_machine_detection` | object or null | Twilio answering-machine detection settings. Omit or set to `null` to disable. Ignored for non-Twilio providers and inbound calls. |
+
+Set `twilio_machine_detection.mode` to `enable` for an early human-or-machine verdict or
+`detect_message_end` to wait for the end of a voicemail greeting. The default is `enable`.
+Detection runs asynchronously. Its verdict arrives through the separate
+`answering_machine_detection` webhook event, which must be enabled in the workspace or agent
+webhook settings.
 
 ### Dynamic Variables
 

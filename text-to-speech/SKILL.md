@@ -50,6 +50,20 @@ Readable.fromWeb(audio).pipe(createWriteStream("output.mp3"));
 
 ### CLI
 
+Use `say` to play text immediately with the default voice and `eleven_v3` model:
+
+```bash
+elevenlabs say "Hello!"
+```
+
+Pipe text into `say` when another command produces the input:
+
+```bash
+echo "The build finished successfully." | elevenlabs say
+```
+
+Use the API command when you need to set request parameters directly:
+
 ```bash
 elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
   --text "Hello!" --model-id eleven_multilingual_v2 --output output.mp3
