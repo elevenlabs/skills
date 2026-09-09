@@ -56,10 +56,10 @@ Use `say` to play text immediately with the default voice and `eleven_v3` model:
 elevenlabs say "Hello!"
 ```
 
-Add `--output` to save the audio instead of playing it:
+Pipe text into `say` when another command produces the input:
 
 ```bash
-elevenlabs say "Hello!" --output output.mp3
+echo "The build finished successfully." | elevenlabs say
 ```
 
 Use the API command when you need to set request parameters directly:
