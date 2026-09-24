@@ -191,6 +191,7 @@ conversation_config={
 | `enable_reasoning_summary` | bool | `false` | Request provider reasoning summaries when supported; keep disabled for lower time-to-first-byte |
 | `tools` | array | - | Webhook and client tool definitions |
 | `built_in_tools` | object | - | System tools (end_call, transfer, etc.) |
+| `enable_parallel_tool_calls` | bool | `true` | Allow supported models to execute multiple tools within one turn |
 | `tool_ids` | array | - | References to pre-configured tools |
 | `knowledge_base` | array | - | Documents for RAG |
 | `custom_llm` | object | - | Custom LLM endpoint config |
@@ -210,7 +211,7 @@ to resolve per-environment auth connections at runtime.
 
 | Provider | Model IDs |
 |----------|-----------|
-| OpenAI | `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
+| OpenAI | `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
 | Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
 | Google | `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` (hosted, ultra-low latency) |
@@ -277,7 +278,7 @@ platform_settings={
 | `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
 | `topic_discovery` | object | Per-agent topic discovery configuration |
 | `sentiment_analysis` | object | Per-agent post-call sentiment analysis configuration |
-| `alerting` | object or null | Per-agent monitor thresholds, auto-resolution timing, and webhook notification settings |
+| `alerting` | object or null | Per-agent monitor thresholds, auto-resolution timing, and webhook, PagerDuty, or Slack notification settings |
 
 ### auth
 
@@ -294,6 +295,36 @@ platform_settings={
 | `agent_concurrency_limit` | int | Max simultaneous conversations (default: -1, unlimited) |
 | `daily_limit` | int | Max conversations per day (default: 100000) |
 | `bursting_enabled` | bool | Allow exceeding limits at 2x cost (default: true) |
+
+### alerting
+
+Use `platform_settings.alerting.notifiers` to deliver alert lifecycle notifications:
+
+| Notifier | Required fields |
+|----------|-----------------|
+| Webhook | `type: "webhook"`, `webhook_id` |
+| PagerDuty | `type: "integration"`, `integration_type: "pagerduty"`, `connection_id` |
+| Slack | `type: "integration"`, `integration_type: "slack"`, `connection_id`, `channel_id` |
+
+For Slack, `connection_id` identifies a workspace integration connection with monitoring
+capability. `channel_id` identifies the destination channel:
+
+```json
+{
+  "platform_settings": {
+    "alerting": {
+      "notifiers": [
+        {
+          "type": "integration",
+          "integration_type": "slack",
+          "connection_id": "connection_id",
+          "channel_id": "C0123456789"
+        }
+      ]
+    }
+  }
+}
+```
 
 ### guardrails
 
@@ -657,7 +688,7 @@ elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}
 |---------|--------|
 | Root | `name`, `tags` |
 | `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables`, `text_behavior_overrides` |
-| `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `knowledge_base`, `custom_llm`, `timezone` |
+| `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `enable_parallel_tool_calls`, `knowledge_base`, `custom_llm`, `timezone` |
 | `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `interruption_ignore_term_languages`, `merge_with_default_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
