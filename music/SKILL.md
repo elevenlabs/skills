@@ -12,7 +12,8 @@ Generate music from text prompts - supports instrumental tracks, songs with lyri
 
 > **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
-All examples below default to `music_v2`, the current generation model. Pass `model_id="music_v1"` only when explicitly requested to.
+All examples below use `music_v2_5`, the most advanced generation model. Pass `music_v2` or
+`music_v1` only when an older model is explicitly requested.
 
 ## Quick Start
 
@@ -26,7 +27,7 @@ client = ElevenLabs()
 audio = client.music.compose(
     prompt="A chill lo-fi hip hop beat with jazzy piano chords",
     music_length_ms=30000,
-    model_id="music_v2",
+    model_id="music_v2_5",
 )
 
 with open("output.mp3", "wb") as f:
@@ -44,7 +45,7 @@ const client = new ElevenLabsClient();
 const audio = await client.music.compose({
   prompt: "A chill lo-fi hip hop beat with jazzy piano chords",
   musicLengthMs: 30000,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 audio.pipe(createWriteStream("output.mp3"));
 ```
@@ -55,7 +56,7 @@ audio.pipe(createWriteStream("output.mp3"));
 elevenlabs music compose \
   --prompt "A chill lo-fi beat" \
   --music-length-ms 30000 \
-  --model-id music_v2 \
+  --model-id music_v2_5 \
   --output output.mp3
 ```
 
@@ -101,7 +102,7 @@ Generate background music from uploaded video clips via
 
 The API combines videos in order, accepts an optional natural-language description, and lets you
 steer style with up to 10 tags such as `upbeat` or `cinematic`. This endpoint still defaults to
-`music_v1`; pass `model_id="music_v2"` to use the newer model.
+`music_v1`; pass `model_id="music_v2_5"` to use the most advanced model.
 
 ### Python
 
@@ -114,7 +115,7 @@ audio = client.music.video_to_music(
     videos=["trailer.mp4"],
     description="Build suspense, then resolve with a warm cinematic finish.",
     tags=["cinematic", "suspenseful", "uplifting"],
-    model_id="music_v2",
+    model_id="music_v2_5",
 )
 
 with open("video-score.mp3", "wb") as f:
@@ -134,7 +135,7 @@ const audio = await client.music.videoToMusic({
   videos: [createReadStream("trailer.mp4")],
   description: "Build suspense, then resolve with a warm cinematic finish.",
   tags: ["cinematic", "suspenseful", "uplifting"],
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 
 audio.pipe(createWriteStream("video-score.mp3"));
@@ -147,7 +148,7 @@ elevenlabs music video_to_music \
   --videos trailer.mp4 \
   --description "Build suspense, then resolve with a warm cinematic finish." \
   --tags cinematic \
-  --model-id music_v2 \
+  --model-id music_v2_5 \
   --output video-score.mp3
 ```
 
@@ -163,10 +164,11 @@ Constraints from the current API schema:
 
 ## Composition Plans
 
-`music_v2` composition plans are an ordered list of `chunks`. Each chunk specifies its own
+`music_v2_5` composition plans are an ordered list of `chunks`. Each chunk specifies its own
 `text` (section label, lyrics, inline cues), `duration_ms`, `positive_styles`, `negative_styles`,
 and `context_adherence` (`low`, `medium`, or `high`, default `high`). Up to 30 chunks per plan,
-each 3,000–120,000 ms, total length 3 s to 10 minutes.
+each 3,000–120,000 ms, total length 3 s to 10 minutes. Each chunk's `text` supports up to 6,132
+characters, with up to 30 lines of 200 characters each.
 
 Generate a plan first, edit it, then compose:
 
@@ -174,7 +176,7 @@ Generate a plan first, edit it, then compose:
 plan = client.music.composition_plan.create(
     prompt="An epic orchestral piece building to a climax",
     music_length_ms=60000,
-    model_id="music_v2",
+    model_id="music_v2_5",
 )
 
 # Edit chunks in place
@@ -182,7 +184,7 @@ plan["chunks"][0]["text"] = "[Intro]\nQuiet strings rising"
 
 audio = client.music.compose(
     composition_plan=plan,
-    model_id="music_v2",
+    model_id="music_v2_5",
 )
 ```
 
@@ -190,14 +192,14 @@ audio = client.music.compose(
 const plan = await client.music.compositionPlan.create({
   prompt: "An epic orchestral piece building to a climax",
   musicLengthMs: 60000,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 
 plan.chunks[0].text = "[Intro]\nQuiet strings rising";
 
 const audio = await client.music.compose({
   compositionPlan: plan,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 ```
 
@@ -223,7 +225,7 @@ composition_plan = {
     ]
 }
 
-audio = client.music.compose(composition_plan=composition_plan, model_id="music_v2")
+audio = client.music.compose(composition_plan=composition_plan, model_id="music_v2_5")
 ```
 
 ```typescript
@@ -248,7 +250,7 @@ const compositionPlan = {
 
 const audio = await client.music.compose({
   compositionPlan,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 ```
 
@@ -258,8 +260,9 @@ Put broader characteristics (genre, instrumentation, vocal style) in `positive_s
 ## Output Formats
 
 Use the `output_format` query parameter on compose, detailed compose, or stream requests to select
-the generated audio format. `auto` chooses a model-appropriate MP3 format; for `music_v2`, it
-selects `mp3_48000_192`. Higher-bitrate MP3 options include `mp3_48000_240` and `mp3_48000_320`.
+the generated audio format. `auto` chooses a model-appropriate MP3 format; for `music_v2` and
+`music_v2_5`, it selects `mp3_48000_192`. Higher-bitrate MP3 options include
+`mp3_48000_240` and `mp3_48000_320`.
 
 ## Streaming
 
@@ -271,7 +274,7 @@ from io import BytesIO
 stream = client.music.stream(
     prompt="A driving synthwave track with arpeggiated leads",
     music_length_ms=30000,
-    model_id="music_v2",
+    model_id="music_v2_5",
 )
 
 buffer = BytesIO()
@@ -284,7 +287,7 @@ for chunk in stream:
 const stream = await client.music.stream({
   prompt: "A driving synthwave track with arpeggiated leads",
   musicLengthMs: 30000,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 
 const chunks: Buffer[] = [];
@@ -304,7 +307,7 @@ detailed compose, streams `text/event-stream`, and can include word timestamps w
 elevenlabs music compose_detailed_stream \
   --prompt "A bright indie pop hook with warm guitars" \
   --music-length-ms 30000 \
-  --model-id music_v2 \
+  --model-id music_v2_5 \
   --with-timestamps true \
   --output-format auto
 ```
@@ -321,7 +324,7 @@ Step 1 — get a `song_id`, either by storing a fresh generation or uploading ex
 result = client.music.compose_detailed(
     prompt="An upbeat pop song with verse and chorus",
     music_length_ms=60000,
-    model_id="music_v2",
+    model_id="music_v2_5",
     store_for_inpainting=True,
 )
 song_id = result.song_id
@@ -329,7 +332,7 @@ song_id = result.song_id
 # Option B: upload an existing track and extract its plan
 uploaded = client.music.upload(
     file=open("my-song.mp3", "rb"),
-    extract_composition_plan="music_v2",
+    extract_composition_plan="music_v2_5",
 )
 song_id = uploaded.song_id
 composition_plan = uploaded.composition_plan
@@ -342,7 +345,7 @@ import { createReadStream } from "fs";
 const result = await client.music.composeDetailed({
   prompt: "An upbeat pop song with verse and chorus",
   musicLengthMs: 60000,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
   storeForInpainting: true,
 });
 let songId = result.songId;
@@ -350,7 +353,7 @@ let songId = result.songId;
 // Option B: upload an existing track and extract its plan
 const uploaded = await client.music.upload({
   file: createReadStream("my-song.mp3"),
-  extractCompositionPlan: "music_v2",
+  extractCompositionPlan: "music_v2_5",
 });
 songId = uploaded.songId;
 const compositionPlan = uploaded.compositionPlan;
@@ -373,7 +376,7 @@ plan = {
     ]
 }
 
-audio = client.music.compose(composition_plan=plan, model_id="music_v2")
+audio = client.music.compose(composition_plan=plan, model_id="music_v2_5")
 ```
 
 ```typescript
@@ -392,7 +395,7 @@ const plan = {
 
 const audio = await client.music.compose({
   compositionPlan: plan,
-  modelId: "music_v2",
+  modelId: "music_v2_5",
 });
 ```
 
