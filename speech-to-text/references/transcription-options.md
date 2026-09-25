@@ -5,7 +5,7 @@
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `file` | file | Yes | Audio or video file to transcribe |
-| `model_id` | string | Yes | `scribe_v2` for batch transcription |
+| `model_id` | string | Yes | `scribe_v2` for general batch transcription or `scribe_v2_medical` for medical and clinical audio |
 | `token` | string | No | Single-use authentication token from `POST /v1/single-use-token/batch_scribe`. Alternative to API key or bearer authentication for frontend clients; expires after 15 minutes and is consumed on use. |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |

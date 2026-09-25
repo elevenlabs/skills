@@ -52,6 +52,7 @@ elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v2
 | Model ID | Description | Best For |
 |----------|-------------|----------|
 | `scribe_v2` | State-of-the-art accuracy, 90+ languages | Batch transcription, subtitles, long-form audio |
+| `scribe_v2_medical` | Specialized recognition for medical and clinical audio, 90+ languages | Clinical documentation, medical dictation, patient calls |
 | `scribe_v2_realtime` | Low latency (~150ms) | Live transcription, voice agents |
 | `scribe_v2_realtime_turbo` | Realtime transcription variant | Live transcription |
 | `scribe_v2_realtime_lite` | Realtime transcription variant | Live transcription |
