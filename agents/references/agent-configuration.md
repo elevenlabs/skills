@@ -212,7 +212,7 @@ to resolve per-environment auth connections at runtime.
 |----------|-----------|
 | OpenAI | `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
 | Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
-| Google | `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
+| Google | `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
 | ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
@@ -258,6 +258,10 @@ platform_settings={
         "agent_concurrency_limit": 10,
         "daily_limit": 100
     },
+    "queueing_config": {
+        "enabled": True,
+        "wait_timeout_seconds": 300
+    },
     "trust_context": "low"
 }
 ```
@@ -272,6 +276,7 @@ platform_settings={
 | `widget` | object | Hosted widget and shareable page configuration. See the widget table below for selected options. |
 | `auth` | object | Authentication and origin restrictions for agent access |
 | `call_limits` | object | Concurrency and daily usage limits |
+| `queueing_config` | object | Per-agent wait queue for calls that arrive at the concurrency limit |
 | `guardrails` | object | Built-in safety and policy controls for agent interactions |
 | `privacy` | object | Recording, retention, and conversation history redaction settings |
 | `trust_context` | string | Trust classification for the agent: `unknown`, `low`, or `high` |
@@ -294,6 +299,22 @@ platform_settings={
 | `agent_concurrency_limit` | int | Max simultaneous conversations (default: -1, unlimited) |
 | `daily_limit` | int | Max conversations per day (default: 100000) |
 | `bursting_enabled` | bool | Allow exceeding limits at 2x cost (default: true) |
+
+### queueing_config
+
+Call queueing holds callers when the agent is at its concurrency limit and connects them when
+capacity becomes available. It is disabled by default.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | bool | `false` | Hold callers in a queue instead of rejecting them immediately |
+| `wait_timeout_seconds` | int | `180` | Maximum wait before disconnection, from 1 to 1,800 seconds |
+
+Queued callers hear the default hold tone unless a custom MP3 or WAV file is uploaded. Use
+`client.conversational_ai.agents.hold_audio.create` or
+`client.conversationalAi.agents.holdAudio.create` to upload a file, and the corresponding
+`delete` method to restore the default tone. The uploaded `hold_audio` object in
+`queueing_config` is read-only.
 
 ### guardrails
 
@@ -662,7 +683,7 @@ elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `interruption_ignore_term_languages`, `merge_with_default_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `dtmf_input_settings`, `monitoring_enabled`, `background_sound` |
-| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis`, `alerting` |
+| `platform_settings` | `summary_language`, `auto_translate_transcript_to_app_language`, `analysis_items`, `queueing_config`, `guardrails`, `privacy`, `topic_discovery`, `sentiment_analysis`, `alerting` |
 | `platform_settings.widget` | `dismissible`, `show_agent_status`, `show_conversation_id`, `strip_audio_tags`, `mic_muting_enabled`, `transcript_enabled`, `syntax_highlight_theme` |
 | `platform_settings.auth` | `enable_auth`, `allowlist` |
 | `platform_settings.call_limits` | `agent_concurrency_limit`, `daily_limit`, `bursting_enabled` |
