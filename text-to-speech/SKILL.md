@@ -1,6 +1,6 @@
 ---
 name: text-to-speech
-description: Convert text to speech using ElevenLabs voice AI. Use when generating audio from text, creating voiceovers, building voice apps, or synthesizing speech in 70+ languages.
+description: Convert text to speech using ElevenLabs voice AI. Use when generating audio from text, creating voiceovers, building voice apps, or synthesizing speech in 90+ languages.
 license: MIT
 compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY).
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
@@ -8,7 +8,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 # ElevenLabs Text-to-Speech
 
-Generate natural speech from text - supports 70+ languages, multiple models for quality vs latency tradeoffs.
+Generate natural speech from text - supports 90+ languages, multiple models for quality vs latency tradeoffs.
 
 > **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
@@ -75,6 +75,8 @@ The CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
 
 | Model ID | Languages | Latency | Best For |
 |----------|-----------|---------|----------|
+| `eleven_v4` | 90+ | Standard | Highest quality, expressive content and dialogue |
+| `eleven_v4_turbo` | 90+ | ~100ms | Expressive real-time dialogue through the Text to Dialogue WebSocket |
 | `eleven_v3` | 70+ | Standard | Highest quality, emotional range |
 | `eleven_multilingual_v2` | 29 | Standard | High quality, long-form content |
 | `eleven_flash_v2_5` | 32 | ~75ms | Ultra-low latency, real-time |
@@ -104,7 +106,8 @@ Fine-tune how the voice sounds:
 
 - **Stability**: How consistent the voice stays. Lower values = more emotional range and variation, but can sound unstable. Higher = steady, predictable delivery.
 - **Similarity boost**: How closely to match the original voice sample. Higher values sound more like the original but may amplify audio artifacts.
-- **Style**: Exaggerates the voice's unique style characteristics (only works with v2+ models).
+- **Style**: Exaggerates the voice's unique style characteristics. It is not available for Eleven v4 models.
+- **Speed**: Adjusts speech rate on supported models. It is not available for Eleven v4 models.
 - **Speaker boost**: Post-processing that enhances clarity and voice similarity.
 
 ```python

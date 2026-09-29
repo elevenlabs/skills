@@ -168,6 +168,12 @@ languages, `entityDetection` for entity events, and `filterBackgroundAudio` to r
 activation from background speech and ambient noise. Do not combine `filterBackgroundAudio` with
 `includeTimestamps`. Enterprise zero-retention sessions can set `enableLogging: false`.
 
+Set `transcriptEdit` on `Scribe.connect` to apply a natural-language instruction of up to 2,000
+characters to each committed segment. Listen for `RealtimeEvents.EDITED_TRANSCRIPT`; each event
+contains the original `text` and the `edited_text`. Transcript editing cannot be combined with
+`entityDetection` and adds a 30% premium, billed for at least 10 seconds of audio per committed
+segment.
+
 ## Manual Audio Chunking
 
 For file uploads or custom audio sources, encode to PCM-16 and send in chunks:

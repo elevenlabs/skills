@@ -303,6 +303,7 @@ const connection = await client.speechToText.realtime.connect({
 | `committed_transcript` | Final results after commit |
 | `committed_transcript_with_timestamps` | Final with word timing |
 | `committed_transcript_entities` | Entities detected in a committed segment |
+| `edited_transcript` | Original and edited text for a committed segment when transcript editing is enabled |
 | `invalid_request` | Connection parameters were rejected and the session closes |
 | `error` | Error occurred |
 

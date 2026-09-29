@@ -92,6 +92,7 @@ conversation_config={
 
 | Model ID | Languages | Latency |
 |----------|-----------|---------|
+| `eleven_v4_turbo` | 90+ | ~100ms |
 | `eleven_flash_v2_5` | 32 | ~75ms (recommended) |
 | `eleven_flash_v2` | English | ~75ms |
 | `eleven_turbo_v2_5` | 32 | ~250-300ms |
@@ -211,10 +212,10 @@ to resolve per-environment auth connections at runtime.
 
 | Provider | Model IDs |
 |----------|-----------|
-| OpenAI | `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
+| OpenAI | `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
+| Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-opus-4-7`, `claude-sonnet-4-6`, `claude-sonnet-4-5`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
 | Google | `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
-| ElevenLabs | `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` (hosted, ultra-low latency) |
+| ElevenLabs | `glm-52`, `deepseek-v41-flash`, `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
 Use `GET /v1/convai/llm/list` to inspect the current model catalog, including deprecation state, token/context limits, and capability flags such as image-input support.
@@ -530,7 +531,9 @@ report which knowledge base sources it used in responses.
 Use a [crawl job](https://elevenlabs.io/docs/api-reference/knowledge-base/create-crawl-job) to
 ingest a website into the knowledge base. A crawl requires a `url` and can control crawl depth,
 page count, URL matching, sitemaps, folder placement, and automatic synchronization. List,
-inspect, or cancel crawl jobs while ingestion is running.
+inspect, or cancel crawl jobs while ingestion is running. Set `auto_discover: true` with
+`enable_auto_sync: true` to follow links from crawled pages and add newly discovered pages during
+automatic synchronization.
 
 Before deleting several documents or folders, use the
 [bulk dependency check](https://elevenlabs.io/docs/api-reference/knowledge-base/dependent-agents-multiple)
@@ -638,9 +641,11 @@ and `sort_direction` to narrow or order results. For a listing that includes sel
 results, pass `data_collection_ids` or `evaluation_criteria_ids`; matching summaries include
 `data_collection_results` or `evaluation_criteria_results`.
 
-Both operations accept repeatable `dynamic_variable_params` filters
-(`dynamicVariableParams` in JavaScript). Each value uses `name:op:value`, where `op` is `eq`,
-`gt`, `gte`, `lt`, or `lte`; comparison operators require a numeric value.
+Both operations accept repeatable `data_collection_params`, `dynamic_variable_params`, and
+`evaluation_params` filters. Data collection and dynamic variable filters use `name:op:value`,
+where `op` is `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, or `in`; comparison operators require a
+numeric value, and `in` values use a pipe delimiter. Evaluation filters use
+`criteria_id:result`, where `result` is `success`, `failure`, or `unknown`.
 
 ### SDK: Get Agent
 

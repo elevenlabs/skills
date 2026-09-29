@@ -8,8 +8,8 @@ Fine-tune voice characteristics for your use case.
 |-----------|-------|---------|-------------|
 | `stability` | 0.0 - 1.0 | 0.5 | How consistent the voice sounds across the generation. Lower = more emotional variation and expressiveness (but can sound erratic). Higher = steady, predictable tone. |
 | `similarity_boost` | 0.0 - 1.0 | 0.75 | How closely to match the original voice sample. Higher sounds more like the source voice but may amplify audio artifacts or background noise from the original recording. |
-| `style` | 0.0 - 1.0 | 0.0 | Exaggerates the unique characteristics of the voice's speaking style (v2+ and v3 models only). Higher values make the voice more "characterful" but can reduce stability. |
-| `speed` | 0.25 - 4.0 | 1.0 | Speech speed multiplier. 1.0 = normal speed. Range is 0.25-4.0 for the REST API; the Agents Platform restricts to 0.7-1.2. |
+| `style` | 0.0 - 1.0 | 0.0 | Exaggerates the unique characteristics of the voice's speaking style. Higher values make the voice more "characterful" but can reduce stability. Not available for Eleven v4 models. |
+| `speed` | 0.25 - 4.0 | 1.0 | Speech speed multiplier. 1.0 = normal speed. Range is 0.25-4.0 for the REST API; the agents platform restricts to 0.7-1.2. Not available for Eleven v4 models. |
 | `use_speaker_boost` | boolean | true | Post-processing that enhances voice clarity and similarity to the original. Generally leave this on unless you're experiencing artifacts. |
 
 ## Python Example
@@ -104,6 +104,7 @@ voice_settings=VoiceSettings(
 - **Start with defaults** and adjust incrementally
 - **Lower stability** if voice sounds monotonous
 - **Reduce similarity_boost** if you hear audio artifacts
-- **Style works** with v2+, v3, and multilingual models
+- **Style is unavailable** for Eleven v4 models
+- **Speed is unavailable** for Eleven v4 models
 - **Test with representative text** from your actual use case
 - **Flash models** ignore some voice settings for speed
