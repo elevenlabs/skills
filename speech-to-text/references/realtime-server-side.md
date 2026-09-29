@@ -29,12 +29,15 @@ ELEVENLABS_API_KEY=<your_api_key_here>
 | Limit language detection to expected additional languages | `secondary_languages` | `secondaryLanguages` |
 | Return detected language in delayed final events | `include_language_detection` | `includeLanguageDetection` |
 | Detect entities in committed segments | `entity_detection` | `entityDetection` |
+| Apply a natural-language edit instruction to committed segments | `transcript_edit` | `transcriptEdit` |
 | Reduce false activation from background speech and noise | `filter_background_audio` | `filterBackgroundAudio` |
 | Disable history and logging for an enterprise zero-retention session | `enable_logging=False` | `enableLogging: false` |
 
 `secondary_languages` accepts additional ISO-639-1 or ISO-639-3 codes. Entity detection accepts
 `all`, a supported entity type or category, or a list of them. Background audio filtering cannot be
-combined with timestamp output.
+combined with timestamp output. A transcript edit instruction can contain up to 2,000 characters
+and cannot be combined with entity detection. It adds a 30% premium, billed for at least 10 seconds
+of audio per committed transcript.
 
 ## Stream from URL
 

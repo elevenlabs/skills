@@ -8,6 +8,7 @@
 | `model_id` | string | Yes | `scribe_v2` for general batch transcription or `scribe_v2_medical` for medical and clinical audio |
 | `token` | string | No | Single-use authentication token from `POST /v1/single-use-token/batch_scribe`. Alternative to API key or bearer authentication for frontend clients; expires after 15 minutes and is consumed on use. |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
+| `transcript_edit` | string | No | Natural-language instruction applied to the final transcript (maximum 2,000 characters). Cannot be combined with `entity_detection`, `entity_redaction`, or `use_multi_channel`. Adds a 30% surcharge, billed for at least 10 seconds of audio. |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
 | `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
 | `use_speaker_library` | boolean | No | Match diarized speakers against registered speaker profiles in the workspace speaker library. Requires `diarize=true` |
@@ -223,6 +224,7 @@ elevenlabs speech-to-text convert \
 | `transcription_id` | string | Unique identifier for this transcription |
 | `additional_formats` | array | Exported transcript formats (if requested) |
 | `entities` | array | Detected entities with text, type, and character offsets (if entity_detection enabled) |
+| `edited_transcript` | object or null | Transcript edit result when `transcript_edit` is set. A successful result has `kind: "transcript"` and `text`; a failed edit has `kind: "error"`, `error_type: "edit_failed"`, and `message`. |
 
 ## Supported Languages (90+)
 

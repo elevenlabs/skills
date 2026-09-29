@@ -148,6 +148,24 @@ Final transcription with word-level timing. Sent after `committed_transcript` wh
 | `words[].type` | string | `"word"`, `"spacing"`, or `"audio_event"` |
 | `words[].speaker_id` | string | Speaker identifier (if diarization enabled) |
 
+### edited_transcript
+
+Edited version of a committed segment. Sent when the connection includes `transcript_edit`.
+
+```json
+{
+  "message_type": "edited_transcript",
+  "text": "our next meeting is on the twelfth of July twenty twenty-six",
+  "edited_text": "our next meeting is on 2026-07-12"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message_type` | string | `"edited_transcript"` |
+| `text` | string | Committed transcript text that the instruction was applied to |
+| `edited_text` | string | Edited text; identical to `text` when no edits were made |
+
 ### committed_transcript_entities
 
 Entities detected in a committed segment when the connection includes `entity_detection`.
@@ -237,6 +255,8 @@ async for event in connection:
     elif event.type == "committed_transcript_with_timestamps":
         for word in event.words:
             print(f"  {word.text}: {word.start}s - {word.end}s")
+    elif event.type == "edited_transcript":
+        print(f"Edited: {event.edited_text}")
     elif event.type == "error":
         print(f"Error: {event.error}")
     elif event.type == "invalid_request":
@@ -268,6 +288,10 @@ connection.on("committed_transcript_with_timestamps", (data) => {
   for (const word of data.words) {
     console.log(`  ${word.text}: ${word.start}s - ${word.end}s`);
   }
+});
+
+connection.on("edited_transcript", (data) => {
+  console.log("Edited:", data.edited_text);
 });
 
 connection.on("error", (error) => {
