@@ -164,6 +164,39 @@ if item.get("path") != expected_path or item.get("agents") != ["Cursor"]:
 PY
 }
 
+copy_proof() {
+  local src=$1
+  local dest=$2
+  python3 - "$src" "$dest" <<'PY'
+import pathlib, shutil, sys
+src = pathlib.Path(sys.argv[1])
+dest = pathlib.Path(sys.argv[2])
+
+def copy_file(source: pathlib.Path, target: pathlib.Path) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+
+def copy_dir(source: pathlib.Path, target: pathlib.Path) -> None:
+    target.mkdir(parents=True, exist_ok=True)
+    for child in source.iterdir():
+        destination = target / child.name
+        if child.is_dir() and not child.is_symlink():
+            copy_dir(child, destination)
+        else:
+            copy_file(child, destination)
+
+if dest.exists():
+    if dest.is_dir() and not dest.is_symlink():
+        shutil.rmtree(dest)
+    else:
+        dest.unlink()
+if src.is_dir() and not src.is_symlink():
+    copy_dir(src, dest)
+else:
+    copy_file(src, dest)
+PY
+}
+
 assert_lock() {
   local path=$1
   local catalog=$2
@@ -254,10 +287,9 @@ drive_install() {
     exit 1
   fi
   cmp "$SKILLS_CATALOG/text-to-speech/SKILL.md" "$skill_md"
-  mkdir -p "$evidence/installed"
-  cp -a "$VERIFY_PROJECT/skills-lock.json" "$evidence/installed/skills-lock.json"
   mkdir -p "$evidence/installed/.agents/skills"
-  cp -a "$VERIFY_PROJECT/.agents/skills/text-to-speech" "$evidence/installed/.agents/skills/text-to-speech"
+  copy_proof "$VERIFY_PROJECT/skills-lock.json" "$evidence/installed/skills-lock.json"
+  copy_proof "$VERIFY_PROJECT/.agents/skills/text-to-speech" "$evidence/installed/.agents/skills/text-to-speech"
   assert_lock "$evidence/installed/skills-lock.json" "$SKILLS_CATALOG"
   (
     cd "$VERIFY_PROJECT"
@@ -281,7 +313,7 @@ cleanup() {
     ) || remove_exit=$?
     mkdir -p "$evidence/after-remove"
     if [[ -f "$VERIFY_PROJECT/skills-lock.json" ]]; then
-      cp -a "$VERIFY_PROJECT/skills-lock.json" "$evidence/after-remove/skills-lock.json"
+      copy_proof "$VERIFY_PROJECT/skills-lock.json" "$evidence/after-remove/skills-lock.json"
     fi
     find "$VERIFY_PROJECT" -print | sort >"$evidence/after-remove/tree.txt"
     rm -rf "$VERIFY_PROJECT"
