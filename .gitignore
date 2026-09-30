@@ -1,3 +1,4 @@
 .DS_Store
 .env
 evals/results/**
+.cursor/skills/verify-skills-catalog/evidence/
