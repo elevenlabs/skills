@@ -9,7 +9,7 @@ CATALOG=$(cd "$SKILL_DIR/../../.." && pwd)
 
 usage() {
   echo "Usage: verify-skills-catalog.sh launch|doctor|drive|cleanup" >&2
-  echo "       verify-skills-catalog.sh drive install-text-to-speech" >&2
+  echo "       verify-skills-catalog.sh drive install-catalog" >&2
   exit 2
 }
 
@@ -132,35 +132,95 @@ if set(names) != expected or len(names) != len(expected):
 PY
 }
 
-assert_empty_list() {
+assert_readme_stdout() {
   local path=$1
   python3 - "$path" <<'PY'
-import pathlib, sys
-text = pathlib.Path(sys.argv[1]).read_text().strip()
-if text != "[]":
-    sys.stderr.write(f"expected empty project list, got {text!r}\n")
+import pathlib, re, sys
+text = pathlib.Path(sys.argv[1]).read_text()
+plain = re.sub(r"\x1b\[[0-9;?]*[A-Za-z]", "", text)
+required = [
+    "https://github.com/elevenlabs/skills.git",
+    "Found 11 skills",
+    "Installing all 11 skills",
+    "text-to-speech (copied)",
+    "Installed 11 skills",
+    "Agent detected — installing non-interactively",
+]
+missing = [line for line in required if line not in plain]
+if missing:
+    sys.stderr.write(f"README install stdout missing {missing!r}\n")
     sys.exit(1)
 PY
 }
 
-assert_installed_list() {
+assert_github_lock() {
+  local path=$1
+  python3 - "$path" <<'PY'
+import json, pathlib, re, sys
+lock = json.loads(pathlib.Path(sys.argv[1]).read_text())
+expected = {
+    "agents",
+    "dubbing",
+    "music",
+    "setup-api-key",
+    "sound-effects",
+    "speech-engine",
+    "speech-to-text",
+    "text-to-speech",
+    "update-skills-from-changelog",
+    "voice-changer",
+    "voice-isolator",
+}
+skills = lock.get("skills", {})
+if lock.get("version") != 1 or set(skills) != expected:
+    sys.stderr.write(f"unexpected lock skills {sorted(skills)!r}\n")
+    sys.exit(1)
+for name, entry in skills.items():
+    if entry.get("source") != "elevenlabs/skills" or entry.get("sourceType") != "github":
+        sys.stderr.write(f"unexpected lock entry for {name}: {entry!r}\n")
+        sys.exit(1)
+    skill_path = entry.get("skillPath", "")
+    if not skill_path.endswith("SKILL.md"):
+        sys.stderr.write(f"unexpected skillPath for {name}: {skill_path!r}\n")
+        sys.exit(1)
+    if not re.fullmatch(r"[0-9a-f]{64}", entry.get("computedHash", "")):
+        sys.stderr.write(f"unexpected computedHash for {name}: {entry.get('computedHash')!r}\n")
+        sys.exit(1)
+if skills["text-to-speech"].get("skillPath") != "text-to-speech/SKILL.md":
+    sys.stderr.write(f"unexpected text-to-speech skillPath {skills['text-to-speech']!r}\n")
+    sys.exit(1)
+PY
+}
+
+assert_installed_catalog() {
   local path=$1
   local project=$2
   python3 - "$path" "$project" <<'PY'
 import json, pathlib, sys
 payload = json.loads(pathlib.Path(sys.argv[1]).read_text())
 project = sys.argv[2]
-if len(payload) != 1:
-    sys.stderr.write(f"expected one installed skill, got {payload!r}\n")
+expected = {
+    "agents",
+    "dubbing",
+    "music",
+    "setup-api-key",
+    "sound-effects",
+    "speech-engine",
+    "speech-to-text",
+    "text-to-speech",
+    "update-skills-from-changelog",
+    "voice-changer",
+    "voice-isolator",
+}
+if {item.get("name") for item in payload} != expected or len(payload) != len(expected):
+    sys.stderr.write(f"expected the catalog install, got {payload!r}\n")
     sys.exit(1)
-item = payload[0]
-expected_path = f"{project}/.agents/skills/text-to-speech"
-if item.get("name") != "text-to-speech" or item.get("scope") != "project":
-    sys.stderr.write(f"unexpected list entry {item!r}\n")
-    sys.exit(1)
-if item.get("path") != expected_path or item.get("agents") != ["Cursor"]:
-    sys.stderr.write(f"unexpected list entry {item!r}\n")
-    sys.exit(1)
+for item in payload:
+    name = item.get("name")
+    expected_path = f"{project}/.agents/skills/{name}"
+    if item.get("scope") != "project" or item.get("agents") != ["Cursor"] or item.get("path") != expected_path:
+        sys.stderr.write(f"unexpected list entry {item!r}\n")
+        sys.exit(1)
 PY
 }
 
@@ -197,32 +257,16 @@ else:
 PY
 }
 
-assert_lock() {
-  local path=$1
-  local catalog=$2
-  python3 - "$path" "$catalog" <<'PY'
-import json, pathlib, re, sys
-lock = json.loads(pathlib.Path(sys.argv[1]).read_text())
-catalog = sys.argv[2]
-entry = lock.get("skills", {}).get("text-to-speech")
-if lock.get("version") != 1 or not isinstance(entry, dict):
-    sys.stderr.write(f"unexpected lock {lock!r}\n")
-    sys.exit(1)
-if entry.get("source") != catalog or entry.get("sourceType") != "local":
-    sys.stderr.write(f"unexpected lock entry {entry!r}\n")
-    sys.exit(1)
-if not re.fullmatch(r"[0-9a-f]{64}", entry.get("computedHash", "")):
-    sys.stderr.write(f"unexpected computedHash {entry.get('computedHash')!r}\n")
-    sys.exit(1)
-PY
-}
-
 launch() {
   local evidence file project
   evidence=$(evidence_root)
   file=$(session_file)
   if [[ -e "$file" ]]; then
     echo "Session already exists at $file. Run cleanup before launching again." >&2
+    exit 1
+  fi
+  if [[ -z "${CURSOR_AGENT:-}" ]]; then
+    echo "CURSOR_AGENT is unset. The README command would prompt for skills and hang." >&2
     exit 1
   fi
   mkdir -p "$evidence/transcript"
@@ -237,13 +281,35 @@ EOF
     exit 1
   fi
   assert_version_file "$evidence/transcript/launch-version.stdout"
+  if [[ -e "$project/.agents/skills" || -e "$project/skills-lock.json" ]]; then
+    echo "Refusing to install into a project that already has skills." >&2
+    exit 1
+  fi
+  run_logged "$evidence" launch-global-before npx --yes skills list -g --agent cursor --json
+  (
+    cd "$project"
+    run_logged "$evidence" launch-add npx --yes skills add elevenlabs/skills
+  ) || true
+  if [[ "$(cat "$evidence/transcript/launch-add.exit")" != "0" ]]; then
+    echo "README install failed. See $evidence/transcript/launch-add.stderr" >&2
+    exit 1
+  fi
+  if [[ -s "$evidence/transcript/launch-add.stderr" ]]; then
+    echo "README install wrote stderr. See $evidence/transcript/launch-add.stderr" >&2
+    exit 1
+  fi
+  assert_readme_stdout "$evidence/transcript/launch-add.stdout"
+  assert_github_lock "$project/skills-lock.json"
+  run_logged "$evidence" launch-global-after npx --yes skills list -g --agent cursor --json
+  cmp "$evidence/transcript/launch-global-before.stdout" "$evidence/transcript/launch-global-after.stdout"
   printf '%s\n' "$project" >"$evidence/project-path.txt"
-  echo "Launched skills CLI 1.5.18. Disposable project: $project"
+  echo "Launched skills CLI 1.5.18 with: npx skills add elevenlabs/skills"
+  echo "Disposable project: $project"
   echo "Evidence: $evidence"
 }
 
 doctor() {
-  local evidence
+  local evidence skill_md
   require_session
   assert_safe_project "$VERIFY_PROJECT"
   evidence=$(evidence_root)
@@ -259,12 +325,17 @@ doctor() {
   )
   assert_version_file "$evidence/transcript/doctor-version.stdout"
   assert_catalog_list "$evidence/transcript/doctor-list-catalog.stdout"
-  assert_empty_list "$evidence/transcript/doctor-list-installed.stdout"
-  if [[ -e "$VERIFY_PROJECT/.agents/skills/text-to-speech" || -e "$VERIFY_PROJECT/skills-lock.json" ]]; then
-    echo "Doctor expected a project with no text-to-speech install." >&2
+  assert_installed_catalog "$evidence/transcript/doctor-list-installed.stdout" "$VERIFY_PROJECT"
+  assert_github_lock "$VERIFY_PROJECT/skills-lock.json"
+  skill_md="$VERIFY_PROJECT/.agents/skills/text-to-speech/SKILL.md"
+  if [[ -L "$skill_md" || ! -f "$skill_md" ]]; then
+    echo "Expected a regular copied SKILL.md at $skill_md" >&2
     exit 1
   fi
-  echo "Doctor ok. CLI 1.5.18, catalog lists text-to-speech, project list is []."
+  cmp "$SKILLS_CATALOG/text-to-speech/SKILL.md" "$skill_md"
+  run_logged "$evidence" doctor-global npx --yes skills list -g --agent cursor --json
+  cmp "$evidence/transcript/launch-global-before.stdout" "$evidence/transcript/doctor-global.stdout"
+  echo "Doctor ok. CLI 1.5.18, README install lists 11 Cursor project skills, global list unchanged."
 }
 
 drive_install() {
@@ -272,15 +343,7 @@ drive_install() {
   require_session
   assert_safe_project "$VERIFY_PROJECT"
   evidence=$(evidence_root)
-  printf '%s\n' "install-text-to-speech" >"$evidence/feature-id.txt"
-  (
-    cd "$VERIFY_PROJECT"
-    run_logged "$evidence" drive-install npx --yes skills add "$SKILLS_CATALOG" --skill text-to-speech --agent cursor -y --copy
-  )
-  if [[ "$(cat "$evidence/transcript/drive-install.exit")" != "0" ]]; then
-    echo "Install command failed. See $evidence/transcript/drive-install.stderr" >&2
-    exit 1
-  fi
+  printf '%s\n' "install-catalog" >"$evidence/feature-id.txt"
   skill_md="$VERIFY_PROJECT/.agents/skills/text-to-speech/SKILL.md"
   if [[ -L "$skill_md" || ! -f "$skill_md" ]]; then
     echo "Expected a regular copied SKILL.md at $skill_md" >&2
@@ -289,33 +352,23 @@ drive_install() {
   cmp "$SKILLS_CATALOG/text-to-speech/SKILL.md" "$skill_md"
   mkdir -p "$evidence/installed/.agents/skills"
   copy_proof "$VERIFY_PROJECT/skills-lock.json" "$evidence/installed/skills-lock.json"
-  copy_proof "$VERIFY_PROJECT/.agents/skills/text-to-speech" "$evidence/installed/.agents/skills/text-to-speech"
-  assert_lock "$evidence/installed/skills-lock.json" "$SKILLS_CATALOG"
+  copy_proof "$VERIFY_PROJECT/.agents/skills" "$evidence/installed/.agents/skills"
+  assert_github_lock "$evidence/installed/skills-lock.json"
   (
     cd "$VERIFY_PROJECT"
     run_logged "$evidence" list-after npx --yes skills list --agent cursor --json
   )
-  assert_installed_list "$evidence/transcript/list-after.stdout" "$VERIFY_PROJECT"
+  assert_installed_catalog "$evidence/transcript/list-after.stdout" "$VERIFY_PROJECT"
   find "$VERIFY_PROJECT" -print | sort >"$evidence/installed-tree.txt"
-  echo "Drove install-text-to-speech. Copied skill files and skills-lock.json into $evidence/installed"
+  echo "Drove install-catalog. Copied the README install into $evidence/installed"
 }
 
 cleanup() {
-  local evidence remove_exit
+  local evidence
   require_session
   assert_safe_project "$VERIFY_PROJECT"
   evidence=$(evidence_root)
-  remove_exit=0
   if [[ -d "$VERIFY_PROJECT" ]]; then
-    (
-      cd "$VERIFY_PROJECT"
-      run_logged "$evidence" cleanup-remove npx --yes skills remove --skill text-to-speech --agent cursor -y
-    ) || remove_exit=$?
-    mkdir -p "$evidence/after-remove"
-    if [[ -f "$VERIFY_PROJECT/skills-lock.json" ]]; then
-      copy_proof "$VERIFY_PROJECT/skills-lock.json" "$evidence/after-remove/skills-lock.json"
-    fi
-    find "$VERIFY_PROJECT" -print | sort >"$evidence/after-remove/tree.txt"
     rm -rf "$VERIFY_PROJECT"
   fi
   if [[ -d "$VERIFY_PROJECT" ]]; then
@@ -323,8 +376,8 @@ cleanup() {
     exit 1
   fi
   local required=(
-    "$evidence/transcript/drive-install.stdout"
-    "$evidence/transcript/drive-install.exit"
+    "$evidence/transcript/launch-add.stdout"
+    "$evidence/transcript/launch-add.exit"
     "$evidence/transcript/list-after.stdout"
     "$evidence/installed/skills-lock.json"
     "$evidence/installed/.agents/skills/text-to-speech/SKILL.md"
@@ -339,10 +392,6 @@ cleanup() {
   done
   printf '%s\n' "$VERIFY_PROJECT" >"$evidence/project-removed.txt"
   echo "Cleaned $VERIFY_PROJECT. Evidence remains at $evidence"
-  if [[ "$remove_exit" != "0" ]]; then
-    echo "skills remove exited $remove_exit" >&2
-    exit "$remove_exit"
-  fi
 }
 
 main() {
@@ -352,8 +401,8 @@ main() {
     doctor) doctor ;;
     drive)
       local feature=${2:-}
-      if [[ "$feature" != "install-text-to-speech" ]]; then
-        echo "This helper drives install-text-to-speech. Other features are in features/." >&2
+      if [[ "$feature" != "install-catalog" ]]; then
+        echo "This helper drives install-catalog. Other features are in features/." >&2
         usage
       fi
       drive_install

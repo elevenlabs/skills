@@ -2,25 +2,27 @@
 
 This directory is the maintained source for verifying the user-facing behavior of the ElevenLabs skills catalog. Read the index before driving the CLI, then use the matching feature file as the recipe.
 
-The surface is `npx skills` 1.5.18 against this repository. There is no app server.
+The surface is `npx skills` 1.5.18. The README installs this catalog with `npx skills add elevenlabs/skills`. There is no app server.
 
 ## Baseline preconditions
 
 - Resolve `$SKILLS_CATALOG` to the checkout that contains `.cursor/skills/verify-skills-catalog`.
-- Launch with `.cursor/skills/verify-skills-catalog/scripts/verify-skills-catalog.sh launch`, which creates `$VERIFY_PROJECT` under `/tmp/verify-skills-catalog.*`.
+- Launch with `.cursor/skills/verify-skills-catalog/scripts/verify-skills-catalog.sh launch`, which creates `$VERIFY_PROJECT` under `/tmp/verify-skills-catalog.*` and runs `npx --yes skills add elevenlabs/skills` there.
 - Require `npx --yes skills --version` to print `1.5.18`.
-- Run the helper's `doctor` and require that catalog listing, an empty Cursor project list, and a project that does not yet contain `text-to-speech`.
+- Require `CURSOR_AGENT` to be set so the README command installs non-interactively.
+- Run the helper's `doctor` and require the 11 installed Cursor project skills, a GitHub `skills-lock.json`, and an unchanged global Cursor list.
 - Never drive `$HOME`, the catalog checkout, or a project the verification run did not create.
 
 ## Driving conventions
 
-- Start every recipe from the doctor baseline unless its preconditions say otherwise.
+- The helper's doctor baseline is the README install: 11 Cursor project skills and a GitHub lock file.
+- Recipes other than [Install the catalog](./install-catalog.md) describe different entry points. They are not the state launch leaves behind, and this run does not verify them.
 - Treat every command as literal. Keep quoted flags unchanged.
 - Run install, list, and remove with cwd `$VERIFY_PROJECT`.
-- Pass `$SKILLS_CATALOG` as the local source. Do not pass `-g` or `--global`.
+- The README install passes `elevenlabs/skills` and no other skills flags. Do not pass `-g` or `--global`.
 - Do not pass `--agent` to `skills use`.
 - Record stdout, stderr, and the exit code.
-- Restore the disposable project after a mutation by removing the installed skill and deleting the project. Do not remove proof artifacts during cleanup.
+- After the README install, delete the disposable project. Do not remove proof artifacts during cleanup.
 
 ## Proof and skip reporting
 
@@ -44,8 +46,9 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 ## Features
 
+- [Install the catalog](./install-catalog.md) runs the README command and installs every skill from `elevenlabs/skills`.
 - [List the catalog](./list-catalog.md) prints the skills in this repository and writes nothing.
-- [Install text-to-speech](./install-text-to-speech.md) copies `text-to-speech` into a Cursor project and writes `skills-lock.json`.
+- [Install text-to-speech](./install-text-to-speech.md) is a different local `--skill text-to-speech --copy` entry point. Launch does not run it.
 - [Render a skill prompt](./render-skill-prompt.md) prints a `text-to-speech` prompt without installing it.
 - [List installed skills](./list-installed.md) shows an empty project and the project after install.
 - [Remove an installed skill](./remove-installed-skill.md) deletes the copied skill directory and leaves the lock file behind.
