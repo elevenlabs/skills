@@ -46,7 +46,7 @@
       "expectations": [
         "Sets type to deterministic and passes JSON-encoded content rather than a raw object",
         "Sends the xi-api-key header populated from the ELEVENLABS_API_KEY environment variable, never a literal key",
-        "PATCHes the agent with branch_id to publish, without calling the procedures/compile endpoint and without sending a workflow",
+        "PATCHes the agent with branch_id to publish and does not call the compile endpoint (NOT '/procedures/compile')",
         "Explains that the publish validates structured procedures, and that a 400 with status procedure_validation_failed means the procedure draft must be repaired and the publish retried"
       ]
     },
@@ -56,7 +56,7 @@
       "expected_output": "Explanation that no compile call is needed, because publishing handles structured procedures itself",
       "files": [],
       "expectations": [
-        "Says to PATCH the agent directly and not to call the procedures/compile endpoint, which is legacy",
+        "Says to PATCH the agent directly and does not call the compile endpoint (NOT '/procedures/compile')",
         "Explains that the publish validates any structured procedures on the branch and, if they pass, publishes them in the new version"
       ]
     },
@@ -92,14 +92,14 @@
     },
     {
       "id": 9,
-      "prompt": "I just wrote a structured (deterministic) procedure draft on my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, but I'm not ready to publish because a teammate has other unpublished procedure drafts on the branch. How do I check that my procedure validates without publishing? Show the REST calls with curl. Do not run anything.",
-      "expected_output": "Explanation that saving an agent draft runs the same validation as publish, with the curl calls to do it",
+      "prompt": "I just wrote a structured (deterministic) procedure draft on my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, but I'm not ready to publish because a teammate has other unpublished procedure drafts on the branch. How do I check that my procedure validates without publishing? Show me the calls. Do not run anything.",
+      "expected_output": "Explanation that saving an agent draft runs the same validation as publish, with the calls to do it and discard the draft afterwards",
       "files": [],
       "expectations": [
-        "Does not use the procedures/compile endpoint, and does not suggest publishing as the way to check",
-        "POSTs /v1/convai/agents/{agent_id}/drafts with branch_id and a full body of name, conversation_config, platform_settings, and workflow read from the agent, rather than a body containing only a flag or only the procedure",
+        "Creates an agent draft with a POST to the agent drafts endpoint using branch_id and does not call the compile endpoint (NOT '/procedures/compile')",
+        "Sends the full agent body of name, conversation_config, platform_settings, and workflow read from the agent",
         "Explains that a 400 with status procedure_validation_failed carries errors keyed by procedure ID with a path per entry, and that the fix goes into the procedure draft",
-        "Mentions that a successful save stores an agent draft, and shows or names the DELETE on /drafts to discard it afterwards"
+        "Discards the agent draft afterwards with a DELETE on the drafts endpoint"
       ]
     }
   ]
