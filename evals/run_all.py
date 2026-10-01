@@ -116,6 +116,7 @@ ALL_SKILLS = [
     "text-to-speech",
     "speech-to-text",
     "speech-engine",
+    "openai-realtime-migration",
     "agents",
     "sound-effects",
     "music",

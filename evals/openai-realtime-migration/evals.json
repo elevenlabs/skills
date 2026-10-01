@@ -1,0 +1,51 @@
+{
+  "skill_name": "openai-realtime-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this Express route to mint the realtime credential from ElevenLabs instead of OpenAI. Keep the route path and response shape the frontend expects.\n\n```typescript\napp.get(\"/api/token\", async (_req, res) => {\n  const r = await fetch(\"https://api.openai.com/v1/realtime/client_secrets\", {\n    method: \"POST\",\n    headers: {\n      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,\n      \"Content-Type\": \"application/json\",\n    },\n    body: JSON.stringify({\n      session: {\n        type: \"realtime\",\n        model: \"gpt-realtime\",\n        instructions: \"You are a cheerful concierge.\",\n        audio: { output: { voice: \"marin\" } },\n      },\n    }),\n  });\n  const data = await r.json();\n  res.json({ value: data.value });\n});\n```",
+      "expected_output": "Express route minting an ElevenLabs realtime client secret",
+      "files": [],
+      "expectations": [
+        "POSTs to https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
+        "Authenticates with the xi-api-key header using ELEVENLABS_API_KEY, not an Authorization Bearer header",
+        "Sets session.model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
+        "Replaces the OpenAI voice marin with an ElevenLabs voice such as brian",
+        "Keeps session.type set to realtime and the instructions unchanged",
+        "Keeps the /api/token path and returns only { value } to the browser",
+        "Does not send ELEVENLABS_API_KEY or the full mint response to the browser"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This React component talks to OpenAI Realtime over WebRTC. Port it to ElevenLabs Realtime, still using @openai/agents-realtime. The token comes from GET /api/token which now returns { value } minted by ElevenLabs.\n\n```tsx\nimport { RealtimeAgent, RealtimeSession } from \"@openai/agents-realtime\";\n\nexport function Talk() {\n  async function start() {\n    const { value } = await fetch(\"/api/token\").then((r) => r.json());\n    const agent = new RealtimeAgent({ name: \"Concierge\", instructions: \"You are a cheerful concierge.\" });\n    const session = new RealtimeSession(agent, { model: \"gpt-realtime\" });\n    await session.connect({ apiKey: value });\n  }\n  return <button onClick={start}>Talk</button>;\n}\n```",
+      "expected_output": "React component using OpenAIRealtimeWebSocket against ElevenLabs with app-managed audio",
+      "files": [],
+      "expectations": [
+        "Uses OpenAIRealtimeWebSocket with url wss://api.elevenlabs.io/v1/convai/realtime",
+        "Sets useInsecureApiKey: true on the WebSocket transport",
+        "Sets the RealtimeSession model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
+        "Captures microphone audio as 24 kHz PCM16 and sends it with session.sendAudio",
+        "Plays audio from the session's audio event",
+        "Stops or clears playback on the audio_interrupted event",
+        "Releases the microphone and closes the session on stop or unmount",
+        "Keeps starting the session from the button click handler"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our backend still uses the old OpenAI beta endpoint POST https://api.openai.com/v1/realtime/sessions with this body, and the frontend reads data.client_secret.value. Convert it for ElevenLabs Realtime.\n\n```json\n{\n  \"model\": \"gpt-4o-realtime-preview\",\n  \"modalities\": [\"audio\", \"text\"],\n  \"voice\": \"alloy\",\n  \"instructions\": \"You are a helpful assistant.\",\n  \"input_audio_format\": \"pcm16\",\n  \"output_audio_format\": \"pcm16\",\n  \"turn_detection\": { \"type\": \"server_vad\" }\n}\n```",
+      "expected_output": "GA-shaped ElevenLabs client_secrets request and a note on the response shape change",
+      "files": [],
+      "expectations": [
+        "Targets POST https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
+        "Wraps the config in a session object with type: realtime",
+        "Uses output_modalities and does not send the deprecated modalities field",
+        "Moves voice to audio.output.voice and replaces alloy with an ElevenLabs voice",
+        "Moves the audio formats to audio.input.format / audio.output.format using audio/pcm at 24000 Hz",
+        "Moves turn_detection under audio.input",
+        "Explains that the credential is now at the top-level value instead of client_secret.value, and handles the frontend accordingly"
+      ]
+    }
+  ]
+}
