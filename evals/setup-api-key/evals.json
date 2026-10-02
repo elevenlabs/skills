@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Help me set up my ElevenLabs API key. I just created an account but don't know where to find the key or how to configure it.",
-      "expected_output": "Step-by-step guide to finding and configuring the ElevenLabs API key without exposing the key in chat, then waiting for confirmation before validation",
+      "prompt": "I already have an ElevenLabs account and a key on the API keys page, but I don't know how to configure it for this project.",
+      "expected_output": "Checks for an existing key, points to the API keys page in the dashboard, has the user put the key in a local .env without exposing it in chat, then waits for confirmation before validating",
       "files": [],
       "expectations": [
         "Checks whether ELEVENLABS_API_KEY is already set in the environment or .env",
@@ -24,6 +24,41 @@
         "Reports that ELEVENLABS_API_KEY is not configured and offers to validate the key after the user saves it in .env",
         "Walks through creating a key at the ElevenLabs API keys page and saving it in .env",
         "Explicitly tells the user not to paste the API key into chat"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The onboarding skill just reported next: legacy with key_status not_available for this account. The project has a .env.local with an empty ELEVENLABS_API_KEY= line. Get a working key into place.",
+      "expected_output": "Uses .env.local (not .env) because it exists, treats the empty line as no key, walks the user through creating a key on the API keys page and pasting it onto that line, never into chat, then validates the .env.local value",
+      "files": [
+        {
+          "path": ".env.local",
+          "content": "ELEVENLABS_API_KEY=\n"
+        }
+      ],
+      "expectations": [
+        "Tells the user to open https://elevenlabs.io/app/settings/api-keys and create a key",
+        "Tells the user to put the key on the ELEVENLABS_API_KEY= line in .env.local, not .env",
+        "Explicitly tells the user not to paste the API key into chat",
+        "Says it will validate the .env.local value with GET /v1/user after the user confirms"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The onboarding skill reported next: legacy with key_status not_permitted: my role cannot create API keys. The project has a .env.local with an empty ELEVENLABS_API_KEY= line.",
+      "expected_output": "Tells the user to ask a workspace administrator for a key, then to put it on the ELEVENLABS_API_KEY= line in .env.local, never into chat, and validates it afterwards",
+      "files": [
+        {
+          "path": ".env.local",
+          "content": "ELEVENLABS_API_KEY=\n"
+        }
+      ],
+      "expectations": [
+        "Tells the user their role cannot create keys and to ask a workspace administrator for one",
+        "The key was issued by a workspace administrator, so no new key is created (NOT '/app/settings/api-keys')",
+        "Tells the user to put the key on the ELEVENLABS_API_KEY= line in .env.local, not .env",
+        "Explicitly tells the user not to paste the API key into chat",
+        "Says it will validate the key with GET /v1/user after the user confirms"
       ]
     }
   ]

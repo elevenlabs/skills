@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""A stand-in for the ElevenLabs CLI, put on PATH by evals/run_all.py for the
+onboarding functional evals. It answers the commands the skill runs with
+whatever the eval case put in these variables, and leaves behind the same
+files the real CLI would, so the agent exercises the real hand-off: run the
+command, read stdout, branch on the JSON, find the env file.
+
+  ONBOARD_STATUS_JSON  what `elevenlabs onboard status ...` prints (exit 0)
+  ONBOARD_JSON         what `elevenlabs onboard ...` prints (exit 0)
+  ONBOARD_ERROR_JSON   what `elevenlabs onboard ...` prints instead, exit 1
+  ONBOARD_ERROR_ENV_FILE  if set, the error applies only to that --env-file
+  ONBOARD_HELP_MISSING if set, `onboard` is an unknown subcommand (old CLI)
+
+Every call is appended to ./outputs/elevenlabs-calls.txt for grading.
+  Before the first brew/npm stand-in call, ONBOARD_HELP_MISSING makes every
+  `onboard` call fail as an unknown subcommand, like a CLI from before the
+  command existed; the update stand-ins touch outputs/.cli-updated to lift it.
+"""
+import json, os, sys
+
+DEFAULT_STATUS = {"signed_in": False, "browser_reachable": True, "env_file": ".env.local",
+                  "env_file_exists": False, "api_key_present": False, "api_key_source": "none",
+                  "api_key_valid": None, "api_key_last4": None}
+DEFAULT_ONBOARD = {"signed_in": True, "key_status": "created", "key_reason": None, "next": "none",
+                   "env_file": ".env.local", "env_file_written": True, "existing_key_kept": False,
+                   "gitignore_updated": True, "key_last4": "4f2a"}
+PLACEHOLDER = ("# Paste your ElevenLabs API key after the = below. Create one at "
+               "https://elevenlabs.io/app/settings/api-keys if you need to. Never paste it into a chat.\n"
+               "ELEVENLABS_API_KEY=\n")
+
+args = sys.argv[1:]
+os.makedirs("outputs", exist_ok=True)
+with open("outputs/elevenlabs-calls.txt", "a") as log:
+    log.write("elevenlabs " + " ".join(args) + "\n")
+
+
+PRODUCTS = ["text-to-speech", "speech-to-text", "voice-changer", "sound-effects", "music",
+            "voice-isolator", "dubbing", "agents", "speech-engine"]
+
+
+def file_key(path):
+    """The value on the last ELEVENLABS_API_KEY= line, "" for a placeholder, None without one."""
+    try:
+        lines = open(path).read().splitlines()
+    except OSError:
+        return None
+    keys = [l.split("=", 1)[1].strip() for l in lines if l.strip().startswith("ELEVENLABS_API_KEY=")]
+    return keys[-1] if keys else None
+
+
+def write_key(path, value):
+    """Set the key line in place, or append it; other lines are kept."""
+    try:
+        lines = open(path).read().splitlines()
+    except OSError:
+        lines = []
+    line = f"ELEVENLABS_API_KEY={value}"
+    idx = [i for i, l in enumerate(lines) if l.strip().startswith("ELEVENLABS_API_KEY=")]
+    if idx:
+        lines[idx[-1]] = line
+    else:
+        if value == "":
+            lines.extend(PLACEHOLDER.rstrip("\n").splitlines()[:-1])
+        lines.append(line)
+    with open(path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def flag(name, default):
+    """`--name value` or `--name=value`, as clap accepts both."""
+    for i, a in enumerate(args):
+        if a == name and i + 1 < len(args):
+            return args[i + 1]
+        if a.startswith(name + "="):
+            return a[len(name) + 1:]
+    return default
+
+
+def emit(obj, code=0):
+    print(json.dumps(obj, indent=2) if isinstance(obj, dict) else obj)
+    sys.exit(code)
+
+
+if args[:1] == ["--version"]:
+    emit("elevenlabs 1.5.0")
+if args[:1] != ["onboard"]:
+    print("fake CLI: only onboard is stubbed", file=sys.stderr)
+    sys.exit(2)
+if os.environ.get("ONBOARD_HELP_MISSING") and not os.path.exists("outputs/.cli-updated"):
+    print("error: unrecognized subcommand 'onboard'", file=sys.stderr)
+    sys.exit(2)
+sub = args[1] if len(args) > 1 else ""
+env_file = flag("--env-file", ".env.local")
+product = flag("--product", None)
+if product is not None and product not in PRODUCTS:
+    print(f"error: invalid value '{product}' for '--product <SLUG>'\n  [possible values: {', '.join(PRODUCTS)}]", file=sys.stderr)
+    sys.exit(2)
+if sub == "--help":
+    emit("Sign in and put a working ElevenLabs API key in this project\n\n"
+         "Options: --product <SLUG> --env-file <PATH> --no-browser --replace\nCommands: status")
+if sub == "status":
+    extra = [a for a in args[2:] if a.startswith("--") and a.split("=")[0] not in ("--env-file", "--format")]
+    if extra:
+        print(f"error: unexpected argument '{extra[0]}' found\n\nUsage: elevenlabs onboard status [OPTIONS]", file=sys.stderr)
+        sys.exit(2)
+    if os.environ.get("ONBOARD_STATUS_JSON"):
+        status = json.loads(os.environ["ONBOARD_STATUS_JSON"])
+    else:
+        # Like the real CLI: read the file the earlier run wrote.
+        key = file_key(env_file)
+        status = dict(DEFAULT_STATUS, env_file_exists=os.path.exists(env_file),
+                      api_key_present=bool(key), api_key_source="env_file" if key else "none",
+                      api_key_valid=True if key else None, api_key_last4=key[-4:] if key else None)
+    status["env_file"] = env_file
+    emit(status)
+if os.environ.get("ONBOARD_ERROR_JSON") and os.path.basename(os.environ.get("ONBOARD_ERROR_ENV_FILE", env_file)) == os.path.basename(env_file):
+    emit(json.loads(os.environ["ONBOARD_ERROR_JSON"]), 1)
+
+result = json.loads(os.environ.get("ONBOARD_JSON") or json.dumps(DEFAULT_ONBOARD))
+result["env_file"] = env_file
+# Leave the same traces the real CLI does, keeping whatever else the file holds.
+if result.get("key_status") == "created":
+    write_key(env_file, f"sk_{'0' * 44}{result.get('key_last4') or '0000'}")
+elif result.get("env_file_written"):
+    write_key(env_file, "")
+if result.get("gitignore_updated"):
+    with open(os.path.join(os.path.dirname(env_file) or ".", ".gitignore"), "a") as f:
+        f.write("# Local secrets written by `elevenlabs onboard`\n" + os.path.basename(env_file) + "\n")
+emit(result)

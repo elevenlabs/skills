@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Stand-in for the eval sandbox: records the call and installs nothing. The CLI
+# is never installed through npm here (`npm ls -g` finds nothing); an install
+# marks the CLI as updated (see the elevenlabs stand-in) unless INSTALL_FAILS is set.
+mkdir -p "$PWD/outputs"; printf '%s\n' "npm $*" >> "$PWD/outputs/elevenlabs-calls.txt"
+case "$1" in
+  ls|list) echo "/usr/local/lib"; echo "└── (empty)"; exit 1 ;;
+esac
+if [ -n "${INSTALL_FAILS:-}" ]; then echo "npm: network unreachable (eval stand-in)" >&2; exit 1; fi
+touch "$PWD/outputs/.cli-updated"; echo "npm: ok (eval stand-in)"

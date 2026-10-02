@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Stand-in for the eval sandbox: records the call and installs nothing. It always
+# reports a Homebrew install of the CLI so the skill picks the Homebrew channel
+# for its update; `upgrade` or `install` marks the CLI as updated (see the
+# elevenlabs stand-in) unless INSTALL_FAILS is set.
+mkdir -p "$PWD/outputs"; printf '%s\n' "brew $*" >> "$PWD/outputs/elevenlabs-calls.txt"
+case "$1 $2" in
+  "list --versions"|"list --version") echo "elevenlabs 1.4.0"; exit 0 ;;
+  "update ") echo "Already up-to-date."; exit 0 ;;
+esac
+if [ -n "${INSTALL_FAILS:-}" ]; then echo "brew: network unreachable (eval stand-in)" >&2; exit 1; fi
+touch "$PWD/outputs/.cli-updated"; echo "brew: ok (eval stand-in)"
