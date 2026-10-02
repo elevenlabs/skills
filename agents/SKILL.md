@@ -1,6 +1,6 @@
 ---
 name: agents
-description: Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience, and when configuring an agent's tools, workflows, or procedures, including creating, editing, compiling, and publishing procedure drafts on an agent branch over the SDKs or REST API.
+description: Build voice AI agents with ElevenLabs. Use when creating voice assistants, customer service bots, interactive voice characters, or any real-time voice conversation experience, and when configuring an agent's tools, workflows, or procedures, including creating, editing, and publishing free-form and structured procedure drafts on an agent branch over the SDKs or REST API.
 license: MIT
 compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY).
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
@@ -216,8 +216,7 @@ Workspace environment variables can resolve per-environment server tool URLs, he
     ],
     "built_in_tools": {
         "end_call": {},
-        "transfer_to_number": {"transfers": [{"transfer_destination": {"type": "phone", "phone_number": "+1234567890"}, "condition": "User asks for human support"}]},
-        "start_procedure": {}
+        "transfer_to_number": {"transfers": [{"transfer_destination": {"type": "phone", "phone_number": "+1234567890"}, "condition": "User asks for human support"}]}
     }
 }
 ```
@@ -244,11 +243,11 @@ Set under `conversation_config.agent.prompt.built_in_tools`. `{}` enables defaul
 | `language_detection` | Multilingual agents |
 | `transfer_to_number` | Phone-based human escalation |
 | `transfer_to_agent` | Multi-agent workflows |
-| `start_procedure` | Procedure-guided conversations (see [Procedures](#procedures)) |
-| `end_procedure` | Completing active procedures |
 | `skip_turn` | Tutoring / coaching (silent listening) |
 | `voicemail_detection` | Outbound calling |
 | `play_keypad_touch_tone` | IVR navigation |
+
+`start_procedure` and `end_procedure` are not configured here. The platform adds them automatically whenever the agent has at least one procedure (see [Procedures](#procedures)).
 
 `run_subagent` is a system tool for delegating a task to another configured agent. Add it to
 `conversation_config.agent.prompt.tools` with `params.system_tool_type: "run_subagent"` and an
@@ -325,25 +324,26 @@ For nested agent transfers, set `enable_nesting` on a `standalone_agent` node an
 
 ## Procedures
 
-Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (ordered, typed steps for flows that must run consistently). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step schema and authoring rules.
+Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (called "structured" in the dashboard: typed steps that run in a fixed order, for flows that must happen the same way every time). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step reference, validation rules, and authoring guidance.
 
 Procedures live on an agent branch, and every write stages a per-user draft:
 
 | Operation | Call |
 |-----------|------|
 | List, create, read, update, discard, remove | `/v1/convai/agents/{agent_id}/branches/{branch_id}/procedures...` (`procedures.*` and `procedures.drafts.*` in the SDKs) |
-| Compile | `POST .../procedures/compile` (`procedures.compile`) |
 | Publish | `PATCH /v1/convai/agents/{agent_id}?branch_id=...` (`agents.update`) |
 
 Semantics worth knowing before writing any of these calls:
 
 - Nothing reaches the live agent until you publish. Publishing is not a procedure endpoint; one PATCH on the agent versions every changed procedure draft on the branch.
 - `GET .../procedures/{procedure_id}` reads branch HEAD and returns `404` until that procedure's first publish. Read the `/draft` variant to see a procedure you just created; do not retry the create.
-- Compile only when structured (`deterministic`) procedures changed. Compilation turns them into workflow nodes, so the publish must carry the `workflow` that compile returned. Free-form-only changes publish without compiling, because the agent loads free-form procedures from their published versions.
-- Compile validates structured content and is the only way to check it. On `400` it returns `errors` keyed by procedure ID with the offending field `path`; repair the draft and compile again rather than publishing.
-- A draft update replaces the whole body. Read the draft first, then resend `name`, `type`, and `trigger` alongside the new `content`.
-- `content` is markdown for a `free_form` procedure, and a JSON-encoded object with a `trigger` and a `steps` array for a `deterministic` one. Serialize it; do not hand-escape quotes.
-- Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say.
+- Turning a structured procedure's steps into the form the agent executes is called compiling. When you publish, the platform validates every structured procedure on the branch, compiles them, and stores the result with the new version. You do not compile anything yourself and do not send a `workflow` in the request; `agents.update` with `branch_id` publishes, and compilation happens as part of that. The compiled result is currently visible as read-only nodes in the dashboard's Workflow tab. A failed publish writes nothing, so publishing is also the validation step. To validate without publishing, save an agent draft with `POST /v1/convai/agents/{agent_id}/drafts?branch_id=...`, sending the agent's current `name`, `conversation_config`, `platform_settings`, and `workflow` unchanged, then discard that agent draft with `DELETE` on the same path; see [Using the Procedure API](references/using-procedure-api.md#validate-without-publishing).
+- If a structured procedure is invalid, the publish or draft save returns `400` with `status` `procedure_validation_failed` and `errors` keyed by procedure ID, each entry carrying the `path` of the offending field and a message. Nothing is written; repair the procedure draft and publish again.
+- A draft update replaces the whole body. Read the draft first, then resend `name`, `type`, and `trigger` alongside the new `content`. `type` cannot change after creation.
+- `content` is markdown for a `free_form` procedure, and a JSON-encoded object with a `steps` array for a `deterministic` one. The trigger is the top-level `trigger` field in both cases, not part of `content`. Serialize it; do not hand-escape quotes.
+- A third `type`, `folder`, groups procedures in the dashboard. Folders carry no `content` or `trigger`; move a procedure into one with `POST .../procedures/{procedure_id}/move`.
+- The agent keeps the five most recently started procedures in context. When more have been started, the content, inline tools, and knowledge base documents of the oldest free-form ones drop out of the prompt, although the procedures remain active. Keep procedures focused and use sub-procedures so that few are active at once.
+- Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say. The model sees only a numbered menu of triggers; it never sees procedure names or IDs.
 - To restrict the starting agent to selected procedures for one conversation, enable `platform_settings.overrides.enable_procedure_ids_from_client`, then pass their IDs as `procedure_ids` in conversation initiation data. An empty list disables all procedures for that starting agent.
 - Procedure APIs require `elevenlabs` (Python) or `@elevenlabs/elevenlabs-js` at `2.60.0` or newer.
 
@@ -552,7 +552,7 @@ Common errors: **401** (invalid key), **404** (not found), **422** (invalid conf
 - [Installation Guide](references/installation.md) - SDK setup and migration
 - [Agent Configuration](references/agent-configuration.md) - All config options and CRUD examples
 - [Client Tools](references/client-tools.md) - Webhook, client, and system tools
-- [Using the Procedure API](references/using-procedure-api.md) - Procedure CLI and SDK flow, compile and publish
-- [Writing Procedures](references/writing-procedures.md) - Trigger and content authoring, step schema
+- [Using the Procedure API](references/using-procedure-api.md) - Procedure CLI and SDK flow, drafts and publish
+- [Writing Procedures](references/writing-procedures.md) - Trigger and content authoring, structured step reference and rules
 - [Widget Embedding](references/widget-embedding.md) - Website integration
 - [Outbound Calls](references/outbound-calls.md) - Phone call integrations

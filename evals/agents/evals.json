@@ -41,23 +41,23 @@
     {
       "id": 4,
       "prompt": "Using the ElevenLabs REST API and curl, show me how to add a structured (deterministic) procedure to agent agent_abc123 on branch agtbranch_xyz789 and get it live. Do not run anything.",
-      "expected_output": "Curl commands covering structured create, compile, and publish",
+      "expected_output": "Curl commands covering structured create and publish, with the publish's validation error handled",
       "files": [],
       "expectations": [
         "Sets type to deterministic and passes JSON-encoded content rather than a raw object",
         "Sends the xi-api-key header populated from the ELEVENLABS_API_KEY environment variable, never a literal key",
-        "POSTs to the procedures/compile endpoint after saving the draft and before publishing, and repairs the draft and compiles again rather than publishing when compile returns errors",
-        "PATCHes the agent with branch_id and the compiled workflow"
+        "PATCHes the agent with branch_id to publish and does not call the compile endpoint (NOT '/procedures/compile')",
+        "Explains that the publish validates structured procedures, and that a 400 with status procedure_validation_failed means the procedure draft must be repaired and the publish retried"
       ]
     },
     {
       "id": 5,
-      "prompt": "On my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, I only edited the wording of one free-form procedure. The branch also has a structured (deterministic) procedure that I did not touch. Do I need to compile before publishing, or can I just PATCH the agent? Do not run anything.",
-      "expected_output": "Explanation that no compile is needed, because compiling only concerns structured procedures",
+      "prompt": "On my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, I only edited the wording of one free-form procedure. The branch also has a structured (deterministic) procedure that I did not touch. Do I need to call the compile endpoint before publishing, or can I just PATCH the agent? Do not run anything.",
+      "expected_output": "Explanation that no compile call is needed, because publishing handles structured procedures itself",
       "files": [],
       "expectations": [
-        "Explains that compilation produces workflow nodes from deterministic procedures, while free-form content is read from its published version instead",
-        "Notes that the unchanged deterministic procedure does not force a compile"
+        "Says to PATCH the agent directly and does not call the compile endpoint (NOT '/procedures/compile')",
+        "Explains that the publish validates any structured procedures on the branch and, if they pass, publishes them in the new version"
       ]
     },
     {
@@ -88,6 +88,18 @@
       "expectations": [
         "Advises making triggers concrete and non-overlapping, and identifies the broad account-questions trigger as the cause of the misrouting",
         "Recommends wording each trigger to cover the phrasings a caller would actually use"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I just wrote a structured (deterministic) procedure draft on my ElevenLabs agent agent_abc123, branch agtbranch_xyz789, but I'm not ready to publish because a teammate has other unpublished procedure drafts on the branch. How do I check that my procedure validates without publishing? Show me the calls. Do not run anything.",
+      "expected_output": "Explanation that saving an agent draft runs the same validation as publish, with the calls to do it and discard the draft afterwards",
+      "files": [],
+      "expectations": [
+        "Creates an agent draft with a POST to the agent drafts endpoint using branch_id and does not call the compile endpoint (NOT '/procedures/compile')",
+        "Sends the full agent body of name, conversation_config, platform_settings, and workflow read from the agent",
+        "Explains that a 400 with status procedure_validation_failed carries errors keyed by procedure ID with a path per entry, and that the fix goes into the procedure draft",
+        "Discards the agent draft afterwards with a DELETE on the drafts endpoint"
       ]
     }
   ]

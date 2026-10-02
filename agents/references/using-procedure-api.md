@@ -1,15 +1,17 @@
 # Using the Procedure API
 
-Procedures are reusable instruction blocks that an agent runs when a trigger matches. Use the ElevenLabs CLI by default to create, edit, compile, and publish them. Python and JavaScript SDKs are also available for application code. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent runs when a trigger matches. Use the ElevenLabs CLI by default to create, edit, and publish them. Python and JavaScript SDKs are also available for application code. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
-The CLI exposes the complete procedure lifecycle, including draft operations and structured procedure compilation.
+One term to know: turning a structured procedure's steps into the form the agent executes is called compiling. The platform compiles every structured procedure on the branch when you publish; you never compile anything yourself or send a `workflow` in a request. The compiled result is currently visible as read-only nodes in the dashboard's Workflow tab.
+
+The CLI exposes the complete procedure lifecycle, including draft operations.
 
 ## Prerequisites
 
 - `ELEVENLABS_API_KEY` is set, with the `CONVAI_READ` and `CONVAI_WRITE` scopes.
-- Reading requires the viewer role on the target agent. Creating, updating, removing, compiling, and publishing require the editor role. Publishing to a protected branch requires admin.
+- Reading requires the viewer role on the target agent. Creating, updating, removing, and publishing require the editor role. Publishing to a protected branch requires admin.
 - The target `agent_id` is known.
 - The target `branch_id` is known. If not, read `main_branch_id` with `elevenlabs agents get --agent-id "$AGENT_ID" --query main_branch_id`, or list branches with `elevenlabs agents branches list --agent-id "$AGENT_ID"`.
 
@@ -28,7 +30,6 @@ Use these command groups for procedure management:
 |-----------|---------|
 | List, create, read, remove | `elevenlabs agents procedures ...` |
 | Read, update, discard draft | `elevenlabs agents procedures drafts ...` |
-| Compile structured procedures | `elevenlabs agents procedures compile` |
 | Publish pending changes | `elevenlabs agents update` |
 
 Use `--dry-run` to validate and inspect a generated request without sending it. Use `--schema`
@@ -58,7 +59,6 @@ Use these SDK methods for the procedure endpoints. Python nests them under `clie
 | Update draft | `PATCH .../procedures/{procedure_id}/draft` | `procedures.drafts.update` |
 | Discard draft | `DELETE .../procedures/{procedure_id}/draft` | `procedures.drafts.delete` |
 | Remove | `DELETE .../procedures/{procedure_id}` | `procedures.remove` |
-| Compile | `POST .../procedures/compile` | `procedures.compile` |
 | Publish | `PATCH /v1/convai/agents/{agent_id}?branch_id=...` | `agents.update` |
 
 SDK notes:
@@ -66,7 +66,7 @@ SDK notes:
 - JavaScript takes the IDs positionally, then a body object. Python takes keyword arguments — except `procedures.create`, which takes its body as `request=CreateProcedureRequestModel(...)`. Flat keywords on `create` raise `TypeError`.
 - Read one historical version with `procedures.get(..., version_id=...)` or `procedures.get(agentId, branchId, procedureId, { versionId })`.
 - Pass `agent_version_id` to `procedures.list` or `procedures.get` to resolve the procedures attached to a specific agent version.
-- For structured changes, pass the `workflow` returned by `procedures.compile` to `agents.update`.
+- To publish, call `agents.update` with `branch_id` and an optional `version_description`. That is the whole call.
 
 The flow below creates a free-form procedure, edits its draft, and publishes it.
 
@@ -110,23 +110,24 @@ client.conversational_ai.agents.update(
 )
 ```
 
-If the pending changes include structured procedures, compile before publishing:
+If the branch has structured procedures, the publish validates them. Catch the validation error and repair the procedure draft:
 
 ```python
 from elevenlabs.errors import BadRequestError
 
 try:
-    compiled = procedures.compile(agent_id=AGENT_ID, branch_id=BRANCH_ID)
+    client.conversational_ai.agents.update(
+        agent_id=AGENT_ID,
+        branch_id=BRANCH_ID,
+        version_description="Publish refund procedure",
+    )
 except BadRequestError as error:
-    print(f"Compile failed, nothing published: {error.body}")
+    detail = error.body.get("detail", {})
+    if detail.get("status") == "procedure_validation_failed":
+        for procedure_id, errors in detail["data"]["errors"].items():
+            for item in errors:
+                print(procedure_id, item["path"], item["message"])
     raise
-
-client.conversational_ai.agents.update(
-    agent_id=AGENT_ID,
-    branch_id=BRANCH_ID,
-    workflow=compiled.workflow,
-    version_description="Publish refund procedure",
-)
 ```
 
 ### JavaScript
@@ -158,21 +159,24 @@ await client.conversationalAi.agents.update(agentId, {
 });
 ```
 
-If the pending changes include structured procedures, compile before publishing:
+If the branch has structured procedures, the publish validates them. Catch the validation error and repair the procedure draft:
 
 ```javascript
 import { ElevenLabsError } from "@elevenlabs/elevenlabs-js";
 
 try {
-  const compiled = await procedures.compile(agentId, branchId);
   await client.conversationalAi.agents.update(agentId, {
     branchId,
-    workflow: compiled.workflow,
     versionDescription: "Publish refund procedure",
   });
 } catch (error) {
   if (error instanceof ElevenLabsError && error.statusCode === 400) {
-    console.error("Compile or publish failed, nothing published:", error.body);
+    const detail = error.body?.detail;
+    if (detail?.status === "procedure_validation_failed") {
+      for (const [procedureId, errors] of Object.entries(detail.data.errors)) {
+        for (const item of errors) console.error(procedureId, item.path, item.message);
+      }
+    }
   }
   throw error;
 }
@@ -184,8 +188,8 @@ try {
 - Create, update, discard, and remove act on your draft working set. Nothing reaches the live agent until you publish.
 - Publishing is not a procedure endpoint. Use `PATCH /v1/convai/agents/{agent_id}?branch_id=...` to version all changed procedure drafts on the branch.
 - Each branch maps every `procedure_id` to a published `version_id`, or to no version while only a draft exists. A branch-HEAD read therefore returns `404` until the first publish.
-- Compile structured-procedure changes before publishing. Publish free-form-only changes without compiling. See [Compile and Publish](#compile-and-publish).
-- Structured content has no dry-run. Save the draft, compile to validate it, and repair what compile reports. See [Compile and Publish](#compile-and-publish).
+- Publishing validates structured procedures. If one is invalid, the publish fails with `procedure_validation_failed` and nothing is written. See [Publish](#publish). To run the same check without publishing, save an agent draft; see [Validate without publishing](#validate-without-publishing).
+- A procedure's `type` cannot change after creation. A draft update with a different `type` is rejected.
 - Draft writes are last-write-wins. Read the draft immediately before editing and avoid concurrent writers.
 
 Reads resolve against different sources:
@@ -248,11 +252,11 @@ elevenlabs agents procedures drafts update \
   }'
 ```
 
-Treat the draft update body as a full replacement. Read the current draft, preserve `name`, `type`, and `trigger` unless the user requested changes to them, and send them with the new `content`. The API accepts an omitted `trigger` and then derives it from `content`; omit it only when that is intentional. Preserve `type` unless the user explicitly requests a conversion.
+Treat the draft update body as a full replacement. Read the current draft, preserve `name` and `trigger` unless the user requested changes to them, and send them with the new `content`. Always send the existing `type`; it cannot change after creation, and a different value is rejected with `procedure_type_cannot_change`. Always send `trigger` explicitly rather than relying on a trigger embedded in `content`.
 
-Publish with the flow under [Compile and Publish](#compile-and-publish).
+Publish with the flow under [Publish](#publish).
 
-## Compile and Publish
+## Publish
 
 One publish versions every changed procedure draft on the branch:
 
@@ -262,49 +266,55 @@ elevenlabs agents update \
   --json '{"version_description": "Publish refund procedure"}'
 ```
 
-Compile only when structured procedures have changed. Compilation turns structured drafts into workflow nodes and merges them into the existing agent workflow. The agent loads free-form procedures from their published versions at the start of a conversation, so publish free-form-only changes without `workflow`.
+If the branch has structured procedures, the publish validates each one and, if all pass, publishes them in the new version. The publish above is the whole call. This also runs when the change was free-form only, and when the last structured procedure was removed, in which case its compiled result is removed.
 
-Also compile after removing the last structured procedure; compilation removes the workflow nodes generated for it.
+On a validation failure the publish returns `400` and nothing is written:
 
-Compilation requires a pending draft on the branch. With nothing staged, it fails with `no_draft_to_compile`, which also means there is nothing to publish.
-
-Compilation validates structured content using saved drafts rather than an inline request body:
-
-1. Save the content as a draft. A draft that does not validate still saves.
-2. Compile. On `400`, `errors` is keyed by procedure ID, and each entry carries the `path` of the offending field and a message naming the step, such as `steps[0].ask.instruction` and `Step 1: Ask step requires an instruction`.
-3. Repair every entry and compile again. Each compile returns the errors detected in that pass; fixing field-level errors may reveal structural errors on the next pass. Continue until compile returns a workflow.
-4. Publish, sending that `workflow` with the publish.
-
-```bash
-WORKFLOW=$(
-  elevenlabs agents procedures compile \
-    --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-    | jq -c '.workflow'
-)
+```json
+{
+  "detail": {
+    "status": "procedure_validation_failed",
+    "message": "Structured procedures failed validation.",
+    "data": {
+      "errors": {
+        "agtprc_abc123": [
+          { "path": "steps[0].ask.instruction", "message": "Step 1: Ask step requires an instruction" }
+        ]
+      }
+    }
+  }
+}
 ```
 
-A successful compile returns `200` with `workflow`; validation failure returns `400` with `errors`
-and no workflow, and the CLI exits non-zero and prints that error payload. Do not publish while
-compile reports errors. Repair and recompile, and fail if `WORKFLOW` is empty or null.
+`errors` is keyed by procedure ID. Each entry carries the `path` of the offending field and a message naming the step. Repair every entry in the procedure draft and publish again. Each attempt reports the errors detected in that pass; fixing field-level errors may reveal structural errors on the next pass.
 
-SDK methods raise on compile failure. Catch the error around `procedures.compile`; see [SDKs](#sdks) for the flow and [Error Handling](#error-handling) for the response fields.
+Saving a procedure draft with `PATCH .../procedures/{procedure_id}/draft` does not validate structured content. The check happens at publish, or at agent draft save as described next.
 
-Publish the drafts with the compiled workflow:
+The legacy `POST .../procedures/compile` endpoint still exists as a dry-run for existing callers, but do not use it. It will eventually be deprecated.
+
+### Validate without publishing
+
+A failed publish writes nothing, so when you are ready to publish, the publish itself is the validation step. Use the flow below only when you need to check structured content and are not ready to publish, for example while other edits on the branch are still pending, or on a protected branch you cannot publish to.
+
+Saving an agent draft runs the same validation as publish and returns the same `procedure_validation_failed` payload. This is how the dashboard surfaces errors while editing. The endpoint is `POST /v1/convai/agents/{agent_id}/drafts?branch_id=...` (`agents.drafts.create` in the SDKs). There is no CLI command for it.
+
+The body is the full agent draft, not a flag: `name`, `conversation_config`, `platform_settings`, and `workflow` are all required. Read them from the agent and resend them unchanged. Do not edit anything else in that body; a validation check is not the place to change agent configuration.
 
 ```bash
-PUBLISH_BODY=$(
-  jq -n \
-    --argjson workflow "$WORKFLOW" \
-    --arg description "Publish refund procedure" \
-    '{workflow: $workflow, version_description: $description}'
+AGENT=$(
+  curl -sS "https://api.elevenlabs.io/v1/convai/agents/$AGENT_ID?branch_id=$BRANCH_ID" \
+    -H "xi-api-key: $ELEVENLABS_API_KEY"
 )
 
-elevenlabs agents update \
-  --agent-id "$AGENT_ID" --branch-id "$BRANCH_ID" \
-  --json "$PUBLISH_BODY"
+curl -sS -X POST "https://api.elevenlabs.io/v1/convai/agents/$AGENT_ID/drafts?branch_id=$BRANCH_ID" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "$(printf '%s' "$AGENT" | jq '{name, conversation_config, platform_settings, workflow}')"
 ```
 
-Include `workflow` whenever publishing structured changes. Without it, the publish versions the procedure drafts but leaves the previously published workflow unchanged.
+A `400` with `procedure_validation_failed` carries the same `errors` map as a failed publish. Repair the procedure draft with `PATCH .../procedures/{procedure_id}/draft` and save the agent draft again.
+
+A `200` means every structured procedure on the branch validated, and it also stored an agent draft for you on that branch. If you only wanted the check, discard it with `DELETE /v1/convai/agents/{agent_id}/drafts?branch_id=...` (`agents.drafts.delete`) so it does not linger as an unsaved change in the dashboard. Discarding the agent draft does not touch your procedure drafts.
 
 Verify a published procedure and record its `version_id`:
 
@@ -335,13 +345,13 @@ elevenlabs agents procedures remove \
 
 This removes the procedure from the branch working set. It does not erase versions still referenced by agent history.
 
-The removal remains a draft until published. If the procedure is structured, compile before publishing to remove its generated workflow nodes. Then confirm that the procedure is absent from the list and that a branch-HEAD lookup returns `404`.
+The removal remains a draft until published. Publishing removes the compiled result of a structured procedure along with it. Then confirm that the procedure is absent from the list and that a branch-HEAD lookup returns `404`.
 
 ## Error Handling
 
 Common errors:
-- **400** from compile, with `errors`: structured validation failed. Fix every returned procedure error, recompile, and only then publish.
-- **400** from compile, with `no_draft_to_compile`: nothing is staged on this branch, so there is nothing to publish either.
+- **400** from publish or agent draft save, with `status` `procedure_validation_failed`: a structured procedure is invalid. Fix every entry under `detail.data.errors` and publish again.
+- **400** from a procedure draft update, with `procedure_type_cannot_change`: the body's `type` differs from the procedure's type. Resend the existing type.
 - **401**: `ELEVENLABS_API_KEY` is unset or invalid.
 - **403**: the key lacks `CONVAI_READ`/`CONVAI_WRITE`, the agent role is too low, or the branch is protected and only admins may publish to it.
 - **404**: verify that the agent, branch, and procedure IDs belong together. Before a procedure's first publish, read the draft endpoint rather than branch HEAD.
