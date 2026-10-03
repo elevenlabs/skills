@@ -123,6 +123,7 @@ ALL_SKILLS = [
     "voice-isolator",
     "dubbing",
     "setup-api-key",
+    "onboarding",
 ]
 
 
@@ -415,6 +416,11 @@ def run_functional_eval_for_skill(
 
         eval_dir = skill_output_dir / f"eval-{eval_id}"
         eval_dir.mkdir(parents=True, exist_ok=True)
+        # Files the prompt says already exist in the project.
+        for fixture in ev.get("files", []):
+            target = eval_dir / fixture["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(fixture["content"])
 
         # Build prompt that includes skill content. Workspace is only eval_dir so the nested
         # agent cannot edit skill packages or other repo files (eval runs must not "fix" skills).
@@ -442,12 +448,28 @@ def run_functional_eval_for_skill(
             str(eval_dir),
             "--model",
             m,
-            full_prompt,
         ]
+        # The prompt goes in on stdin: cursor-agent is killed on startup when a
+        # single argument is more than about a kilobyte, and a skill is far larger.
 
         env = dict(os.environ)
         # Keep functional evals deterministic and avoid exposing a real user key to the nested agent.
         env.pop("ELEVENLABS_API_KEY", None)
+        # A skill may ship stand-ins for the commands it runs (evals/<skill>/bin), and a
+        # case may set variables those stand-ins read, so the agent runs the real command
+        # and branches on its real output instead of being told what it returned.
+        fake_bin = EVALS_DIR / skill_name / "bin"
+        if fake_bin.is_dir():
+            env["PATH"] = f"{fake_bin}{os.pathsep}{env.get('PATH', '')}"
+            # A login shell re-sorts PATH (macOS path_helper puts /opt/homebrew/bin
+            # first), so a real `elevenlabs` would shadow the stand-in. Give zsh its
+            # own startup files that put the stand-ins back in front afterwards.
+            zdotdir = eval_dir / ".zdotdir"
+            zdotdir.mkdir(exist_ok=True)
+            for rc in (".zshenv", ".zprofile", ".zshrc"):
+                (zdotdir / rc).write_text(f'export PATH="{fake_bin}:$PATH"\n')
+            env["ZDOTDIR"] = str(zdotdir)
+        env.update(ev.get("env", {}))
 
         t0 = time.time()
         response_text = ""
@@ -458,6 +480,7 @@ def run_functional_eval_for_skill(
             # group; on Windows, taskkill /T kills the process tree instead.
             process = subprocess.Popen(
                 cmd,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -466,7 +489,7 @@ def run_functional_eval_for_skill(
                 start_new_session=(os.name != "nt"),
             )
             try:
-                stdout_text, stderr_text = process.communicate(timeout=timeout)
+                stdout_text, stderr_text = process.communicate(input=full_prompt, timeout=timeout)
             except subprocess.TimeoutExpired:
                 if os.name == "nt":
                     subprocess.run(
@@ -485,6 +508,11 @@ def run_functional_eval_for_skill(
                 raise
             elapsed = time.time() - t0
             success = process.returncode == 0
+            if not success and verbose:
+                print(
+                    f"    cursor-agent exited {process.returncode}: {stderr_text.strip()[-400:]}",
+                    file=sys.stderr,
+                )
 
             response_text = stdout_text
 
@@ -500,6 +528,10 @@ def run_functional_eval_for_skill(
                 # Recursive: agents legitimately nest configs (e.g. outputs/agent_configs/*.json)
                 # and a top-level-only scan hides them from grading.
                 for out_file in sorted(outputs_dir.rglob("*")):
+                    # Skip installed dependencies and other hidden trees (.venv,
+                    # node_modules): they are not the agent's answer.
+                    if any(part.startswith(".") or part == "node_modules" for part in out_file.relative_to(outputs_dir).parts[:-1]):
+                        continue
                     if out_file.is_file() and out_file.suffix in (
                         ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
                         ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
@@ -591,6 +623,9 @@ def grade_expectations(response_text, expectations):
     return grades
 
 
+NEGATIVE_CLAUSE_RE = re.compile(r"\(?\bnot\b[^\"']*([\"'])(.+?)\1\)?")
+
+
 def extract_negative_terms(expectation: str) -> list[str]:
     """Extract quoted terms from generic NOT clauses like ``(NOT 'elevenlabs')``."""
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
@@ -630,7 +665,8 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
 
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
     package names — those are forbidden as literal substrings when used, since
-    import-context matching can't catch SDK method usage. Terms starting with '/'
+    import-context matching can't catch SDK method usage. So are CLI flags
+    ('--product'), subcommands and other phrases with spaces, and `KEY=` lines. Terms starting with '/'
     are API paths — forbidden including their child routes, except child routes
     under any of ``allowed_paths`` (quoted paths from the same expectation that
     extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
@@ -650,7 +686,9 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
             if not is_advisory_reference(response_text, match.start()):
                 return match.group(0)
         return None
-    if "." in term:
+    # CLI flags, subcommands, `KEY=` lines, and phrases are not packages either:
+    # forbid them as literal substrings outside advisory prose.
+    if "." in term or term.startswith("--") or re.search(r"[\s=]", term):
         for match in re.finditer(rf"(?i){escaped}", response_text):
             if not is_advisory_reference(response_text, match.start()):
                 return match.group(0)
@@ -673,6 +711,8 @@ def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
     negative_terms = extract_negative_terms(expectation)
+    # The positive checks below must not be triggered by words inside a NOT clause.
+    positive_lower = NEGATIVE_CLAUSE_RE.sub("", exp_lower)
     # Quoted API paths that are not themselves forbidden act as allowed exceptions
     # for path-based NOT terms (see find_forbidden_reference).
     quoted_strings = [m[1] for m in re.findall(r"([\"'])(.+?)\1", expectation)]
@@ -701,7 +741,7 @@ def check_expectation(response_lower, response_text, expectation):
         if forbidden_match:
             return False, "Found forbidden reference: %s" % forbidden_match
 
-    filename_terms = list(dict.fromkeys(AUDIO_FILENAME_RE.findall(exp_lower)))
+    filename_terms = list(dict.fromkeys(AUDIO_FILENAME_RE.findall(positive_lower)))
     if filename_terms:
         missing_filenames = [
             filename for filename in filename_terms if filename not in response_lower
@@ -751,7 +791,7 @@ def check_expectation(response_lower, response_text, expectation):
     matched_pattern_checks = []
     seen_pattern_labels = set()
     for trigger, search, label in pattern_checks:
-        if trigger in exp_lower and label not in seen_pattern_labels:
+        if trigger in positive_lower and label not in seen_pattern_labels:
             matched_pattern_checks.append((search, label))
             seen_pattern_labels.add(label)
 
@@ -802,7 +842,7 @@ def check_expectation(response_lower, response_text, expectation):
     semantic_check_evidence = ""
     semantic_check_passed = False
     for triggers, indicators, strong_indicators in semantic_checks:
-        if any(t in exp_lower for t in triggers):
+        if any(t in positive_lower for t in triggers):
             semantic_check_applied = True
             found = [ind for ind in indicators if ind in response_lower]
             if len(found) >= 2:
@@ -840,7 +880,7 @@ def check_expectation(response_lower, response_text, expectation):
         "very", "just", "only", "than", "other", "about", "over", "most",
         "equivalent", "similar", "least",
     }
-    key_terms = [w for w in exp_lower.split() if len(w) > 3 and w not in stop_words]
+    key_terms = [w for w in positive_lower.split() if len(w) > 3 and w not in stop_words]
 
     if key_terms:
         matches = sum(1 for t in key_terms if t in response_lower)

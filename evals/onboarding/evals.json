@@ -1,0 +1,391 @@
+{
+  "skill_name": "onboarding",
+  "_comment": "A stand-in `elevenlabs` CLI (evals/onboarding/bin) is on PATH, with stand-ins for brew/npm/pip that install nothing. Each case's `env` decides what `onboard status` and `onboard` print, so the agent runs the real commands and branches on their real JSON. Every call is appended to outputs/elevenlabs-calls.txt, which the grader reads along with the agent's final summary; expectations name the literal commands and fields the grader can find there.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add text to speech to my app. It's a Next.js project and I don't have an ElevenLabs account yet. The project has no env yet.",
+      "expected_output": "elevenlabs-calls.txt shows the CLI brought up to date through Homebrew (brew list --versions elevenlabs, brew upgrade elevenlabs/tap/elevenlabs) and then elevenlabs onboard --help, before any onboard status or onboard --product call",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows brew list --versions elevenlabs and brew upgrade elevenlabs/tap/elevenlabs before elevenlabs onboard --help, and nothing installed through another channel (NOT 'npm install -g') (NOT 'brew install')",
+        "elevenlabs-calls.txt shows elevenlabs onboard status .env.local --format json before elevenlabs onboard --product",
+        "elevenlabs-calls.txt shows elevenlabs onboard --product text-to-speech .env.local --format json",
+        "The key is in .env.local and .env.local was added to .gitignore",
+        "Continues to the text-to-speech SDK @elevenlabs/elevenlabs-js and offers to turn the sentence Welcome to ElevenLabs into speech as a first request that spends a few credits"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set up ElevenLabs text to speech here. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard status --format json and then elevenlabs onboard --product text-to-speech --format json",
+      "files": [],
+      "env": {
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"created\", \"key_reason\": null, \"next\": \"none\", \"env_file\": \".env.local\", \"env_file_written\": true, \"existing_key_kept\": false, \"gitignore_updated\": false, \"key_last4\": \"9c1d\"}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard status --format json and then elevenlabs onboard --product text-to-speech --format json",
+        "The key is in .env.local",
+        "Reminds the user to keep .env.local out of version control because .gitignore was not updated"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add ElevenLabs speech to text to this Flask project. The project already has a .env that git does not track. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard status .env --format json",
+      "files": [
+        {
+          "path": ".env",
+          "content": "FLASK_ENV=development\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard status .env --format json",
+        "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text .env --format json",
+        "The key is in .env"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add ElevenLabs music generation to this Node project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product music --format json",
+      "files": [],
+      "env": {
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"no_key\", \"key_reason\": null, \"next\": \"paste_key\", \"env_file\": \".env.local\", \"env_file_written\": true, \"existing_key_kept\": false, \"gitignore_updated\": true, \"key_last4\": null}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product music --format json",
+        "No usable key arrived from the approval page",
+        "Click Copy key on the approval page if it is still open, or create a key at https://elevenlabs.io/app/settings/api-keys",
+        "Paste the key after ELEVENLABS_API_KEY= in .env.local and never into the chat",
+        "Next: elevenlabs onboard status again after the user confirms"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Wire ElevenLabs text to speech into this Python app. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "The key could not be set up automatically (the API could not be reached to check it); the clipboard was cleared; hands off to setup-api-key",
+      "files": [],
+      "env": {
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"failed\", \"key_reason\": \"could_not_verify\", \"next\": \"legacy\", \"env_file\": \".env.local\", \"env_file_written\": true, \"existing_key_kept\": false, \"gitignore_updated\": true, \"key_last4\": null}"
+      },
+      "expectations": [
+        "Says the key could not be set up automatically this time because the API could not be reached to check it, and that nothing was stored",
+        "Hands off to the setup-api-key skill for the key, telling it the key goes on the ELEVENLABS_API_KEY= line in .env.local",
+        "Does not tell the user to paste what is on the clipboard (NOT 'paste what is on your clipboard')"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "My ElevenLabs key seems broken. Replace it and get text to speech working in this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs onboard status reported the key in .env.local as rejected by the API",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": true, \"api_key_present\": true, \"api_key_source\": \"env_file\", \"api_key_valid\": false, \"api_key_last4\": \"0ld1\"}",
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"clipboard_invalid\", \"key_reason\": null, \"next\": \"paste_key\", \"env_file\": \".env.local\", \"env_file_written\": false, \"existing_key_kept\": true, \"gitignore_updated\": false, \"key_last4\": null}"
+      },
+      "expectations": [
+        "elevenlabs onboard status reported the key in .env.local as rejected by the API",
+        "elevenlabs-calls.txt shows elevenlabs onboard --product text-to-speech .env.local --replace --format json",
+        "The key on the clipboard was not usable and the previous key is still on the ELEVENLABS_API_KEY line and must be replaced",
+        "Paste a key into .env.local, never into the chat, then elevenlabs onboard status again"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Get me set up with ElevenLabs text to speech in this repo. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product text-to-speech --format json",
+      "files": [],
+      "env": {
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"not_available\", \"key_reason\": null, \"next\": \"legacy\", \"env_file\": \".env.local\", \"env_file_written\": true, \"existing_key_kept\": false, \"gitignore_updated\": true, \"key_last4\": null}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product text-to-speech --format json",
+        "This account cannot create keys this way (not_available)",
+        "Points the user to the setup-api-key skill or the manual key setup for the key, with .env.local as where it goes, before the text-to-speech SDK"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add ElevenLabs voice agents to our internal tool. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product agents --format json",
+      "files": [],
+      "env": {
+        "ONBOARD_JSON": "{\"signed_in\": true, \"key_status\": \"not_permitted\", \"key_reason\": null, \"next\": \"legacy\", \"env_file\": \".env.local\", \"env_file_written\": true, \"existing_key_kept\": false, \"gitignore_updated\": true, \"key_last4\": null}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product agents --format json",
+        "The user's role cannot create keys and an administrator has to issue one: not_permitted",
+        "Hands off to the setup-api-key skill, naming .env.local as where the key goes, then the agents skill"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm on a remote server over SSH. Set up ElevenLabs speech to text in this Python project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard status --format json and nothing with --product",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": false, \"browser_reachable\": false, \"env_file\": \".env.local\", \"env_file_exists\": false, \"api_key_present\": false, \"api_key_source\": \"none\", \"api_key_valid\": null, \"api_key_last4\": null}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard status --format json (NOT '--product')",
+        "browser_reachable false: no browser can reach this machine, so elevenlabs onboard is not run",
+        "Asks the user to create an API key at https://elevenlabs.io/app/settings/api-keys and make it available as ELEVENLABS_API_KEY the way they handle secrets on that machine, never by pasting it into the chat",
+        "Tells the user to make the key available on that machine themselves (NOT 'ELEVENLABS_API_KEY=')",
+        "Next: elevenlabs onboard status again once the user confirms, then the speech-to-text skill"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Add sound effects generation to this Python project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard status --format json and nothing with --product",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": true, \"api_key_present\": true, \"api_key_source\": \"env_file\", \"api_key_valid\": true, \"api_key_last4\": \"77ab\"}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard status --format json (NOT '--product')",
+        "A working key is already in .env.local",
+        "A working key is already in .env.local so the sign-in is skipped; next is the sound-effects SDK"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Add ElevenLabs text to speech to this Next.js project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "ELEVENLABS_API_KEY comes from the shell environment (api_key_source env), not from .env.local",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": false, \"api_key_present\": true, \"api_key_source\": \"env\", \"api_key_valid\": true, \"api_key_last4\": \"e5e5\"}"
+      },
+      "expectations": [
+        "ELEVENLABS_API_KEY comes from the shell environment (api_key_source env), not from .env.local",
+        "Asks the user to choose: keep running from the shell variable, or unset it so a key can go in .env.local",
+        "elevenlabs-calls.txt shows only elevenlabs onboard status: no onboard --product run before the user answers"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Add ElevenLabs text to speech to this Next.js project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "The shell environment sets ELEVENLABS_API_KEY and the API rejects that key: api_key_valid false, api_key_source env",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": false, \"api_key_present\": true, \"api_key_source\": \"env\", \"api_key_valid\": false, \"api_key_last4\": \"dead\"}"
+      },
+      "expectations": [
+        "The shell environment sets ELEVENLABS_API_KEY and the API rejects that key: api_key_valid false, api_key_source env",
+        "A key in .env.local would not take effect while the shell variable is set; asks the user to unset or fix the variable",
+        "Next: elevenlabs onboard status again (NOT '--replace')"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Set up ElevenLabs dubbing in this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "A key is in .env.local but the API could not be reached to check it: api_key_valid null, so it is not known to be bad",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": true, \"api_key_present\": true, \"api_key_source\": \"env_file\", \"api_key_valid\": null, \"api_key_last4\": \"b2b2\"}"
+      },
+      "expectations": [
+        "A key is in .env.local but the API could not be reached to check it: api_key_valid null, so it is not known to be bad",
+        "Next: the dubbing SDK, unless the user wants a fresh key, which would mean elevenlabs onboard --replace",
+        "elevenlabs-calls.txt has only elevenlabs onboard status, no onboard --product line"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Set up ElevenLabs dubbing in this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "ELEVENLABS_API_KEY comes from the shell environment and could not be checked: api_key_valid null, api_key_source env",
+      "files": [],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": false, \"api_key_present\": true, \"api_key_source\": \"env\", \"api_key_valid\": null, \"api_key_last4\": \"c3c3\"}"
+      },
+      "expectations": [
+        "ELEVENLABS_API_KEY comes from the shell environment and could not be checked: api_key_valid null, api_key_source env",
+        "A fresh key would mean unsetting the shell variable first",
+        "elevenlabs-calls.txt has only elevenlabs onboard status, no onboard --product line"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "I'm working in a GitHub Codespace. Get ElevenLabs speech to text working in this project; there is an old key in .env. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard status .env --format json and nothing with --product or --replace",
+      "files": [
+        {
+          "path": ".env",
+          "content": "FLASK_ENV=development\nELEVENLABS_API_KEY=sk_000000000000000000000000000000000000000000000000\n"
+        }
+      ],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": false, \"browser_reachable\": false, \"env_file\": \".env\", \"env_file_exists\": true, \"api_key_present\": true, \"api_key_source\": \"env_file\", \"api_key_valid\": false, \"api_key_last4\": \"0ld0\"}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard status .env --format json (NOT '--product') (NOT '--replace')",
+        "browser_reachable false and api_key_valid false: the key in .env is rejected and no browser can reach this machine",
+        "Asks the user to create an API key at https://elevenlabs.io/app/settings/api-keys and make it available as ELEVENLABS_API_KEY the way they handle secrets there, never by pasting it into the chat",
+        "Next: elevenlabs onboard status again once the user confirms"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Add ElevenLabs text to speech to my Express app. The installed CLI is old. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows brew list --versions elevenlabs, then brew upgrade elevenlabs/tap/elevenlabs, then elevenlabs onboard --help succeeding, without asking the user for permission first",
+      "files": [],
+      "env": {
+        "ONBOARD_HELP_MISSING": "1"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows brew list --versions elevenlabs and brew upgrade elevenlabs/tap/elevenlabs, then elevenlabs onboard --help (NOT 'npm install')",
+        "Tells the user in passing that it updated the ElevenLabs CLI, without stopping to ask for permission first (NOT 'may I') (NOT 'do you want me to upgrade') (NOT 'shall I upgrade')",
+        "elevenlabs-calls.txt shows elevenlabs onboard status .env.local --format json and elevenlabs onboard --product text-to-speech .env.local --format json after the upgrade",
+        "The key is in .env.local"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "Add ElevenLabs text to speech to my Express app. The installed CLI is old. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "The update failed, so the skill takes the manual key path: the user creates a key on the API keys page and exposes it as ELEVENLABS_API_KEY; no onboard run, no env file created",
+      "files": [],
+      "env": {
+        "ONBOARD_HELP_MISSING": "1",
+        "INSTALL_FAILS": "1"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows brew upgrade elevenlabs/tap/elevenlabs (one attempt) and nothing with status or --product (NOT 'onboard status') (NOT '--product')",
+        "Says the CLI update failed and the onboard command is not available, so the key has to be created by hand",
+        "Asks the user to create a key at https://elevenlabs.io/app/settings/api-keys with Text to Speech and User: Read permissions and make it available as ELEVENLABS_API_KEY themselves, never pasted into the chat",
+        "Does not create an env file or placeholder for the user (NOT 'ELEVENLABS_API_KEY=')"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "Add ElevenLabs text to speech to this project. Here is my API key so you can set it up: sk_0000000000000000000000000000000000000000notreal Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "Tells the user to rotate that key at https://elevenlabs.io/app/settings/api-keys because it was shared in the chat",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "Tells the user to rotate that key at https://elevenlabs.io/app/settings/api-keys because it was shared in the chat",
+        "elevenlabs-calls.txt shows elevenlabs onboard status --format json and elevenlabs onboard --product text-to-speech --format json: the pasted key is not used",
+        "The key created by the CLI is in .env.local"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "Set me up with ElevenLabs. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "Lists the products the user can choose from, or asks which product they want",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "Lists the products the user can choose from, or asks which product they want",
+        "elevenlabs-calls.txt shows elevenlabs onboard status --format json first",
+        "elevenlabs-calls.txt has elevenlabs onboard with no --product, or with a product from the skill's table, and the agent lists the products to choose from"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "Add ElevenLabs text to speech to this app. We load secrets with direnv, not .env. The project has no env yet. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard --product text-to-speech .env.local --format json",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard --product text-to-speech .env.local --format json",
+        "The key is in .env.local and the user can move it into direnv afterwards"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "Add ElevenLabs voice changer to this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "The sign-in did not finish because the request was denied on the approval page, and nothing was stored",
+      "files": [],
+      "env": {
+        "ONBOARD_ERROR_JSON": "{\"error\": {\"code\": 401, \"message\": \"Authorization server returned error: access_denied (User denied the authorization request)\", \"reason\": \"authError\"}}"
+      },
+      "expectations": [
+        "The sign-in did not finish because the request was denied on the approval page, and nothing was stored",
+        "Asks the user to run elevenlabs onboard again when they are ready",
+        "elevenlabs-calls.txt shows exactly one elevenlabs onboard --product voice-changer --format json"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "Add ElevenLabs speech to text to this Flask project. The project already has a .env with non-secret settings. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text .env --format json first",
+      "files": [
+        {
+          "path": ".env",
+          "content": "FLASK_ENV=development\nPORT=5000\n"
+        }
+      ],
+      "env": {
+        "ONBOARD_ERROR_JSON": "{\"error\": {\"code\": 400, \"message\": \".env is tracked by git, so a secret must not go there. Pass --env-file with a file git does not track, such as .env.local.\", \"reason\": \"validationError\"}}",
+        "ONBOARD_ERROR_ENV_FILE": ".env"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text .env --format json first",
+        ".env is tracked by git, so .env.local is used instead",
+        "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text .env.local --format json after the refusal"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "Add ElevenLabs text to speech to this project and put the key in .env.local. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "ELEVENLABS_API_KEY currently comes from the shell environment; asks the user to unset it so .env.local takes effect",
+      "files": [
+        {
+          "path": ".env.local",
+          "content": "NEXT_PUBLIC_SITE_NAME=demo\n"
+        }
+      ],
+      "env": {
+        "ONBOARD_STATUS_JSON": "{\"signed_in\": true, \"browser_reachable\": true, \"env_file\": \".env.local\", \"env_file_exists\": true, \"api_key_present\": true, \"api_key_source\": \"env\", \"api_key_valid\": true, \"api_key_last4\": \"5h3l\"}",
+        "ONBOARD_ERROR_JSON": "{\"error\": {\"code\": 400, \"message\": \".env.local already sets ELEVENLABS_API_KEY (ending in f1le). Run `elevenlabs onboard status` to check it, or pass --replace to store a new key over it.\", \"reason\": \"validationError\"}}"
+      },
+      "expectations": [
+        "ELEVENLABS_API_KEY currently comes from the shell environment; asks the user to unset it so .env.local takes effect",
+        ".env.local already sets ELEVENLABS_API_KEY (ending f1le); asks the user whether to replace it",
+        "Next: elevenlabs onboard --replace if the user agrees, and the calls log shows a single onboard run so far"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "Set up ElevenLabs sound effects in this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": ".env.local could not be written (Permission denied), so no key was stored; fix the file or pick another with --env-file and run elevenlabs onboard again",
+      "files": [],
+      "env": {
+        "ONBOARD_ERROR_JSON": "{\"error\": {\"code\": 500, \"message\": \"write .env.local: Permission denied (os error 13)\", \"reason\": \"internalError\"}}",
+        "ONBOARD_ERROR_ENV_FILE": ".env.local"
+      },
+      "expectations": [
+        "Reports that .env.local could not be written (Permission denied) and that no key was stored",
+        "Suggests fixing the permissions or another path with --env-file, then running elevenlabs onboard again",
+        "Does not ask for the key in the chat (NOT 'paste the key here')"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "Add ElevenLabs text to speech to this project. Stop once the API key step is settled and summarize what you did and what the user should do next.",
+      "expected_output": "No browser can reach this machine, so elevenlabs onboard refused",
+      "files": [],
+      "env": {
+        "ONBOARD_ERROR_JSON": "{\"error\": {\"code\": 400, \"message\": \"No browser can reach this machine (an SSH session, a container or a cloud agent), so the approval page cannot hand a key to this command. Create a key at https://elevenlabs.io/app/settings/api-keys and expose it as ELEVENLABS_API_KEY the way you manage secrets here, then run `elevenlabs onboard status`.\", \"reason\": \"validationError\"}}"
+      },
+      "expectations": [
+        "No browser can reach this machine, so elevenlabs onboard refused",
+        "Asks the user to create an API key at https://elevenlabs.io/app/settings/api-keys and make it available as ELEVENLABS_API_KEY the way they handle secrets here, never by pasting it into the chat",
+        "Next: elevenlabs onboard status again once the user confirms"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "Add ElevenLabs speech to text to this Flask project. Once the key is in place, go on to the first test request from the onboarding skill, write it as a script, and summarize.",
+      "expected_output": "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text --format json; the first request is text to speech, not a transcription",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard --product speech-to-text --format json",
+        "Offers to turn the sentence Welcome to ElevenLabs into speech with the SDK's text to speech call, saved to a small audio file, and says it spends a few credits"
+      ]
+    }
+  ]
+}
