@@ -8,7 +8,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 # ElevenLabs Text-to-Speech
 
-Generate natural speech from text - supports 90+ languages, multiple models for quality vs latency tradeoffs.
+Generate natural speech from text - supports 90+ languages, multiple models for quality vs latency tradeoffs. Examples default to `eleven_v4`, the latest and highest-quality model.
 
 > **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
@@ -24,7 +24,7 @@ client = ElevenLabs()
 audio = client.text_to_speech.convert(
     text="Hello, welcome to ElevenLabs!",
     voice_id="JBFqnCBsd6RMkjVDRZzb",  # George
-    model_id="eleven_multilingual_v2"
+    model_id="eleven_v4"
 )
 
 with open("output.mp3", "wb") as f:
@@ -42,7 +42,7 @@ import { Readable } from "stream";
 const client = new ElevenLabsClient();
 const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   text: "Hello, welcome to ElevenLabs!",
-  modelId: "eleven_multilingual_v2",
+  modelId: "eleven_v4",
 });
 // convert() returns a web ReadableStream — bridge it to a Node stream to write to disk
 Readable.fromWeb(audio).pipe(createWriteStream("output.mp3"));
@@ -66,7 +66,7 @@ Use the API command when you need to set request parameters directly:
 
 ```bash
 elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
-  --text "Hello!" --model-id eleven_multilingual_v2 --output output.mp3
+  --text "Hello!" --model-id eleven_v4 --output output.mp3
 ```
 
 The CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
@@ -75,14 +75,16 @@ The CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
 
 | Model ID | Languages | Latency | Best For |
 |----------|-----------|---------|----------|
-| `eleven_v4` | 90+ | Standard | Highest quality, expressive content and dialogue |
-| `eleven_v4_turbo` | 90+ | ~100ms | Expressive real-time dialogue through the Text to Dialogue WebSocket |
-| `eleven_v3` | 70+ | Standard | Highest quality, emotional range |
-| `eleven_multilingual_v2` | 29 | Standard | High quality, long-form content |
-| `eleven_flash_v2_5` | 32 | ~75ms | Ultra-low latency, real-time |
-| `eleven_flash_v2` | English | ~75ms | English-only, fastest |
-| `eleven_turbo_v2_5` | 32 | ~250-300ms | Balanced quality/speed |
-| `eleven_turbo_v2` | English | ~250-300ms | English-only, balanced |
+| `eleven_v4` | 90+ | Standard | **Default.** Highest quality, emotional range, audio tags, voice cloning accuracy |
+| `eleven_v4_turbo` | 90+ | ~100ms | Real-time v4 quality for agents and interactive apps (via [Text to Dialogue WebSocket](references/streaming.md#eleven-v4-turbo-websocket)) |
+| `eleven_flash_v2_5` | 32 | ~75ms | Lowest latency, lowest cost, `stream-input` WebSocket |
+| `eleven_flash_v2` | English | ~75ms | English-only, lowest latency |
+| `eleven_multilingual_v2` | 29 | Standard | Previous generation; most stable on very long-form generations |
+| `eleven_v3` | 70+ | Standard | Previous generation expressive model |
+
+`eleven_turbo_v2_5` and `eleven_turbo_v2` are superseded by the Flash models (same output, lower latency) — use `eleven_flash_v2_5` / `eleven_flash_v2` instead.
+
+**Eleven v4 notes:** supports only `stability` and `similarity_boost` voice settings (no `style` or `speed`), does not support SSML, and is not available on the `stream-input` TTS WebSocket. Direct delivery with audio tags such as `[whispers]`, `[laughs]`, `[sarcastic]`.
 
 ## Voice IDs
 
@@ -106,8 +108,8 @@ Fine-tune how the voice sounds:
 
 - **Stability**: How consistent the voice stays. Lower values = more emotional range and variation, but can sound unstable. Higher = steady, predictable delivery.
 - **Similarity boost**: How closely to match the original voice sample. Higher values sound more like the original but may amplify audio artifacts.
-- **Style**: Exaggerates the voice's unique style characteristics. It is not available for Eleven v4 models.
-- **Speed**: Adjusts speech rate on supported models. It is not available for Eleven v4 models.
+- **Style**: Exaggerates the voice's unique style characteristics (v2/v3 models; not supported on Eleven v4).
+- **Speed**: Speech speed multiplier (v2/v3 models; not supported on Eleven v4).
 - **Speaker boost**: Post-processing that enhances clarity and voice similarity.
 
 ```python
@@ -116,12 +118,10 @@ from elevenlabs import VoiceSettings
 audio = client.text_to_speech.convert(
     text="Customize my voice settings.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
+    model_id="eleven_v4",
     voice_settings=VoiceSettings(
-        stability=0.5,
-        similarity_boost=0.75,
-        style=0.5,
-        speed=1.0,             # 0.25 to 4.0 (default 1.0)
-        use_speaker_boost=True
+        stability=0.5,          # Lower = more expressive, higher = more consistent
+        similarity_boost=0.75,  # Higher = closer to the reference voice
     )
 )
 ```
@@ -134,7 +134,7 @@ Use `language_code` with models that support language enforcement to guide pronu
 audio = client.text_to_speech.convert(
     text="Bonjour, comment allez-vous?",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_v3",
+    model_id="eleven_v4",
     language_code="fr"  # ISO 639-1 code
 )
 ```
@@ -151,6 +151,7 @@ Controls how numbers, dates, and abbreviations are converted to spoken words. Fo
 audio = client.text_to_speech.convert(
     text="Call 1-800-555-0123 on 01/15/2026",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
+    model_id="eleven_v4",
     apply_text_normalization="on"
 )
 ```
@@ -164,6 +165,7 @@ When generating long audio in multiple requests, the audio can have pops, unnatu
 audio1 = client.text_to_speech.convert(
     text="This is the first part.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
+    model_id="eleven_v4",
     next_text="And this continues the story."
 )
 
@@ -171,6 +173,7 @@ audio1 = client.text_to_speech.convert(
 audio2 = client.text_to_speech.convert(
     text="And this continues the story.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
+    model_id="eleven_v4",
     previous_text="This is the first part."
 )
 ```
@@ -195,20 +198,20 @@ audio2 = client.text_to_speech.convert(
 
 ## Streaming
 
-For real-time applications, use the `stream` method (returns audio chunks as they're generated):
+Use the `stream` method to receive audio chunks as they're generated:
 
 ```python
 audio_stream = client.text_to_speech.stream(
     text="This text will be streamed as audio.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_flash_v2_5"  # Ultra-low latency
+    model_id="eleven_v4"
 )
 
 for chunk in audio_stream:
     play_audio(chunk)
 ```
 
-See [references/streaming.md](references/streaming.md) for WebSocket streaming.
+For real-time apps where latency matters most, use `eleven_v4_turbo` (~100ms) over the Text to Dialogue WebSocket, or `eleven_flash_v2_5` (~75ms) over HTTP streaming or the `stream-input` WebSocket. See [references/streaming.md](references/streaming.md).
 
 ## Error Handling
 
@@ -216,7 +219,8 @@ See [references/streaming.md](references/streaming.md) for WebSocket streaming.
 try:
     audio = client.text_to_speech.convert(
         text="Generate speech",
-        voice_id="invalid-voice-id"
+        voice_id="invalid-voice-id",
+        model_id="eleven_v4"
     )
 except Exception as e:
     print(f"API error: {e}")
@@ -233,7 +237,7 @@ Monitor character usage via response headers (`x-character-count`, `request-id`)
 
 ```python
 response = client.text_to_speech.convert.with_raw_response(
-    text="Hello!", voice_id="JBFqnCBsd6RMkjVDRZzb", model_id="eleven_multilingual_v2"
+    text="Hello!", voice_id="JBFqnCBsd6RMkjVDRZzb", model_id="eleven_v4"
 )
 audio = response.parse()
 print(f"Characters used: {response.headers.get('x-character-count')}")

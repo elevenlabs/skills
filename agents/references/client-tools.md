@@ -617,7 +617,7 @@ Always verify order ID before lookup. Offer transfer for complex issues.""",
                 }
             }
         },
-        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5"}
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_v4_turbo"}
     }
 )
 ```

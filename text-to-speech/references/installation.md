@@ -98,7 +98,7 @@ Once installed and authenticated, no headers or keys are needed on the command l
 
 ```bash
 elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
-  --text "Hello world" --model-id eleven_multilingual_v2 --output output.mp3
+  --text "Hello world" --model-id eleven_v4 --output output.mp3
 ```
 
 ## Getting an API Key
