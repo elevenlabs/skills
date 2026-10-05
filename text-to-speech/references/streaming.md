@@ -4,11 +4,14 @@ Stream audio chunks as they're generated for lower latency.
 
 ## Model Selection for Streaming
 
-| Model | Latency | Use Case |
-|-------|---------|----------|
-| `eleven_flash_v2_5` | ~75ms | Lowest latency, 32 languages |
-| `eleven_flash_v2` | ~75ms | Lowest latency, English only |
-| `eleven_turbo_v2_5` | Low | Balanced quality/speed |
+| Model | Latency | Transport | Use Case |
+|-------|---------|-----------|----------|
+| `eleven_v4` | Standard | HTTP streaming, Text to Dialogue WebSocket | Highest quality, 90+ languages |
+| `eleven_v4_turbo` | ~100ms | [Text to Dialogue WebSocket](#eleven-v4-turbo-websocket) | Real-time v4 quality for agents and interactive apps |
+| `eleven_flash_v2_5` | ~75ms | HTTP streaming, `stream-input` WebSocket | Lowest latency, 32 languages |
+| `eleven_flash_v2` | ~75ms | HTTP streaming, `stream-input` WebSocket | Lowest latency, English only |
+
+`eleven_turbo_v2_5` is superseded by `eleven_flash_v2_5`, which is functionally equivalent with lower latency.
 
 ## Python Streaming
 
@@ -18,9 +21,9 @@ from elevenlabs import ElevenLabs
 client = ElevenLabs()
 
 audio_stream = client.text_to_speech.stream(
-    text="This is a streaming example with ultra-low latency.",
+    text="This is a streaming example.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_flash_v2_5"
+    model_id="eleven_v4"
 )
 
 with open("output.mp3", "wb") as f:
@@ -46,7 +49,7 @@ def play_stream(audio_stream):
 audio_stream = client.text_to_speech.stream(
     text="Playing this audio in real-time.",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
-    model_id="eleven_flash_v2_5"
+    model_id="eleven_v4"
 )
 play_stream(audio_stream)
 ```
@@ -62,7 +65,7 @@ const client = new ElevenLabsClient();
 
 const audioStream = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
   text: "Streaming audio in JavaScript.",
-  modelId: "eleven_flash_v2_5",
+  modelId: "eleven_v4",
 });
 
 // Write to file (convert() returns a web ReadableStream — bridge to a Node stream first)
@@ -74,9 +77,98 @@ for await (const chunk of audioStream) {
 }
 ```
 
+## Eleven v4 Turbo WebSocket
+
+For real-time Eleven v4 quality (~100ms), stream text to `eleven_v4_turbo` over the Text to Dialogue WebSocket (`/v1/text-to-dialogue/stream-input`). This endpoint only accepts Eleven v3 and v4 models. `eleven_v4_turbo` allows exactly **one** registered voice per connection; `eleven_v4` allows up to 10.
+
+```python
+import asyncio
+import base64
+import json
+import os
+import websockets
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
+URI = (
+    "wss://api.elevenlabs.io/v1/text-to-dialogue/stream-input"
+    "?model_id=eleven_v4_turbo&output_format=mp3_44100_128"
+)
+
+async def stream_v4_turbo(text: str):
+    async with websockets.connect(URI) as websocket:
+        # First message registers voices and authenticates
+        await websocket.send(json.dumps({
+            "voices": [VOICE_ID],
+            "xi_api_key": ELEVENLABS_API_KEY,
+        }))
+        await websocket.send(json.dumps({
+            "inputs": [{"text": text, "voice_id": VOICE_ID, "new_turn": False}],
+        }))
+        # Flush remaining text and close after the final audio frame
+        await websocket.send(json.dumps({"close_socket": True}))
+
+        with open("output.mp3", "wb") as f:
+            while True:
+                msg = json.loads(await websocket.recv())
+                if msg.get("error"):
+                    raise RuntimeError(msg)
+                if msg.get("audio"):
+                    f.write(base64.b64decode(msg["audio"]))
+                if msg.get("is_final"):
+                    break
+
+asyncio.run(stream_v4_turbo(
+    "This is a longer line of dialogue so the server has enough text to start streaming audio. "
+))
+```
+
+```javascript
+import "dotenv/config";
+import * as fs from "node:fs";
+import WebSocket from "ws";
+
+const voiceId = "JBFqnCBsd6RMkjVDRZzb";
+const uri =
+  "wss://api.elevenlabs.io/v1/text-to-dialogue/stream-input?model_id=eleven_v4_turbo&output_format=mp3_44100_128";
+
+const websocket = new WebSocket(uri);
+const out = fs.createWriteStream("output.mp3");
+
+websocket.on("open", () => {
+  websocket.send(JSON.stringify({ voices: [voiceId], xi_api_key: process.env.ELEVENLABS_API_KEY }));
+  websocket.send(JSON.stringify({
+    inputs: [{
+      text: "This is a longer line of dialogue so the server has enough text to start streaming audio. ",
+      voice_id: voiceId,
+      new_turn: false,
+    }],
+  }));
+  websocket.send(JSON.stringify({ close_socket: true }));
+});
+
+websocket.on("message", (data) => {
+  const msg = JSON.parse(data.toString());
+  if (msg.error) return console.error(msg);
+  if (msg.audio) out.write(Buffer.from(msg.audio, "base64"));
+});
+
+websocket.on("close", () => out.end());
+```
+
+**Behavior notes:**
+- The server buffers about **40 characters and 8 words** before emitting audio. Send `{"flush": true}` to force generation of shorter text without closing.
+- Omit `close_socket` to keep the connection open between lines; send `{"keep_alive": true}` to reset the **20 second** inactivity timeout.
+- Set `new_turn: true` when a speaker finishes a turn so prosody resets.
+- Add `sync_alignment=true` to the query string to receive `alignment` timing data.
+- Response fields are snake_case (`is_final`). Each open connection holds one dialogue session from a pool separate from standard concurrency.
+
 ## WebSocket Streaming
 
-For text-streaming input where you send text chunks as they arrive (e.g., from an LLM).
+For text-streaming input where you send text chunks as they arrive (e.g., from an LLM) using Flash or Multilingual v2 models. The `stream-input` WebSocket does not support `eleven_v3` or `eleven_v4` — use the [Eleven v4 Turbo WebSocket](#eleven-v4-turbo-websocket) for those.
 
 ### Connection
 
@@ -84,7 +176,7 @@ For text-streaming input where you send text chunks as they arrive (e.g., from a
 wss://api.elevenlabs.io/v1/text-to-speech/{voiceId}/stream-input?model_id={modelId}
 ```
 
-**Note:** WebSockets are unavailable for the `eleven_v3` model. Use `eleven_flash_v2_5` for lowest latency.
+**Note:** This WebSocket does not support `eleven_v3` or `eleven_v4`. Use `eleven_flash_v2_5` here for lowest latency, or `eleven_v4_turbo` over the [Text to Dialogue WebSocket](#eleven-v4-turbo-websocket).
 
 ### Message Flow
 
@@ -287,14 +379,15 @@ fs.writeFileSync("output.mp3", audio);
 
 - **Inactivity timeout**: Connection closes after 20 seconds without activity. Send a space `" "` to keep alive.
 - **TTFB (Time to First Byte)**: How long until audio starts playing. Affected by `chunk_length_schedule` - the model waits for enough text before generating.
-- **Model limitation**: WebSockets are unavailable for `eleven_v3`.
+- **Model limitation**: The `stream-input` WebSocket does not support `eleven_v3` or `eleven_v4`; use the [Text to Dialogue WebSocket](#eleven-v4-turbo-websocket) for those.
 - **Best practice**: Use `flush: true` at conversation turn endings to ensure the buffered text gets spoken.
 - **Alignment data**: Word-level timestamps available via `alignment` field for lip-sync or captions.
 
 ## Best Practices
 
-1. **Use Flash models** for real-time:
-   - `eleven_flash_v2_5` for multilingual (~75ms)
+1. **Pick a real-time model**:
+   - `eleven_v4_turbo` for the most expressive real-time speech (~100ms, Text to Dialogue WebSocket)
+   - `eleven_flash_v2_5` for the lowest latency and cost, multilingual (~75ms)
    - `eleven_flash_v2` for English-only (~75ms)
 
 2. **Buffer audio** before playback to prevent choppy output

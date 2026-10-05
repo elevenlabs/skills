@@ -67,11 +67,9 @@ conversation_config={
 conversation_config={
     "tts": {
         "voice_id": "JBFqnCBsd6RMkjVDRZzb",
-        "model_id": "eleven_flash_v2_5",
+        "model_id": "eleven_v4_turbo",
         "stability": 0.5,
-        "similarity_boost": 0.8,
-        "speed": 1.0,
-        "expressive_mode": True
+        "similarity_boost": 0.8
     }
 }
 ```
@@ -79,10 +77,10 @@ conversation_config={
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `voice_id` | string | `"cjVigY5qzO86Huf0OWal"` | Voice to use |
-| `model_id` | string | - | TTS model (see below) |
+| `model_id` | string | `"eleven_v4_turbo"` | TTS model (see below) |
 | `stability` | float | `0.5` | 0-1, lower = more expressive |
 | `similarity_boost` | float | `0.8` | 0-1, higher = closer to original voice |
-| `speed` | float | `1.0` | 0.7-1.2, speech speed multiplier |
+| `speed` | float | `1.0` | 0.7-1.2, speech speed multiplier (not supported on Eleven v4 models) |
 | `expressive_mode` | bool | `true` | Enable expressive voice generation |
 | `agent_output_audio_format` | string | - | Output audio codec format |
 | `pronunciation_dictionary_locators` | array | - | Pronunciation overrides |
@@ -92,13 +90,14 @@ conversation_config={
 
 | Model ID | Languages | Latency |
 |----------|-----------|---------|
-| `eleven_v4_turbo` | 90+ | ~100ms |
-| `eleven_flash_v2_5` | 32 | ~75ms (recommended) |
+| `eleven_v4_turbo` | 90+ | ~100ms (default, recommended — most expressive real-time model) |
+| `eleven_v4` | 90+ | Standard |
+| `eleven_flash_v2_5` | 32 | ~75ms (lowest latency and cost) |
 | `eleven_flash_v2` | English | ~75ms |
-| `eleven_turbo_v2_5` | 32 | ~250-300ms |
-| `eleven_turbo_v2` | English | ~250-300ms |
-| `eleven_multilingual_v2` | 29 | Standard |
-| `eleven_v3_conversational` | 70+ | Standard |
+| `eleven_v3_conversational` | 70+ | ~280ms (previous generation) |
+| `eleven_multilingual_v2` | 29 | Standard (previous generation) |
+
+`eleven_turbo_v2_5` and `eleven_turbo_v2` are still accepted but superseded by the Flash models. Eleven v4 models use only `stability` and `similarity_boost`; `speed` does not apply.
 
 ### asr (Automatic Speech Recognition)
 
@@ -672,7 +671,7 @@ client.conversational_ai.agents.update(agent_id="id", name="New Name")
 
 # Update TTS voice
 client.conversational_ai.agents.update(agent_id="id", conversation_config={
-    "tts": {"voice_id": "EXAVITQu4vr4xnSDxMaL", "model_id": "eleven_flash_v2_5"}
+    "tts": {"voice_id": "EXAVITQu4vr4xnSDxMaL", "model_id": "eleven_v4_turbo"}
 })
 
 # Update prompt/LLM (nested in agent)
@@ -772,7 +771,7 @@ agent = client.conversational_ai.agents.create(
                 }
             }
         },
-        "tts": {"voice_id": "XB0fDUnXU5powFXDhCwa", "model_id": "eleven_flash_v2_5"},
+        "tts": {"voice_id": "XB0fDUnXU5powFXDhCwa", "model_id": "eleven_v4_turbo"},
         "turn": {"turn_eagerness": "normal", "turn_timeout": 7},
         "conversation": {"max_duration_seconds": 900}
     }
@@ -794,7 +793,7 @@ agent = client.conversational_ai.agents.create(
                 "max_tokens": 100
             }
         },
-        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5"},
+        "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb", "model_id": "eleven_flash_v2_5"},  # Flash: lowest latency (~75ms)
         "turn": {"turn_eagerness": "eager", "turn_timeout": 3}
     }
 )

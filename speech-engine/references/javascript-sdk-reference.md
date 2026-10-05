@@ -27,9 +27,8 @@ const engine = await elevenlabs.speechEngine.create({
     firstMessage: true,
   },
   tts: {
-    modelId: "eleven_flash_v2_5",
+    modelId: "eleven_v4_turbo",
     voiceId: "cjVigY5qzO86Huf0OWal",
-    optimizeStreamingLatency: "2",
   },
   asr: {
     provider: "scribe_realtime",
