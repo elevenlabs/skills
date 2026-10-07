@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""A stand-in for the ElevenLabs CLI's `onboard` steps, put on PATH by
+evals/run_all.py for the onboarding and setup-api-key functional evals. Each
+step prints the real CLI's reply (next, instruction, run, say, details, rules) for the
+states the evals use: a laptop with no key yet, a key in the env file (always
+accepted), an empty placeholder, the SDK wired in or not. It rejects flags the
+real step doesn't take. Other
+states (a rejected key, a remote machine, a key in a `.env` up the tree) are
+scripted per case.
+
+A case can replace a step's reply with these variables (JSON; a list is
+used one item per call, the last item repeating):
+
+  ONBOARD_INIT_JSON  ONBOARD_CONNECT_JSON  ONBOARD_CHECK_JSON  ONBOARD_TEST_JSON
+
+`connect` with the default reply writes a fake key to the env file and
+gitignores it, as the real CLI does once the approval page hands one over.
+Every call is appended to $EVAL_DIR/outputs/elevenlabs-calls.txt with the
+folder it ran in, followed by `-> <next>` for its reply, for grading.
+"""
+import json, os, re, sys
+
+args = sys.argv[1:]
+EVAL_DIR = os.environ.get("EVAL_DIR", ".")
+# The eval folder's outputs, wherever in it the agent runs this from.
+OUTPUTS = os.path.join(EVAL_DIR, "outputs")
+os.makedirs(OUTPUTS, exist_ok=True)
+if "-h" in args or "--help" in args or args[1:2] == ["help"]:
+    # Help is not a step: printed, and not logged as a call.
+    print("Usage: elevenlabs onboard <init|connect|check|test> [OPTIONS]")
+    sys.exit(0)
+with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
+    log.write(f"elevenlabs {' '.join(args)} (in {os.path.relpath(os.getcwd(), EVAL_DIR)})\n")
+
+# The flags each step takes, as the real CLI defines them; the framework adds the global ones.
+FLAGS = {"init": {"--env-file", "--no-browser"},
+         "connect": {"--env-file", "--no-browser", "--replace", "--wait", "--authorize-url"},
+         "check": {"--env-file", "--no-browser"}, "test": {"--env-file", "--no-browser"}}
+GLOBAL_FLAGS = {"--format", "--human", "--base-url", "-q", "--quiet", "--debug", "--dry-run", "--via",
+                "--query", "--schema", "--spec", "--spec-raw"}
+# Flags followed by a value (unless given as --flag=value).
+VALUE_FLAGS = {"--env-file", "--authorize-url", "--format", "--base-url", "--via", "--query"}
+RULES = ["Never open, print or cat the env file; run `onboard check` to verify it.",
+         "Never ask for an API key in chat, and never accept one pasted there.",
+         "Never put the key in code; the SDK reads ELEVENLABS_API_KEY.",
+         "Never run git clean or delete untracked files.",
+         "Don't run the app or make your own API calls to try the key unless the user says yes. Once the code is written, run `onboard check` before you finish: it verifies the key and the code."]
+FAKE_KEY = "sk_" + "0" * 40 + "4f2a"
+SKIPPED_DIRS = {"node_modules", "venv", "__pycache__", "dist", "build", "target", "vendor", "third_party"}
+SAMPLE_DIRS = {"examples", "example"}  # beside the app, at its top level only
+# What the agent does with each reply, as the real CLI prints it.
+INSTRUCTIONS = {
+    "run": "Tell the user `say`, then run `run`.",
+    "wait": "Show the user `say`, then run `run` right away, without ending your turn: it waits while they "
+            "approve in the browser.",
+    "ask_user": "Ask the user what `say` says and wait for their answer, then run `run`, unless they said no.",
+    "fix": "Do what `say` describes, then run `run`.",
+    "write_code": "Tell the user `say`. Know what they're building first (`details.what_to_build` says when "
+                  "to ask). Before writing any code, read the ElevenLabs skill for that product: run "
+                  "`curl -fsSL https://raw.githubusercontent.com/elevenlabs/skills/main/<skill>/SKILL.md`, "
+                  "where <skill> is one of agents, dubbing, music, sound-effects, speech-engine, "
+                  "speech-to-text, text-to-speech, voice-changer, voice-isolator, and the same way each "
+                  "`references/` file it links. Then install the SDK, write the code the way the skill "
+                  "shows, and run `run` to check it.",
+    "offer_test": "Ask the user the question in `say`; run `run` only if they say yes.",
+    "done": "Tell the user `say`. There's nothing left to run.",
+}
+CLI = "npx -y @elevenlabs/cli@latest" if os.environ.get("npm_command") == "exec" else "elevenlabs"
+
+
+def flag(name):
+    for i, a in enumerate(args):
+        if a == name and i + 1 < len(args):
+            return args[i + 1]
+        if a.startswith(name + "="):
+            return a[len(name) + 1:]
+    return None
+
+
+def has(*files):
+    return any(os.path.exists(f) for f in files)
+
+
+STACK = "node" if has("package.json") else "python" if has("pyproject.toml", "requirements.txt", "Pipfile", "setup.py") else "other"
+env_file = flag("--env-file") or (".env" if STACK == "python" else ".env.local")
+
+
+def cmd(step):
+    """The real CLI's next command: the env file always, and --no-browser when this run had it."""
+    out = f"{CLI} onboard {step}"
+    if "--env-file" not in step:
+        out += f" --env-file {env_file}"
+    if "--no-browser" in args:
+        out += " --no-browser"
+    return out
+
+
+def store_key():
+    """What the real CLI does once the approval page hands a key over."""
+    lines = [l for l in (open(env_file).read().splitlines() if os.path.exists(env_file) else []) if not l.startswith("ELEVENLABS_API_KEY=")]
+    with open(env_file, "w") as f:
+        f.write("\n".join(lines + [f"ELEVENLABS_API_KEY={FAKE_KEY}"]) + "\n")
+    with open(".gitignore", "a") as f:
+        f.write("# Local secrets written by `elevenlabs onboard`\n/" + env_file + "\n")
+
+
+def code_details(key):
+    """The real CLI's write_code details."""
+    loading = (f"load it with python-dotenv (`load_dotenv(\"{env_file}\")`)" if STACK == "python" else
+               f"Next.js and Vite read {env_file} on their own; plain Node needs `node --env-file={env_file}` "
+               f"or `dotenv.config({{ path: \"{env_file}\" }})`")
+    install = {"python": "pip install elevenlabs (and add elevenlabs to the project's dependencies)",
+               "node": "npm install @elevenlabs/elevenlabs-js"}.get(
+        STACK, "npm install @elevenlabs/elevenlabs-js (or pip install elevenlabs, and add elevenlabs to requirements.txt)")
+    return dict(key_last4=key[-4:], sdk_install=install,
+                load_key=f"The SDK reads ELEVENLABS_API_KEY from the environment; never put the key in the code. "
+                         f"It's in {env_file}: {loading}.",
+                voice_id="JBFqnCBsd6RMkjVDRZzb",
+                what_to_build="What the user asked for. If neither the conversation nor the project shows it, "
+                              "ask them before writing any code; don't pick a product for them.",
+                env_file=env_file)
+
+
+def reply(next_, say, run=None, rules=False, **details):
+    out = {"next": next_, "instruction": INSTRUCTIONS[next_]}
+    if run:
+        out["run"] = run
+    out["say"] = say
+    if rules:
+        out["rules"] = RULES
+    if details:
+        out["details"] = details
+    return out
+
+
+def scripted(step):
+    """The case's reply for this step, if it set one; a list is consumed one per call."""
+    raw = os.environ.get(f"ONBOARD_{step.upper()}_JSON")
+    if not raw:
+        return None
+    value = json.loads(raw)
+    if isinstance(value, list):
+        counter = os.path.join(OUTPUTS, f".{step}-calls")
+        n = int(open(counter).read()) if os.path.exists(counter) else 0
+        open(counter, "w").write(str(n + 1))
+        value = value[min(n, len(value) - 1)]
+    # Every real reply says what to do with it.
+    if isinstance(value, dict) and value.get("next") in INSTRUCTIONS:
+        value.setdefault("instruction", INSTRUCTIONS[value["next"]])
+    return value
+
+
+def file_key():
+    """The last key line's value, read the way dotenv loaders read it."""
+    try:
+        lines = open(env_file, encoding="utf-8-sig").read().splitlines()
+    except OSError:
+        return None
+    keys = []
+    for line in lines:
+        m = re.match(r"\s*(?:export\s+)?ELEVENLABS_API_KEY\s*=\s*(.*)$", line)
+        if not m:
+            continue
+        value = m.group(1).strip()
+        quoted = re.match(r"""(['"])(.*?)\1""", value)
+        keys.append(quoted.group(2) if quoted else re.split(r"(?:^|\s+)#", value, maxsplit=1)[0].strip())
+    return keys[-1] if keys else None
+
+
+def sdk_in_project():
+    """An ElevenLabs SDK (any `@elevenlabs/` package but the CLI) declared and imported, like the real
+    check: symlinks, hidden folders, installed dependencies, build output, vendored code and a sample
+    project beside the app don't count."""
+    declared = imported = False
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIPPED_DIRS
+                   and not (root == "." and d in SAMPLE_DIRS)]
+        for f in files:
+            path = os.path.join(root, f)
+            if os.path.islink(path):
+                continue
+            try:
+                text = open(path, errors="replace").read()
+            except OSError:
+                continue
+            if f == "package.json":
+                try:
+                    pkg = json.loads(text)
+                except ValueError:
+                    pkg = None
+                sections = [pkg.get(k) for k in ("dependencies", "devDependencies")] if isinstance(pkg, dict) else []
+                deps = [d for section in sections if isinstance(section, dict) for d in section]
+                declared = declared or any(d.startswith("@elevenlabs/") and d != "@elevenlabs/cli" for d in deps)
+            elif f in ("requirements.txt", "pyproject.toml", "Pipfile", "setup.py", "setup.cfg"):
+                declared = declared or bool(re.search(r"(^|[\s\"'])elevenlabs($|[^\w.-])", text, re.M))
+            if f.endswith((".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".py")):
+                js = any(m != "cli" for m in re.findall(r"""["']@elevenlabs/([\w.-]+)""", text))
+                imported = imported or js or re.search(r"^\s*(from|import) elevenlabs", text, re.M) is not None
+    return declared, imported
+
+
+def emit(obj, code=0):
+    with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
+        log.write(f"  -> {obj.get('next', 'error')}\n")
+    # The real CLI prints its keys sorted.
+    print(json.dumps(obj, indent=2, sort_keys=True))
+    sys.exit(code)
+
+
+def refuse(message):
+    """The real CLI's usage error: JSON on stdout, exit 3."""
+    with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
+        log.write("  -> error\n")
+    print(json.dumps({"error": {"code": 400, "message": message, "reason": "validationError",
+                                "usage": f"elevenlabs onboard {step} [OPTIONS]"}}, indent=2))
+    sys.exit(3)
+
+
+if args[:1] != ["onboard"] or len(args) < 2:
+    print("elevenlabs stand-in: only `onboard init|connect|check|test` is available", file=sys.stderr)
+    sys.exit(2)
+step = "check" if args[1] == "status" else args[1]
+if step not in FLAGS:
+    print(f"elevenlabs stand-in: unknown step {step!r}", file=sys.stderr)
+    sys.exit(2)
+rest = iter(args[2:])
+for a in rest:
+    name = a.split("=", 1)[0]
+    if not name.startswith("-") or name not in FLAGS[step] | GLOBAL_FLAGS:
+        refuse(f"unexpected argument '{name}' found")
+    if name in VALUE_FLAGS and "=" not in a:
+        next(rest, None)
+own = scripted(step)
+if own:
+    # A scripted sign-in that created a key stores it, as the real one does.
+    if step == "connect" and (own.get("details") or {}).get("key_status") == "created":
+        store_key()
+    emit(own)
+
+key = file_key()
+if step == "init":
+    if key:
+        emit(reply("run", f"This project already has a working ElevenLabs key (ending in {key[-4:]}).", cmd("check"),
+                   rules=True, env_file=env_file))
+    sign_in = ("Next, I'll give you the link to the ElevenLabs approval page. Open it, sign in (or create an account) "
+               "and click Authorize." if "--no-browser" in args else
+               "Next, I'll open the ElevenLabs approval page in your browser. Sign in (or create an account) "
+               "and click Authorize.")
+    emit(reply("run", sign_in, cmd("connect"), rules=True, env_file=env_file))
+def stored(new_key, replaced):
+    """The reply once a key is stored: straight to check when it replaced one in an app that uses the SDK."""
+    say = f"Signed in. Your new key ending in {new_key[-4:]} is in {env_file}, and your clipboard was cleared."
+    if replaced and sdk_in_project() == (True, True):
+        return reply("run", say, cmd("check"), rules=True, key_status="created", gitignored=True)
+    return reply("write_code", say, cmd("check"), rules=True, **code_details(new_key), key_status="created", gitignored=True)
+
+
+if step == "connect":
+    replace = "--replace" in args
+    if "--wait" in args:
+        if key:
+            # The finished sign-in's reply stays readable.
+            emit(stored(key, replace))
+        emit(reply("run", "The sign-in isn't running anymore, so I'll start it again.", cmd("connect --replace" if replace else "connect")))
+    if key and not replace:
+        emit(reply("run", f"This project already has an ElevenLabs key (ending in {key[-4:]}).", cmd("check")))
+    replaced = bool(key)
+    store_key()
+    emit(stored(FAKE_KEY, replaced))
+if step == "check":
+    if key is None:
+        approval = "I'll give you a link to the approval page" if "--no-browser" in args else "I'll open the approval page"
+        emit(reply("run", f"There's no ElevenLabs API key in this project yet, so {approval} to create one.", cmd("connect")))
+    if key == "":
+        emit(reply("ask_user", f"ELEVENLABS_API_KEY in {env_file} is still empty. Paste the key after the = (never into this chat), and tell me when it's done.", cmd("check")))
+    declared, imported = sdk_in_project()
+    facts = dict(api_key_source="env_file", sdk_declared=declared, sdk_imported=imported, fixed=[])
+    if not (declared and imported):
+        emit(reply("write_code", "Your key works. Next I'll add the ElevenLabs SDK to the project and use it in the code.", cmd("check"),
+                   **code_details(key), **facts))
+    emit(reply("offer_test", f"ElevenLabs is set up: a working key ending in {key[-4:]} in {env_file}, and the SDK in your code. Want me to send a test request? It makes a short text-to-speech clip with your key and uses a few credits.",
+               cmd("test"), key_last4=key[-4:], **facts))
+if step == "test":
+    if not key:
+        emit(reply("run", "There's no ElevenLabs API key in this project yet.", cmd("check")))
+    declared, imported = sdk_in_project()
+    code = " and the SDK is in your code" if declared and imported else ""
+    emit(reply("done", "Your first request worked. Play /tmp/elevenlabs-hello-1a2b3c.mp3 to hear it. "
+               f"ElevenLabs is set up: your key is in {env_file}{code}.",
+               audio_file="/tmp/elevenlabs-hello-1a2b3c.mp3", status=200))
