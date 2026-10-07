@@ -1,8 +1,8 @@
 [
-  {"query": "how do I get an elevenlabs API key? I just signed up but can't find where to generate one", "should_trigger": true},
+  {"query": "how do I get an elevenlabs API key? I just signed up but can't find where to generate one", "should_trigger": false},
   {"query": "I'm getting an auth error when trying to use elevenlabs text to speech, says 401 unauthorized", "should_trigger": true},
   {"query": "my ELEVENLABS_API_KEY isn't working -- I set it in my .env but the API calls keep failing", "should_trigger": true},
-  {"query": "I want to start using elevenlabs but haven't set up my account or API access yet", "should_trigger": true},
+  {"query": "I want to start using elevenlabs but haven't set up my account or API access yet", "should_trigger": false},
   {"query": "configure my environment for elevenlabs, I need to set the api key somewhere", "should_trigger": true},
   {"query": "the elevenlabs tts call is returning a 401, probably need to fix my api key setup", "should_trigger": true},
   {"query": "what's the difference between elevenlabs flash and multilingual text to speech models?", "should_trigger": false},
@@ -13,5 +13,7 @@
   {"query": "I need to rotate all my API keys for a security audit", "should_trigger": false},
   {"query": "connect the hosted ElevenLabs MCP server to Claude Desktop", "should_trigger": false},
   {"query": "how do I set up my deepgram API key for my transcription project?", "should_trigger": false},
-  {"query": "help me set up stripe API keys for payment processing", "should_trigger": false}
+  {"query": "help me set up stripe API keys for payment processing", "should_trigger": false},
+  {"query": "add text to speech to my app", "should_trigger": false},
+  {"query": "my admin gave me an ElevenLabs API key, where do I put it", "should_trigger": true}
 ]
