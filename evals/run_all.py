@@ -123,6 +123,7 @@ ALL_SKILLS = [
     "voice-isolator",
     "dubbing",
     "setup-api-key",
+    "onboarding",
 ]
 
 
@@ -415,7 +416,21 @@ def run_functional_eval_for_skill(
 
         eval_dir = skill_output_dir / f"eval-{eval_id}"
         eval_dir.mkdir(parents=True, exist_ok=True)
+        # Files the prompt says already exist in the project.
+        for fixture in ev.get("files", []):
+            target = eval_dir / fixture["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(fixture["content"])
 
+        # A skill may ship stand-ins for the commands it runs (evals/<skill>/bin). Its
+        # evals treat the workspace as the user's project, where those commands write.
+        fake_bin = EVALS_DIR / skill_name / "bin"
+        where = (
+            "This workspace is the user's project, in an isolated eval scratch directory. "
+            if fake_bin.is_dir()
+            else "This workspace is an isolated eval scratch directory. "
+            "Put all new files under ./outputs/ (create it if needed). "
+        )
         # Build prompt that includes skill content. Workspace is only eval_dir so the nested
         # agent cannot edit skill packages or other repo files (eval runs must not "fix" skills).
         full_prompt = (
@@ -423,8 +438,7 @@ def run_functional_eval_for_skill(
             f"Use its guidance to complete the task.\n\n"
             f"<skill>\n{skill_md}\n</skill>\n\n"
             f"Task: {prompt}\n\n"
-            f"This workspace is an isolated eval scratch directory. "
-            f"Put all new files under ./outputs/ (create it if needed). "
+            f"{where}"
             f"Do not edit, create, or delete anything outside this directory.\n"
         )
 
@@ -442,12 +456,28 @@ def run_functional_eval_for_skill(
             str(eval_dir),
             "--model",
             m,
-            full_prompt,
         ]
+        # The prompt goes in on stdin: cursor-agent is killed on startup when a
+        # single argument is more than about a kilobyte, and a skill is far larger.
 
         env = dict(os.environ)
         # Keep functional evals deterministic and avoid exposing a real user key to the nested agent.
         env.pop("ELEVENLABS_API_KEY", None)
+        # A case may set variables the stand-ins read, so the agent runs the real command
+        # and branches on its real output instead of being told what it returned.
+        if fake_bin.is_dir():
+            env["PATH"] = f"{fake_bin}{os.pathsep}{env.get('PATH', '')}"
+            # A login shell re-sorts PATH (macOS path_helper puts /opt/homebrew/bin
+            # first), so a real `elevenlabs` would shadow the stand-in. Give zsh its
+            # own startup files that put the stand-ins back in front afterwards.
+            zdotdir = eval_dir / ".zdotdir"
+            zdotdir.mkdir(exist_ok=True)
+            for rc in (".zshenv", ".zprofile", ".zshrc"):
+                (zdotdir / rc).write_text(f'export PATH="{fake_bin}:$PATH"\n')
+            env["ZDOTDIR"] = str(zdotdir)
+        # Where the eval folder is, so stand-ins log there wherever the agent runs them from.
+        env["EVAL_DIR"] = str(eval_dir)
+        env.update(ev.get("env", {}))
 
         t0 = time.time()
         response_text = ""
@@ -458,6 +488,7 @@ def run_functional_eval_for_skill(
             # group; on Windows, taskkill /T kills the process tree instead.
             process = subprocess.Popen(
                 cmd,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -466,7 +497,7 @@ def run_functional_eval_for_skill(
                 start_new_session=(os.name != "nt"),
             )
             try:
-                stdout_text, stderr_text = process.communicate(timeout=timeout)
+                stdout_text, stderr_text = process.communicate(input=full_prompt, timeout=timeout)
             except subprocess.TimeoutExpired:
                 if os.name == "nt":
                     subprocess.run(
@@ -485,6 +516,11 @@ def run_functional_eval_for_skill(
                 raise
             elapsed = time.time() - t0
             success = process.returncode == 0
+            if not success and verbose:
+                print(
+                    f"    cursor-agent exited {process.returncode}: {stderr_text.strip()[-400:]}",
+                    file=sys.stderr,
+                )
 
             response_text = stdout_text
 
@@ -496,17 +532,36 @@ def run_functional_eval_for_skill(
             # Include output files in grading context
             grading_text = response_text
             outputs_dir = eval_dir / "outputs"
-            if outputs_dir.is_dir():
+            roots = [outputs_dir]
+            if fake_bin.is_dir():
+                # The workspace is the user's project: grade the code written in it too,
+                # but not its secrets (.env*), skill folders or lockfiles.
+                roots.insert(0, eval_dir)
+            for root in roots:
+                if not root.is_dir():
+                    continue
                 # Recursive: agents legitimately nest configs (e.g. outputs/agent_configs/*.json)
                 # and a top-level-only scan hides them from grading.
-                for out_file in sorted(outputs_dir.rglob("*")):
-                    if out_file.is_file() and out_file.suffix in (
-                        ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
-                        ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
+                for out_file in sorted(root.rglob("*")):
+                    rel = out_file.relative_to(root)
+                    # Skip installed dependencies and other hidden trees (.venv,
+                    # node_modules): they are not the agent's answer.
+                    if any(part.startswith(".") or part == "node_modules" for part in rel.parts[:-1]):
+                        continue
+                    if root == eval_dir and (
+                        rel.parts[0] == "outputs"
+                        or rel.name.startswith(".")
+                        or rel.name in LOCKFILES
+                        or rel.name in RUNNER_FILES
+                    ):
+                        continue
+                    if out_file.is_file() and (
+                        out_file.suffix in GRADED_SUFFIXES
+                        or (root == eval_dir and out_file.suffix in PAGE_SUFFIXES)
                     ):
                         try:
                             content = out_file.read_text(errors="replace")
-                            grading_text += f"\n\n--- {out_file.relative_to(outputs_dir)} ---\n{content}"
+                            grading_text += f"\n\n--- {rel} ---\n{content}"
                         except Exception:
                             pass
 
@@ -591,6 +646,9 @@ def grade_expectations(response_text, expectations):
     return grades
 
 
+NEGATIVE_CLAUSE_RE = re.compile(r"\(?\bnot\b[^\"']*([\"'])(.+?)\1\)?")
+
+
 def extract_negative_terms(expectation: str) -> list[str]:
     """Extract quoted terms from generic NOT clauses like ``(NOT 'elevenlabs')``."""
     return [match[1] for match in re.findall(r"\bnot\b[^\"']*([\"'])(.+?)\1", expectation, flags=re.IGNORECASE)]
@@ -630,7 +688,8 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
 
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
     package names — those are forbidden as literal substrings when used, since
-    import-context matching can't catch SDK method usage. Terms starting with '/'
+    import-context matching can't catch SDK method usage. So are CLI flags
+    ('--env-file'), subcommands and other phrases with spaces, and `KEY=` lines. Terms starting with '/'
     are API paths — forbidden including their child routes, except child routes
     under any of ``allowed_paths`` (quoted paths from the same expectation that
     extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'
@@ -650,7 +709,9 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
             if not is_advisory_reference(response_text, match.start()):
                 return match.group(0)
         return None
-    if "." in term:
+    # CLI flags, subcommands, `KEY=` lines, and phrases are not packages either:
+    # forbid them as literal substrings outside advisory prose.
+    if "." in term or term.startswith("--") or re.search(r"[\s=]", term):
         for match in re.finditer(rf"(?i){escaped}", response_text):
             if not is_advisory_reference(response_text, match.start()):
                 return match.group(0)
@@ -669,10 +730,68 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
     return None
 
 
+GRADED_SUFFIXES = (
+    ".py", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
+    ".sh", ".json", ".yaml", ".yml", ".md", ".txt",
+)
+# A project's pages and components, graded only for skills whose workspace is the project.
+PAGE_SUFFIXES = (".html", ".vue", ".svelte", ".astro")
+LOCKFILES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "uv.lock", "poetry.lock"}
+# What this runner writes into an eval folder, which is not the agent's answer.
+RUNNER_FILES = {"response.md", "stderr.txt", "grading.json"}
+
+SHOWS_RE = re.compile(
+    r"^(?P<file>[\w./-]+\.txt|response) (?P<never>never )?shows (?P<first>.+?)(?: after (?P<second>.+?))?$"
+)
+
+
+def file_section(response_text, name):
+    """The contents of output file `name` as appended to the graded text, or None."""
+    marker = f"\n--- {name} ---\n"
+    start = response_text.find(marker)
+    if start < 0:
+        return None
+    rest = response_text[start + len(marker):]
+    end = rest.find("\n\n--- ")
+    return rest if end < 0 else rest[:end]
+
+
+def check_shows(response_text, file, first, second, never=False):
+    """`<file> shows <first> [after <second>]`: literal lines, in order. `response` is the
+    agent's final message, matched case-insensitively. `never shows` passes exactly when
+    `shows` would fail, and a file that was never written never shows anything."""
+    if file == "response":
+        reply = response_text.split("\n\n--- ", 1)[0].lower()
+        missing = [t for t in (first, second) if t and t.lower() not in reply]
+        found, evidence = (False, f"the response doesn't say {missing[0]!r}") if missing else (
+            True, f"the response says {first!r}")
+    else:
+        section = file_section(response_text, file)
+        lines = (section or "").splitlines()
+        start = 0
+        if second:
+            at = next((i for i, line in enumerate(lines) if second in line), None)
+            start = len(lines) if at is None else at + 1
+        found = any(first in line for line in lines[start:])
+        evidence = f"{file} {'shows' if found else 'does not show'} {first!r}" + (f" after {second!r}" if second else "")
+    return (not found, evidence) if never else (found, evidence)
+
+
 def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
     negative_terms = extract_negative_terms(expectation)
+    # `<file> [never] shows <literal> [after <literal>]` and NOT-only expectations are exact checks.
+    positive = re.sub(NEGATIVE_CLAUSE_RE.pattern, "", expectation, flags=re.IGNORECASE).strip()
+    shows = SHOWS_RE.match(positive)
+    if shows or (not positive and negative_terms):
+        # Exact: a forbidden term may not appear anywhere in the graded text.
+        for term in negative_terms:
+            if term in response_text:
+                return False, "Found forbidden reference: %s" % term
+        if shows:
+            return check_shows(response_text, shows["file"], shows["first"], shows["second"], bool(shows["never"]))
+        return True, "No forbidden references"
     # Quoted API paths that are not themselves forbidden act as allowed exceptions
     # for path-based NOT terms (see find_forbidden_reference).
     quoted_strings = [m[1] for m in re.findall(r"([\"'])(.+?)\1", expectation)]

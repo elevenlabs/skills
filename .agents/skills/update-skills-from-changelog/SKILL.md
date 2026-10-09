@@ -58,6 +58,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `speech-engine` | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations |
 | `voice-changer` | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()` |
 | `setup-api-key` | Authentication flow changes, API key dashboard changes, environment variable guidance |
+| `onboarding` | `elevenlabs onboard` CLI changes, approval page or sign-up flow changes, CLI install channels, SDK package names |
 
 A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
 
@@ -85,6 +86,7 @@ Skill directories:
 - `speech-engine/` (`SKILL.md` plus `references/installation.md`, `references/javascript-sdk-reference.md`, `references/python-sdk-reference.md`)
 - `voice-changer/` (`SKILL.md` plus `references/installation.md`)
 - `setup-api-key/` (`SKILL.md` only)
+- `onboarding/` (`SKILL.md` only)
 
 ## Step 4: Verify source documentation
 

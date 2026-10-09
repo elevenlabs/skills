@@ -10,7 +10,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 Add a real-time voice interface to a custom agent. ElevenLabs handles microphone audio, speech-to-text, turn-taking, text-to-speech, and browser playback; your server exposes a Speech Engine WebSocket endpoint and streams response text back.
 
-> **Setup:** See [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only. For deeper SDK details, read [JavaScript SDK Reference](references/javascript-sdk-reference.md) or [Python SDK Reference](references/python-sdk-reference.md).
+> **Setup:** No API key in this project yet? Run `npx -y @elevenlabs/cli@latest onboard init` from the app's folder and follow what it prints: it signs the user in and stores a key for the project, so nobody copies one by hand. Otherwise see the [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only. For deeper SDK details, read [JavaScript SDK Reference](references/javascript-sdk-reference.md) or [Python SDK Reference](references/python-sdk-reference.md).
 
 ## When to Use
 

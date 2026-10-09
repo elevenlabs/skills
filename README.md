@@ -23,17 +23,18 @@ npx skills add elevenlabs/skills
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
 | [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
 | [dubbing](./dubbing) | Dub audio/video into other languages while preserving the original speakers' voices |
-| [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
+| [onboarding](./onboarding) | Add ElevenLabs to a project from scratch: sign-in, API key, SDK and a first request |
+| [setup-api-key](./setup-api-key) | Fix or hand-configure an existing ElevenLabs API key |
 
 ## Configuration
 
-All skills require an ElevenLabs API key. Set it as an environment variable:
+All skills require an ElevenLabs API key in `ELEVENLABS_API_KEY`. The `onboarding` skill puts one in your project's env file for you. To set one by hand:
 
 ```bash
 export ELEVENLABS_API_KEY="your-api-key"
 ```
 
-Get your API key from the `setup-api-key` skill or use the [ElevenLabs dashboard](https://elevenlabs.io/app/settings/api-keys).
+Keys come from the [API keys page](https://elevenlabs.io/app/settings/api-keys); the `setup-api-key` skill helps with an existing key that stopped working or was issued by an administrator.
 
 ## SDK Support
 

@@ -86,11 +86,11 @@ elevenlabs music compose \
 
 ## Getting an API Key
 
+Run `npx -y @elevenlabs/cli@latest onboard init` from the app's folder and follow what it prints: it signs the user in and stores a key for the project. For an existing key that stopped working or was issued by an administrator, use the `setup-api-key` skill. To do it by hand instead:
+
 1. Sign up at [elevenlabs.io](https://elevenlabs.io)
 2. Go to [API Keys](https://elevenlabs.io/app/settings/api-keys)
 3. Click **Create API Key**
 4. Copy and store securely
-
-Or use the `setup-api-key` skill for guided setup.
 
 **Note:** Music generation requires a paid ElevenLabs plan.

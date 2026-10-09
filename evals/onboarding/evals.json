@@ -1,0 +1,85 @@
+{
+  "skill_name": "onboarding",
+  "_comment": "Stand-ins for npx and the ElevenLabs CLI (evals/onboarding/bin) are on PATH. Each `onboard` step prints the real CLI's reply (next, run, say, details, rules) and decides from the workspace the way the real one does; a case's `env` can script a step's reply (a list is one reply per call). Every call is appended to outputs/elevenlabs-calls.txt with the folder it ran in, then `  -> <next>` for its reply. `<file> [never] shows <text> [after <text>]` is checked literally, in order; the stand-in's lines start with `elevenlabs onboard`, npx's with `npx`.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add text to speech to my app: it's a Next.js notes app, and it should read notes aloud. I don't have an ElevenLabs account yet.",
+      "expected_output": "Runs onboard init in the app and signs in, writes the code with the SDK, runs check until it offers the test, and asks before any test request",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\"name\": \"notes\", \"private\": true}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard init",
+        "elevenlabs-calls.txt shows elevenlabs onboard connect after elevenlabs onboard init",
+        "elevenlabs-calls.txt shows -> offer_test after elevenlabs onboard connect",
+        "elevenlabs-calls.txt never shows (in outputs",
+        "elevenlabs-calls.txt never shows elevenlabs onboard test",
+        "response shows  test",
+        "(NOT 'sk_000000000000')"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set me up with ElevenLabs in this project.",
+      "expected_output": "Runs onboard init and signs in, then asks what the user wants to build before writing any code (nothing in the conversation or the empty project says)",
+      "files": [],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard init",
+        "elevenlabs-calls.txt shows elevenlabs onboard connect after elevenlabs onboard init",
+        "elevenlabs-calls.txt never shows elevenlabs onboard check",
+        "(NOT 'ElevenLabsClient')",
+        "(NOT 'from elevenlabs import') (NOT 'from elevenlabs.client')"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm on an SSH box. Add speech to text to this repo with ElevenLabs.",
+      "expected_output": "Relays the CLI's manual key steps to the user and waits; does not sign in",
+      "files": [],
+      "env": {
+        "ONBOARD_INIT_JSON": "{\"next\": \"ask_user\", \"run\": \"npx -y @elevenlabs/cli@latest onboard check --env-file .env.local\", \"say\": \"A browser can't reach this machine (an SSH session, a container or a cloud environment), so the approval page can't hand a key to it. Please add a key by hand:\\n1. Create a key at https://elevenlabs.io/app/settings/api-keys.\\n2. Paste it after ELEVENLABS_API_KEY= in .env.local, or set ELEVENLABS_API_KEY in this environment's secrets.\\n3. Never paste it into this chat. Tell me when it's done.\", \"rules\": [\"Never open, print or cat the env file; run `onboard check` to verify it.\", \"Never ask for an API key in chat, and never accept one pasted there.\", \"Never put the key in code; the SDK reads ELEVENLABS_API_KEY.\", \"Never run git clean or delete untracked files.\", \"Don't run the app or make your own API calls to try the key unless the user says yes. Once the code is written, run `onboard check` before you finish: it verifies the key and the code.\"], \"details\": {\"env_file\": \".env.local\"}}",
+        "ONBOARD_CHECK_JSON": "{\"next\": \"ask_user\", \"run\": \"npx -y @elevenlabs/cli@latest onboard check --env-file .env.local\", \"say\": \"ELEVENLABS_API_KEY in .env.local is still empty. Paste the key after the = (never into this chat), and tell me when it's done.\"}"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard init",
+        "response shows https://elevenlabs.io/app/settings/api-keys",
+        "elevenlabs-calls.txt never shows elevenlabs onboard connect",
+        "elevenlabs-calls.txt never shows elevenlabs onboard check"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a browser game and want ElevenLabs sound effects in it: explosions and UI clicks. I'll approve in the browser, it might take me a minute.",
+      "expected_output": "Keeps running onboard connect --wait while the approval is open, then continues to check",
+      "files": [],
+      "env": {
+        "ONBOARD_CONNECT_JSON": "[{\"next\": \"wait\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --wait --env-file .env.local\", \"say\": \"Waiting for you to approve ElevenLabs in the browser. If no browser tab opened, open this link: https://elevenlabs.io/app/oauth/authorize?response_type=code&client_id=c9c18126-5718-406a-8a12-21b69e5a888d&key_handoff=clipboard\"}, {\"next\": \"wait\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --wait --env-file .env.local\", \"say\": \"Waiting for you to approve ElevenLabs in the browser. If no browser tab opened, open this link: https://elevenlabs.io/app/oauth/authorize?response_type=code&client_id=c9c18126-5718-406a-8a12-21b69e5a888d&key_handoff=clipboard\"}, {\"next\": \"write_code\", \"run\": \"npx -y @elevenlabs/cli@latest onboard check --env-file .env.local\", \"say\": \"Signed in. Your new key ending in 4f2a is in .env.local, and your clipboard was cleared.\", \"rules\": [\"Never open, print or cat the env file; run `onboard check` to verify it.\", \"Never ask for an API key in chat, and never accept one pasted there.\", \"Never put the key in code; the SDK reads ELEVENLABS_API_KEY.\", \"Never run git clean or delete untracked files.\", \"Don't run the app or make your own API calls to try the key unless the user says yes. Once the code is written, run `onboard check` before you finish: it verifies the key and the code.\"], \"details\": {\"key_last4\": \"4f2a\", \"sdk_install\": \"npm install @elevenlabs/elevenlabs-js (or pip install elevenlabs, and add elevenlabs to requirements.txt)\", \"load_key\": \"The SDK reads ELEVENLABS_API_KEY from the environment; never put the key in the code. It's in .env.local: Next.js and Vite read .env.local on their own; plain Node needs `node --env-file=.env.local` or `dotenv.config({ path: \\\".env.local\\\" })`.\", \"voice_id\": \"JBFqnCBsd6RMkjVDRZzb\", \"env_file\": \".env.local\", \"key_status\": \"created\", \"gitignored\": true, \"what_to_build\": \"What the user asked for. If neither the conversation nor the project shows it, ask them before writing any code; don't pick a product for them.\"}}]"
+      },
+      "expectations": [
+        "elevenlabs-calls.txt shows elevenlabs onboard connect --wait",
+        "elevenlabs-calls.txt shows elevenlabs onboard check after elevenlabs onboard connect --wait",
+        "(NOT 'sk_000000000000')"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a voice agent to my store's website using ElevenLabs: it should answer customers' questions about orders.",
+      "expected_output": "When the approval was declined, tells the user and asks what to do instead of retrying on its own",
+      "files": [],
+      "env": {
+        "ONBOARD_CONNECT_JSON": "{\"next\": \"ask_user\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --env-file .env.local\", \"say\": \"The approval was declined. Tell me if you want to try again, or create a key at https://elevenlabs.io/app/settings/api-keys and paste it after ELEVENLABS_API_KEY= in .env.local yourself (never into this chat).\", \"details\": {\"key_status\": \"sign_in_failed\"}}"
+      },
+      "expectations": [
+        "response shows declined",
+        "elevenlabs-calls.txt never shows elevenlabs onboard connect after elevenlabs onboard connect",
+        "elevenlabs-calls.txt never shows elevenlabs onboard check"
+      ]
+    }
+  ]
+}
