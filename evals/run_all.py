@@ -122,6 +122,7 @@ ALL_SKILLS = [
     "voice-changer",
     "voice-isolator",
     "dubbing",
+    "flows-templates",
     "setup-api-key",
 ]
 

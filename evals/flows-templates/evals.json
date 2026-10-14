@@ -1,0 +1,49 @@
+{
+  "skill_name": "flows-templates",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a Python script that runs my ElevenLabs Flows template (template id Yz4DETxRv4uXyIo5PnEy, version Kqs4nRrpndEjQ54BhbwE) on the local photo garment.jpg. The template has one image input called garment_photo and one image output called packshot. It's a one-off script, so just wait for the result and save it to packshot.jpg.",
+      "expected_output": "Python script that starts a template run with the photo as an inline_base64 input, waits with create_and_wait (or a Retry-After-paced loop), checks the output status and downloads content_url",
+      "files": [],
+      "expectations": [
+        "Starts a run with flows.templates.runs.create_and_wait, flows.templates.runs.create, or POST /v1/flows/templates/Yz4DETxRv4uXyIo5PnEy/runs",
+        "Passes version_id Kqs4nRrpndEjQ54BhbwE",
+        "Passes the photo under the inputs key garment_photo as an inline_base64 reference (TemplateInputReference_InlineBase64 or type inline_base64) with mime_type image/jpeg",
+        "Waits for the run with create_and_wait, or, if polling by hand, sleeps for the Retry-After header value between status checks rather than a fixed tight interval",
+        "Reads the result from run.outputs['packshot'] and checks that its status is completed before reading content_url",
+        "Downloads content_url and writes it to packshot.jpg",
+        "Authenticates using the ELEVENLABS_API_KEY environment variable"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're adding an ElevenLabs Flows template to our production Express (TypeScript) app. When a user uploads a product photo we start a run of template Yz4DETxRv4uXyIo5PnEy (input port product_photo, which takes an image; output port ad_video, a video). Show me how to start the run without blocking the request, and the endpoint that receives the finished run. Our webhook signing secret is in WEBHOOK_SECRET.",
+      "expected_output": "Create call with webhook { type: 'all' } (or ids) that returns immediately, plus an Express route that verifies the signature on the raw body with constructEvent, filters for flows_template_run, and reads data.outputs.ad_video",
+      "files": [],
+      "expectations": [
+        "Starts the run with client.flows.templates.runs.create (not createAndWait) or POST /v1/flows/templates/Yz4DETxRv4uXyIo5PnEy/runs, passing a webhook target such as { type: 'all' } or { type: 'ids', ids: [...] }",
+        "Does not poll the run status in a loop inside the request handler",
+        "Passes the photo under the inputs key product_photo as an asset, generation or inline_base64 reference",
+        "The webhook route reads the raw request body (e.g. express.raw) rather than parsed JSON for verification",
+        "Verifies the elevenlabs-signature header with client.webhooks.constructEvent (or equivalent HMAC verification) using WEBHOOK_SECRET, rejecting invalid signatures",
+        "Checks that the event type is flows_template_run",
+        "Reads the ad_video output from event.data.outputs and checks its status before using content_url",
+        "Responds with a 2xx status from the webhook route"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "This loop is getting 429s from ElevenLabs. Rewrite it so it's well-behaved.\n\n```python\nimport os, time, requests\nH = {'xi-api-key': os.environ['ELEVENLABS_API_KEY']}\nurl = 'https://api.elevenlabs.io/v1/flows/templates/Yz4DETxRv4uXyIo5PnEy/runs'\nrun = requests.post(url, headers=H, json={'inputs': {'headline': 'Autumn sale'}}).json()\nwhile True:\n    run = requests.get(f\"{url}/{run['id']}\", headers=H).json()\n    if run['status'] == 'completed':\n        break\n    time.sleep(0.5)\nprint(run['outputs'])\n```",
+      "expected_output": "Either a switch to create_and_wait, or a loop that sleeps for Retry-After, handles 429, stops on failed as well as completed, and has a timeout",
+      "files": [],
+      "expectations": [
+        "Uses create_and_wait, or sleeps for the value of the Retry-After response header between status checks instead of a fixed 0.5 second interval",
+        "Treats failed as a terminal status as well as completed, so the loop cannot spin forever on a failed run",
+        "Handles a 429 response by waiting (for its Retry-After) rather than crashing or retrying immediately",
+        "Adds a deadline or timeout to the wait",
+        "Mentions that webhooks are the recommended approach for production"
+      ]
+    }
+  ]
+}

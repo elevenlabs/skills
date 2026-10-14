@@ -1,0 +1,22 @@
+[
+  {"query": "I published a template in ElevenLabs Flows that turns a product photo into an ad video. Write a python script that runs it on ~/photos/shoe.jpg and saves the video", "should_trigger": true},
+  {"query": "call https://elevenlabs.io/app/templates/MBz9OuVgBFop3rfCFvHK by api", "should_trigger": true},
+  {"query": "how do I call my elevenlabs flows template from my node backend and get notified when it's done instead of polling?", "should_trigger": true},
+  {"query": "write a webhook handler for flows_template_run events from elevenlabs", "should_trigger": true},
+  {"query": "my script polls GET /v1/flows/templates/{id}/runs/{run_id} every second and now I'm getting 429s, fix it", "should_trigger": true},
+  {"query": "run the elevenlabs template Yz4DETxRv4uXyIo5PnEy with a base64 image input and wait for the result in typescript", "should_trigger": true},
+  {"query": "batch-run our team's ElevenCreative packshot template over every jpg in ./catalog and download the outputs", "should_trigger": true},
+  {"query": "what inputs does my elevenlabs flows template take and how do I pin a specific version when calling it via api?", "should_trigger": true},
+  {"query": "use create_and_wait to run an elevenlabs template with a text input and a voice input", "should_trigger": true},
+  {"query": "set up an elevenlabs workspace webhook so finished template runs get posted to my fastapi server", "should_trigger": true},
+  {"query": "convert this paragraph into speech with a warm british voice using elevenlabs", "should_trigger": false},
+  {"query": "build a conversational voice agent that books appointments over the phone", "should_trigger": false},
+  {"query": "dub my product video into spanish with elevenlabs", "should_trigger": false},
+  {"query": "generate a 30 second upbeat jingle for my podcast intro", "should_trigger": false},
+  {"query": "transcribe the meeting recording at ~/calls/standup.m4a with speaker labels", "should_trigger": false},
+  {"query": "write a github actions workflow template for running pytest on every PR", "should_trigger": false},
+  {"query": "set up a Stripe webhook handler in express that verifies the signature", "should_trigger": false},
+  {"query": "create a jinja2 email template for our onboarding flow", "should_trigger": false},
+  {"query": "generate a whoosh sound effect for a transition", "should_trigger": false},
+  {"query": "help me get an elevenlabs api key and put it in my .env", "should_trigger": false}
+]
