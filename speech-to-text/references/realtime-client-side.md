@@ -168,6 +168,10 @@ languages, `entityDetection` for entity events, and `filterBackgroundAudio` to r
 activation from background speech and ambient noise. Do not combine `filterBackgroundAudio` with
 `includeTimestamps`. Enterprise zero-retention sessions can set `enableLogging: false`.
 
+In microphone mode, both also accept `previousText`: text that precedes the audio, such as existing
+document content. It is sent with the first audio chunk as context for casing, punctuation, and
+sentence continuation.
+
 Set `transcriptEdit` on `Scribe.connect` to apply a natural-language instruction of up to 2,000
 characters to each committed segment. Listen for `RealtimeEvents.EDITED_TRANSCRIPT`; each event
 contains the original `text` and the `edited_text`. Transcript editing cannot be combined with

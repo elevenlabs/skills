@@ -52,6 +52,7 @@ show a message entry point, and multimodal agents show both.
 | `dismissible` | Allow the user to minimize the widget | `false` |
 | `disable-banner` | Hide "Powered by ElevenLabs" | `false` |
 | `show-resize-button` | Show the expand and collapse control in the widget header | `true` |
+| `end-confirmation` | Ask the user to confirm before ending a chat or call | `false` |
 
 ## Examples
 
