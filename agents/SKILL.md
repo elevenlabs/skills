@@ -298,7 +298,7 @@ No-auth APIs useful for prototypes (URLs must be HTTPS):
 
 Route conversations through discrete steps with branching logic. Define under the agent's top-level `workflow` field. Reference: [Agent Workflows](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows).
 
-**Node types:** `start` (ID must be `"start_node"`), `end`, `override_agent` (subagent step with `label` + `additional_prompt`), `dispatch_tool` (executes a tool with success/failure routing), `agent_transfer`, `transfer_to_number`.
+**Node types:** `start` (ID must be `"start_node"`), `end` (`outcome` records the conversation as `success`, the default, or `failure`), `override_agent` (subagent step with `label` + `additional_prompt`), `dispatch_tool` (executes a tool with success/failure routing), `agent_transfer`, `transfer_to_number`.
 
 **Edge types:** `unconditional`, `llm` (natural-language condition), `expression` (deterministic data check). Tool nodes have separate success/failure edges.
 
