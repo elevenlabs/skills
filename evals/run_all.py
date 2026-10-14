@@ -689,7 +689,7 @@ def find_forbidden_reference(response_text: str, term: str, allowed_paths: tuple
     Terms containing a dot (e.g. 'client.dubbing') are method/attribute paths, not
     package names — those are forbidden as literal substrings when used, since
     import-context matching can't catch SDK method usage. So are CLI flags
-    ('--env-file'), subcommands and other phrases with spaces, and `KEY=` lines. Terms starting with '/'
+    ('--env-path'), subcommands and other phrases with spaces, and `KEY=` lines. Terms starting with '/'
     are API paths — forbidden including their child routes, except child routes
     under any of ``allowed_paths`` (quoted paths from the same expectation that
     extend the forbidden path, e.g. NOT '/v1/dubbing' with '/v1/dubbing/project'

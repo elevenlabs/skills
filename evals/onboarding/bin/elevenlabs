@@ -33,13 +33,15 @@ with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
     log.write(f"elevenlabs {' '.join(args)} (in {os.path.relpath(os.getcwd(), EVAL_DIR)})\n")
 
 # The flags each step takes, as the real CLI defines them; the framework adds the global ones.
-FLAGS = {"init": {"--env-file", "--no-browser"},
-         "connect": {"--env-file", "--no-browser", "--replace", "--wait", "--authorize-url"},
-         "check": {"--env-file", "--no-browser", "--answered"}, "test": {"--env-file", "--no-browser"}}
+# `--env-file` is the old name of `--env-path`, still accepted like the real CLI does.
+ENV = {"--env-path", "--env-file"}
+FLAGS = {"init": ENV | {"--no-browser"},
+         "connect": ENV | {"--no-browser", "--replace", "--wait", "--authorize-url"},
+         "check": ENV | {"--no-browser", "--answered"}, "test": ENV | {"--no-browser"}}
 GLOBAL_FLAGS = {"--format", "--human", "--base-url", "-q", "--quiet", "--debug", "--dry-run", "--via",
                 "--query", "--schema", "--spec", "--spec-raw"}
 # Flags followed by a value (unless given as --flag=value).
-VALUE_FLAGS = {"--env-file", "--authorize-url", "--format", "--base-url", "--via", "--query"}
+VALUE_FLAGS = {"--env-path", "--env-file", "--authorize-url", "--format", "--base-url", "--via", "--query"}
 RULES = ["Never open, print or cat the env file; run `onboard check` to verify it.",
          "Never ask for an API key in chat, and never accept one pasted there.",
          "Never put the key in code; the SDK reads ELEVENLABS_API_KEY.",
@@ -98,14 +100,14 @@ def has(*files):
 
 
 STACK = "node" if has("package.json") else "python" if has("pyproject.toml", "requirements.txt", "Pipfile", "setup.py") else "other"
-env_file = flag("--env-file") or (".env" if STACK == "python" else ".env.local")
+env_file = flag("--env-path") or flag("--env-file") or (".env" if STACK == "python" else ".env.local")
 
 
 def cmd(step):
     """The real CLI's next command: the env file always, and --no-browser when this run had it."""
     out = f"{CLI} onboard {step}"
-    if "--env-file" not in step:
-        out += f" --env-file {env_file}"
+    if "--env-path" not in step:
+        out += f" --env-path {env_file}"
     if "--no-browser" in args:
         out += " --no-browser"
     return out

@@ -33,11 +33,11 @@
         }
       ],
       "env": {
-        "ONBOARD_CHECK_JSON": "[{\"next\": \"run\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --replace --env-file .env.local\", \"say\": \"ElevenLabs rejects the key ending in tale, so I'll open the approval page to create a new one.\"}, {\"next\": \"offer_test\", \"run\": \"npx -y @elevenlabs/cli@latest onboard test --env-file .env.local\", \"say\": \"ElevenLabs is set up: a working key ending in 4f2a in .env.local, and the SDK in your code. Want me to send a test request? It makes a short text-to-speech clip with your key and uses a few credits.\", \"details\": {\"key_last4\": \"4f2a\", \"api_key_source\": \"env_file\", \"sdk_declared\": true, \"sdk_imported\": true, \"fixed\": []}}]"
+        "ONBOARD_CHECK_JSON": "[{\"next\": \"run\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --replace --env-path .env.local\", \"say\": \"ElevenLabs rejects the key ending in tale, so I'll open the approval page to create a new one.\"}, {\"next\": \"offer_test\", \"run\": \"npx -y @elevenlabs/cli@latest onboard test --env-path .env.local\", \"say\": \"ElevenLabs is set up: a working key ending in 4f2a in .env.local, and the SDK in your code. Want me to send a test request? It makes a short text-to-speech clip with your key and uses a few credits.\", \"details\": {\"key_last4\": \"4f2a\", \"api_key_source\": \"env_file\", \"sdk_declared\": true, \"sdk_imported\": true, \"fixed\": []}}]"
       },
       "expectations": [
         "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard check",
-        "elevenlabs-calls.txt shows elevenlabs onboard connect --replace --env-file .env.local after elevenlabs onboard check",
+        "elevenlabs-calls.txt shows elevenlabs onboard connect --replace --env-path .env.local after elevenlabs onboard check",
         "elevenlabs-calls.txt shows elevenlabs onboard check after elevenlabs onboard connect --replace",
         "(NOT 'sk_000000000000')",
         "(NOT 'sk_stale')"

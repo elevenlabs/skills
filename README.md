@@ -34,7 +34,7 @@ All skills require an ElevenLabs API key in `ELEVENLABS_API_KEY`. The `onboardin
 export ELEVENLABS_API_KEY="your-api-key"
 ```
 
-Keys come from the [API keys page](https://elevenlabs.io/app/settings/api-keys); the `setup-api-key` skill helps with an existing key that stopped working or was issued by an administrator.
+Keys come from the [API keys page](https://elevenlabs.io/app/api/api-keys?quickstart=true); the `setup-api-key` skill helps with an existing key that stopped working or was issued by an administrator.
 
 ## SDK Support
 
