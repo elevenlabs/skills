@@ -57,6 +57,19 @@
         "Relies on (or explains) the non-zero exit code for a failed run, rather than only checking for the completed status",
         "Does not poll at a fixed interval or call the REST API with cURL"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "From my terminal, run ElevenLabs Flows template DXODDui4CjL6Ho5X3Sfs on the photo ./old-photo.jpg on my laptop. Its only input is an image port called input_image. Wait for it to finish and give me the result. I have the elevenlabs CLI installed; bash only, no scripts in other languages.",
+      "expected_output": "Either uploads the file with `elevenlabs assets create --asset ./old-photo.jpg` and passes {\"type\":\"asset\",\"asset_id\":...}, or builds an inline_base64 body with jq and pipes it to `create-and-wait --json -`; then waits with create-and-wait",
+      "files": [],
+      "expectations": [
+        "Turns the local file into a reference: uploads it with `elevenlabs assets create --asset` and passes {\"type\": \"asset\", \"asset_id\": ...}, or sends it as {\"type\": \"inline_base64\", \"mime_type\": \"image/jpeg\", \"content_base64\": ...}",
+        "Does not pass a file path (or @path) as the input value",
+        "If it uses inline_base64, pipes the body to --json - (or reads it from a file) rather than putting the base64 string in a command-line argument",
+        "Keys the input by the port id input_image",
+        "Waits with `elevenlabs flows templates runs create-and-wait` rather than a hand-written polling loop"
+      ]
     }
   ]
 }

@@ -151,6 +151,27 @@ jq -r '.outputs.packshot.content_url' <<<"$run"
 - `--json '{"version_id": ..., "inputs": {...}}'` works in place of the per-field flags, and `--json -` reads the body from stdin.
 - The same command exists for single generations: `elevenlabs flows image|video|text-to-speech create-and-wait --json '{...}'`.
 
+#### Local files as inputs
+
+No flag takes a file path for a media input; turn the file into a reference first. To reuse the file across runs, upload it once and pass its `asset_id`:
+
+```bash
+asset_id=$(elevenlabs assets create --asset ./garment.jpg --name garment --query asset_id | jq -r .)
+elevenlabs flows templates runs create-and-wait --template-id Yz4DETxRv4uXyIo5PnEy \
+  --inputs "{\"garment_photo\": {\"type\": \"asset\", \"asset_id\": \"$asset_id\"}}"
+```
+
+For a one-off run, send it inline as base64. Build the body with `jq` and pipe it to `--json -`: a base64 string is too long for a command-line argument, and `--inputs` doesn't read `@file`.
+
+```bash
+jq -n --arg b64 "$(base64 < garment.jpg)" '{
+  version_id: "Kqs4nRrpndEjQ54BhbwE",
+  inputs: {garment_photo: {type: "inline_base64", mime_type: "image/jpeg", content_base64: $b64}}
+}' | elevenlabs flows templates runs create-and-wait --template-id Yz4DETxRv4uXyIo5PnEy --json -
+```
+
+Image and video generations take the same reference objects inside `--json`, in fields such as `images`, `start_frame` and `end_frame`.
+
 Don't wrap `runs create` and `runs get` in your own shell loop; `create-and-wait` already reads `Retry-After`, which `runs get` doesn't show. To check on a run started elsewhere, use `elevenlabs flows templates runs get --template-id ... --run-id ...` once.
 
 ### Polling by hand (other languages, older SDKs and CLIs)
