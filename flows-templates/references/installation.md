@@ -55,12 +55,12 @@ npm install -g @elevenlabs/cli
 ```bash
 elevenlabs flows templates list --search packshot
 elevenlabs flows templates get --template-id Yz4DETxRv4uXyIo5PnEy
-elevenlabs flows templates runs create --template-id Yz4DETxRv4uXyIo5PnEy \
-  --json '{"version_id": "latest", "inputs": {"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}}'
+elevenlabs flows templates runs create-and-wait --template-id Yz4DETxRv4uXyIo5PnEy \
+  --inputs '{"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}'
 elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id RUN_ID
 ```
 
-The CLI has no wait helper and doesn't show the `Retry-After` header: check by hand with `runs get` until `status` is `completed` or `failed`. For an unattended loop, use the SDK's `create_and_wait` or the cURL loop in [Polling by hand](polling.md).
+`create-and-wait` is only in recent CLI releases. If `elevenlabs flows templates runs create-and-wait --help` reports an unrecognized subcommand, upgrade the CLI, or use the cURL loop in [Polling by hand](polling.md).
 
 ## Getting an API Key
 

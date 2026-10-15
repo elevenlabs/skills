@@ -1,6 +1,6 @@
 ---
 name: flows-templates
-description: Run ElevenCreative Flows templates from code with the ElevenLabs Templates API (/v1/flows/templates), and get the result by waiting (create_and_wait / polling with Retry-After) or by webhook (flows_template_run). Use when calling a published Flows template from a script or app (including when given an elevenlabs.io/app/templates/<template_id> link), passing template inputs (text, images, video, audio, voices), polling a template run until it finishes, receiving finished runs by webhook, or pinning a template version.
+description: Run ElevenCreative Flows templates from code with the ElevenLabs Templates API (/v1/flows/templates), and get the result by waiting (SDK create_and_wait, CLI create-and-wait, or polling with Retry-After) or by webhook (flows_template_run). Use when calling a published Flows template from a script or app (including when given an elevenlabs.io/app/templates/<template_id> link), passing template inputs (text, images, video, audio, voices), polling a template run until it finishes, receiving finished runs by webhook, or pinning a template version.
 license: MIT
 compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY). Pro plan or above.
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
@@ -18,7 +18,7 @@ A run takes from seconds to several minutes. There are two ways to get the finis
 
 | Approach | Use for | How |
 |----------|---------|-----|
-| **Wait** | Scripts, one-off and batch jobs, trying a template out | SDK `create_and_wait` / `createAndWait`, or poll `GET .../runs/{run_id}` honoring `Retry-After` |
+| **Wait** | Scripts, one-off and batch jobs, trying a template out | SDK `create_and_wait` / `createAndWait`, CLI `elevenlabs flows templates runs create-and-wait`, or poll `GET .../runs/{run_id}` honoring `Retry-After` |
 | **Webhook** | Production applications | Pass `webhook` on create; ElevenLabs sends a `flows_template_run` event when the run finishes |
 
 **Default to webhooks for anything that runs in production** — an app server, a queue worker, a user-facing feature. Use waiting only when there is no server to receive the event (a CLI script, a notebook, a batch job) or the user is just trying the template. Never write a fixed-interval poll loop: the server sets the pace with the `Retry-After` header and rate-limits status checks, so a loop that ignores it gets `429`s.
@@ -134,20 +134,26 @@ if (packshot.type === "image" && packshot.status === "completed" && packshot.con
 
 ### From the terminal
 
-Use the `elevenlabs` CLI to start a run and check on it by hand:
+`elevenlabs flows templates runs create-and-wait` takes the same flags as `runs create`, waits the way `create_and_wait` does, and prints the finished run:
 
 ```bash
-# Start a run; the response carries the run's "id"
-elevenlabs flows templates runs create --template-id Yz4DETxRv4uXyIo5PnEy \
-  --json '{"version_id": "Kqs4nRrpndEjQ54BhbwE", "inputs": {"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}}'
-
-# Check it; repeat until "status" is "completed" or "failed"
-elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id RUN_ID
+run=$(elevenlabs flows templates runs create-and-wait \
+  --template-id Yz4DETxRv4uXyIo5PnEy \
+  --version-id Kqs4nRrpndEjQ54BhbwE \
+  --inputs '{"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}' \
+  --wait-timeout 600) || { echo "run failed or timed out: $run" >&2; exit 1; }
+jq -r '.outputs.packshot.content_url' <<<"$run"
 ```
 
-The CLI has no wait helper and doesn't show response headers, so it can't read `Retry-After`. Don't wrap `runs get` in a loop; for an unattended shell loop, use the cURL loop in [Polling by hand](references/polling.md), which reads the header.
+- stdout carries only the final run (the same JSON as `runs get`), so `jq`, `--query` and `--format` work on it. `--query` keeps JSON quoting; use `jq -r` for a bare URL. Progress goes to stderr, and only when stderr is a terminal or with `--debug`.
+- Exit code `0` means `completed`. A `failed` run is still printed, but the command exits `1`. Check the exit code before reading outputs, and don't pipe the command straight into `jq` without `set -o pipefail`, which would hide it.
+- If `--wait-timeout` runs out, it exits `1` with an error whose `reason` is `waitTimeout`; its `help` field holds the `runs get` command for that run. The run keeps going on the server.
+- `--json '{"version_id": ..., "inputs": {...}}'` works in place of the per-field flags, and `--json -` reads the body from stdin.
+- The same command exists for single generations: `elevenlabs flows image|video|text-to-speech create-and-wait --json '{...}'`.
 
-### Polling by hand (other languages, older SDKs)
+Don't wrap `runs create` and `runs get` in your own shell loop; `create-and-wait` already reads `Retry-After`, which `runs get` doesn't show. To check on a run started elsewhere, use `elevenlabs flows templates runs get --template-id ... --run-id ...` once.
+
+### Polling by hand (other languages, older SDKs and CLIs)
 
 Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](references/polling.md) for complete Python, TypeScript and shell loops.
 

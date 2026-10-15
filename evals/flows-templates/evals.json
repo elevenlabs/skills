@@ -44,6 +44,19 @@
         "Adds a deadline or timeout to the wait",
         "Mentions that webhooks are the recommended approach for production"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "From my terminal (bash, no code please), run ElevenLabs Flows template Yz4DETxRv4uXyIo5PnEy with its text input headline set to \"Autumn sale\". It has one image output called banner. I want the command to block until it's done and print just the image URL, and fail loudly if the run fails. I have the elevenlabs CLI installed.",
+      "expected_output": "A single `elevenlabs flows templates runs create-and-wait` command with --template-id and the headline input, extracting outputs.banner.content_url, relying on its non-zero exit for a failed run",
+      "files": [],
+      "expectations": [
+        "Uses `elevenlabs flows templates runs create-and-wait` rather than `runs create` followed by a hand-written sleep loop around `runs get`",
+        "Passes the input as {\"headline\": \"Autumn sale\"} via --inputs or a --json body, keyed by the port id",
+        "Extracts the URL from outputs.banner.content_url with --query or by piping stdout to jq",
+        "Relies on (or explains) the non-zero exit code for a failed run, rather than only checking for the completed status",
+        "Does not poll at a fixed interval or call the REST API with cURL"
+      ]
     }
   ]
 }

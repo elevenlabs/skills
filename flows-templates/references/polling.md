@@ -1,8 +1,8 @@
 # Polling by hand
 
-Prefer the SDK's `create_and_wait` / `createAndWait`, which does all of this for you. Write your own loop only when the helper isn't available (another language, an older SDK, a shell script). In production, use a webhook instead.
+Prefer the SDK's `create_and_wait` / `createAndWait`, or `elevenlabs flows templates runs create-and-wait` from a shell, which do all of this for you. Write your own loop only when neither is available (another language, an older SDK, a machine without the CLI). In production, use a webhook instead.
 
-These loops call the REST API directly because they need the `Retry-After` response header, which the `elevenlabs` CLI doesn't expose. For a one-off check from the terminal, use `elevenlabs flows templates runs get` instead.
+These loops call the REST API directly because they need the `Retry-After` response header.
 
 ## Rules
 
@@ -102,7 +102,15 @@ async function runAndWait(templateId: string, body: unknown, timeoutMs = 600_000
 
 ## Shell
 
-The `elevenlabs` CLI can't read `Retry-After`, so a shell loop uses cURL.
+Use the CLI; it follows `Retry-After`, exits `1` on a `failed` run, and prints only the finished run on stdout:
+
+```bash
+elevenlabs flows templates runs create-and-wait --template-id Yz4DETxRv4uXyIo5PnEy \
+  --inputs '{"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}' \
+  --wait-timeout 600 --query outputs
+```
+
+Without the CLI, the same loop in cURL:
 
 ```bash
 TEMPLATE_ID=Yz4DETxRv4uXyIo5PnEy
@@ -123,4 +131,4 @@ echo "$RESPONSE" | jq .outputs
 
 ## Resuming
 
-A run keeps going server-side whether or not anyone is checking. If a script exits early, resume with `GET .../runs/{run_id}`, or find recent runs with `flows.templates.runs.list(template_id)` (newest first, filterable by `version_id`). A `completed` output's `content_url` expires about an hour after the response; fetch the run again for a fresh one.
+A run keeps going server-side whether or not anyone is checking. If a script exits early, resume with `GET .../runs/{run_id}` (`elevenlabs flows templates runs get` from a shell; a `create-and-wait` timeout prints this command for you), or find recent runs with `flows.templates.runs.list(template_id)` (newest first, filterable by `version_id`). A `completed` output's `content_url` expires about an hour after the response; fetch the run again for a fresh one.

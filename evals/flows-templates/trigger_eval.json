@@ -18,5 +18,6 @@
   {"query": "set up a Stripe webhook handler in express that verifies the signature", "should_trigger": false},
   {"query": "create a jinja2 email template for our onboarding flow", "should_trigger": false},
   {"query": "generate a whoosh sound effect for a transition", "should_trigger": false},
-  {"query": "help me get an elevenlabs api key and put it in my .env", "should_trigger": false}
+  {"query": "help me get an elevenlabs api key and put it in my .env", "should_trigger": false},
+  {"query": "run my elevenlabs flows template from the command line and wait until it finishes", "should_trigger": true}
 ]
