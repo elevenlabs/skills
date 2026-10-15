@@ -132,23 +132,24 @@ if (packshot.type === "image" && packshot.status === "completed" && packshot.con
 - `min_poll_interval_in_seconds` / `minPollIntervalInSeconds` sets the floor between checks (default 3s, minimum 0.5s). There's normally no reason to change it.
 - `429`s on status checks are retried automatically after their `Retry-After`.
 
-### Polling by hand (cURL, other languages, older SDKs)
+### From the terminal
 
-Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](references/polling.md) for complete Python, TypeScript and shell loops.
+Use the `elevenlabs` CLI to start a run and check on it by hand:
 
 ```bash
 # Start a run; the response carries the run's "id"
-curl -X POST "https://api.elevenlabs.io/v1/flows/templates/Yz4DETxRv4uXyIo5PnEy/runs" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"version_id": "Kqs4nRrpndEjQ54BhbwE", "inputs": {"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}}'
+elevenlabs flows templates runs create --template-id Yz4DETxRv4uXyIo5PnEy \
+  --json '{"version_id": "Kqs4nRrpndEjQ54BhbwE", "inputs": {"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}}'
 
-# Check it. While unfinished, the Retry-After response header says how many seconds to wait.
-curl -i "https://api.elevenlabs.io/v1/flows/templates/Yz4DETxRv4uXyIo5PnEy/runs/RUN_ID" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY"
+# Check it; repeat until "status" is "completed" or "failed"
+elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id RUN_ID
 ```
 
-With the CLI: `elevenlabs flows templates runs create --template-id ... --json '{...}'`, then `elevenlabs flows templates runs get --template-id ... --run-id ...`.
+The CLI has no wait helper and doesn't show response headers, so it can't read `Retry-After`. Don't wrap `runs get` in a loop; for an unattended shell loop, use the cURL loop in [Polling by hand](references/polling.md), which reads the header.
+
+### Polling by hand (other languages, older SDKs)
+
+Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](references/polling.md) for complete Python, TypeScript and shell loops.
 
 ## Get the result by webhook (production)
 

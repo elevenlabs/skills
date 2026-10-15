@@ -60,7 +60,7 @@ elevenlabs flows templates runs create --template-id Yz4DETxRv4uXyIo5PnEy \
 elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id RUN_ID
 ```
 
-The CLI has no wait helper: run `runs get` again until `status` is `completed` or `failed`, a few seconds apart.
+The CLI has no wait helper and doesn't show the `Retry-After` header: check by hand with `runs get` until `status` is `completed` or `failed`. For an unattended loop, use the SDK's `create_and_wait` or the cURL loop in [Polling by hand](polling.md).
 
 ## Getting an API Key
 

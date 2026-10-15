@@ -1,6 +1,8 @@
 # Polling by hand
 
-Prefer the SDK's `create_and_wait` / `createAndWait`, which does all of this for you. Write your own loop only when the helper isn't available (cURL, another language, an older SDK). In production, use a webhook instead.
+Prefer the SDK's `create_and_wait` / `createAndWait`, which does all of this for you. Write your own loop only when the helper isn't available (another language, an older SDK, a shell script). In production, use a webhook instead.
+
+These loops call the REST API directly because they need the `Retry-After` response header, which the `elevenlabs` CLI doesn't expose. For a one-off check from the terminal, use `elevenlabs flows templates runs get` instead.
 
 ## Rules
 
@@ -99,6 +101,8 @@ async function runAndWait(templateId: string, body: unknown, timeoutMs = 600_000
 ```
 
 ## Shell
+
+The `elevenlabs` CLI can't read `Retry-After`, so a shell loop uses cURL.
 
 ```bash
 TEMPLATE_ID=Yz4DETxRv4uXyIo5PnEy
