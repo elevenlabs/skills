@@ -1,27 +1,8 @@
----
-name: flows-templates
-description: Run ElevenCreative Flows templates from code with the ElevenLabs Templates API (/v1/flows/templates), and get the result by waiting (SDK create_and_wait, CLI create-and-wait, or polling with Retry-After) or by webhook (flows_template_run). Use when calling a published Flows template from a script or app (including when given an elevenlabs.io/app/templates/<template_id> link), passing template inputs (text, images, video, audio, voices), polling a template run until it finishes, receiving finished runs by webhook, or pinning a template version.
-license: MIT
-compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY). Pro plan or above.
-metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
----
-
-# ElevenLabs Flows Templates
+# Flows templates
 
 Run a template built in ElevenCreative Flows from your own code. A **template** is a published Flow: a chain of models with a fixed set of named **inputs** and **outputs**. Its author already chose the models and prompts, so your code only passes the input values and reads the outputs.
 
-> **Setup:** See [Installation Guide](references/installation.md). The API key needs the **Image & Video** permission, and the workspace must be on a Pro plan or above. The SDKs and the `elevenlabs` CLI read `ELEVENLABS_API_KEY` automatically; REST base URL is `https://api.elevenlabs.io` with the key in the `xi-api-key` header.
-
-## Choose how to get the result
-
-A run takes from seconds to several minutes. There are two ways to get the finished run:
-
-| Approach | Use for | How |
-|----------|---------|-----|
-| **Wait** | Scripts, one-off and batch jobs, trying a template out | SDK `create_and_wait` / `createAndWait`, CLI `elevenlabs flows templates runs create-and-wait`, or poll `GET .../runs/{run_id}` honoring `Retry-After` |
-| **Webhook** | Production applications | Pass `webhook` on create; ElevenLabs sends a `flows_template_run` event when the run finishes |
-
-**Default to webhooks for anything that runs in production** — an app server, a queue worker, a user-facing feature. Use waiting only when there is no server to receive the event (a CLI script, a notebook, a batch job) or the user is just trying the template. Never write a fixed-interval poll loop: the server sets the pace with the `Retry-After` header and rate-limits status checks, so a loop that ignores it gets `429`s.
+Read the skill's SKILL.md first for setup and for when to wait versus use a webhook.
 
 ## Concepts
 
@@ -55,7 +36,7 @@ elevenlabs flows templates get --template-id Yz4DETxRv4uXyIo5PnEy
 
 ## Wait for the result (scripts)
 
-`create_and_wait` starts the run, then checks on it at the interval the server suggests (`Retry-After`) until it is `completed` or `failed`. It needs a recent SDK; see the [Installation Guide](references/installation.md).
+`create_and_wait` starts the run, then checks on it at the interval the server suggests (`Retry-After`) until it is `completed` or `failed`. It needs a recent SDK; see the [Installation Guide](installation.md).
 
 ### Python
 
@@ -176,7 +157,7 @@ Don't wrap `runs create` and `runs get` in your own shell loop; `create-and-wait
 
 ### Polling by hand (other languages, older SDKs and CLIs)
 
-Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](references/polling.md) for complete Python, TypeScript and shell loops.
+Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](polling.md) for complete Python, TypeScript and shell loops.
 
 ## Get the result by webhook (production)
 
@@ -301,7 +282,7 @@ Payload:
 }
 ```
 
-Full FastAPI and Express servers: [Webhook handlers](references/webhooks.md).
+Full FastAPI and Express servers: [Webhook handlers](webhooks.md).
 
 ### Delivery rules
 
@@ -356,9 +337,3 @@ Pass the `version_id` you tested against. `latest` (or omitting it) switches to 
 - **422**: Missing/unknown input id, or a value of the wrong shape for its port
 - **429** on status checks: Too many reads for this API key — wait `Retry-After` seconds; prefer webhooks
 - **Template not found / not runnable**: It isn't shared with your workspace (`Just me` templates only run for their author), or no published version can run through the API (`versions` is empty)
-
-## References
-
-- [Installation Guide](references/installation.md)
-- [Polling by hand](references/polling.md) — Retry-After-driven loops without `create_and_wait`
-- [Webhook handlers](references/webhooks.md) — complete FastAPI and Express servers

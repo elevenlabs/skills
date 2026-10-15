@@ -1,6 +1,6 @@
 # Webhook handlers
 
-Complete servers that receive `flows_template_run` events. Before these work, a workspace webhook pointing at the server must be subscribed to the `flows` event (see SKILL.md, "Subscribe a webhook to template runs"), and runs must be started with `webhook: {"type": "all"}` or a list of webhook ids.
+Complete servers that receive `flows_template_run` events. Before these work, a workspace webhook pointing at the server must be subscribed to the `flows` event (see [Flows templates](templates.md), "Subscribe a webhook to template runs"), and runs must be started with `webhook: {"type": "all"}` or a list of webhook ids.
 
 Every handler:
 
