@@ -57,6 +57,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |
 | `speech-engine` | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations |
 | `voice-changer` | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()` |
+| `flows` | Changes to `/v1/flows` endpoints the skill covers (currently templates), including `/v1/flows/templates` endpoints, template run inputs/outputs, `flows_template_run` webhook payloads, `Retry-After`/rate-limit behavior, SDK changes for `flows.templates.runs.create_and_wait` / `createAndWait` |
 | `setup-api-key` | Authentication flow changes, API key dashboard changes, environment variable guidance |
 
 A change is relevant if it affects model tables, code examples, parameter documentation, configuration tables, or CLI commands documented in skills.
@@ -84,6 +85,7 @@ Skill directories:
 - `voice-isolator/` (`SKILL.md` plus `references/installation.md`)
 - `speech-engine/` (`SKILL.md` plus `references/installation.md`, `references/javascript-sdk-reference.md`, `references/python-sdk-reference.md`)
 - `voice-changer/` (`SKILL.md` plus `references/installation.md`)
+- `flows/` (`SKILL.md` plus `references/installation.md`, `references/templates.md`, `references/polling.md`, `references/webhooks.md`)
 - `setup-api-key/` (`SKILL.md` only)
 
 ## Step 4: Verify source documentation

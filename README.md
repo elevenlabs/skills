@@ -23,6 +23,7 @@ npx skills add elevenlabs/skills
 | [voice-changer](./voice-changer) | Transform the voice in an audio recording into a different target voice (speech-to-speech) |
 | [voice-isolator](./voice-isolator) | Remove background noise and isolate vocals/speech from audio |
 | [dubbing](./dubbing) | Dub audio/video into other languages while preserving the original speakers' voices |
+| [flows](./flows) | Generate images, video and speech with the Image & Video API, chain generations, and run Flows templates from code, by waiting or by webhook |
 | [setup-api-key](./setup-api-key) | Guide through obtaining and configuring an ElevenLabs API key |
 
 ## Configuration
