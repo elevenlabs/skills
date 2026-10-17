@@ -2,7 +2,7 @@
 
 Prefer the SDK's `create_and_wait` / `createAndWait`, or `elevenlabs flows templates runs create-and-wait` from a shell, which do all of this for you. Write your own loop only when neither is available (another language, an older SDK, a machine without the CLI). In production, use a webhook instead.
 
-These loops call the REST API directly because they need the `Retry-After` response header.
+These loops call the REST API directly because they need the `Retry-After` response header. They are written for template runs; for a single generation, poll `GET /v1/flows/{image|video|text-to-speech}/{generation_id}` the same way (its unfinished responses carry `Retry-After` too) and read `status`, `content_url` and `failure_reason` from the top level instead of `outputs`.
 
 ## Rules
 

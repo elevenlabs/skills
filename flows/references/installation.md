@@ -1,13 +1,13 @@
 # Installation
 
-The Templates API is available in the official SDKs under `flows.templates.*`, via the `elevenlabs` CLI under `elevenlabs flows templates`, and via REST at `/v1/flows/templates`.
+The Flows API is available in the official SDKs under `flows.image`, `flows.video`, `flows.text_to_speech` (`flows.textToSpeech` in TypeScript), `flows.templates` and `assets`; via the `elevenlabs` CLI under `elevenlabs flows ...` and `elevenlabs assets ...`; and via REST at `/v1/flows/...` and `/v1/assets`.
 
 ## Requirements
 
 - A workspace on a **Pro plan or above**.
-- An API key with the **Image & Video** permission.
+- An API key with the **Image & Video** permission (plus **Text to Speech** for `/v1/flows/text-to-speech`).
 - For webhooks: the **Webhooks Manage** permission (or workspace admin) to create and subscribe the webhook.
-- The template must be shared with your workspace (or be public, or shared with you by link). A template shared as **Just me** only runs for its author.
+- For templates: the template must be shared with your workspace (or be public, or shared with you by link). A template shared as **Just me** only runs for its author. See [Access and errors](access-errors.md).
 
 ## Python
 
@@ -15,7 +15,7 @@ The Templates API is available in the official SDKs under `flows.templates.*`, v
 pip install --upgrade elevenlabs requests
 ```
 
-`create_and_wait` is only in recent SDK releases. If `client.flows.templates.runs.create_and_wait` doesn't exist, upgrade, or [poll by hand](polling.md).
+`create_and_wait` is only in recent SDK releases. If `client.flows.templates.runs.create_and_wait` (or `client.flows.image.create_and_wait`) doesn't exist, upgrade, or [poll by hand](polling.md).
 
 ```python
 import os
@@ -66,7 +66,7 @@ elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id 
 
 1. Sign up at [elevenlabs.io](https://elevenlabs.io)
 2. Go to [API Keys](https://elevenlabs.io/app/settings/api-keys)
-3. Click **Create API Key** and give it the **Image & Video** permission
+3. Click **Create API Key** and give it the **Image & Video** permission (and **Text to Speech** if you generate speech)
 4. Copy and store securely
 
 Or use the `setup-api-key` skill for guided setup.

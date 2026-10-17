@@ -14,25 +14,55 @@ Read the skill's SKILL.md first for setup and for when to wait versus use a webh
 | **Output port** | One result, keyed by its `id` in the run's `outputs`. Each output has its own `status`. |
 | **Run** | One execution. `status` is rolled up from its outputs: `pending` → `generating` → `completed` or `failed`. |
 
-## Find the template's inputs and outputs
+## From a template URL to running code
 
-Every template page in the app has an **API** tab with ready-to-run cURL, Python and TypeScript snippets, in both **Wait for the result** and **Webhook** modes. From code, read the ports from the template itself:
+1. **Take the id from the path.** `https://elevenlabs.io/app/templates/Yz4DETxRv4uXyIo5PnEy` → `Yz4DETxRv4uXyIo5PnEy`. Drop any query string or trailing slash. A template id is not a run id or a version id.
+2. **Read its ports.** Call `flows.templates.get` (or the CLI); this works for any template the caller can open, including link-shared and Explore templates that `templates.list` doesn't show.
 
-```python
-template = client.flows.templates.get("Yz4DETxRv4uXyIo5PnEy")
-version = template.versions[0]  # newest version the API can run
-print(version.version_id)
-for port in version.inputs:
-    print("input ", port.id, port.content_schema.type)
-for port in version.outputs:
-    print("output", port.id, port.content_schema.type)
-```
+   ```python
+   template = client.flows.templates.get("Yz4DETxRv4uXyIo5PnEy")
+   if not template.versions:
+       raise SystemExit("No version of this template can run through the API")
+   version = template.versions[0]  # newest version the API can run
+   print(version.version_id, version.is_latest)
+   for port in version.inputs:
+       print("input ", port.id, port.content_schema.type)
+   for port in version.outputs:
+       print("output", port.id, port.content_schema.type)
+   ```
 
-```bash
-elevenlabs flows templates get --template-id Yz4DETxRv4uXyIo5PnEy
-```
+   ```typescript
+   const template = await client.flows.templates.get("Yz4DETxRv4uXyIo5PnEy");
+   const version = template.versions[0];
+   ```
 
-`versions` only lists versions the API can run (a version built on a model the API doesn't offer is left out), so it can be empty. `flows.templates.list` lists the workspace's templates; templates shared by link or from Explore aren't listed but can still be fetched and run by id.
+   ```bash
+   elevenlabs flows templates get --template-id Yz4DETxRv4uXyIo5PnEy \
+     | jq '.versions[0] | {version_id, is_latest, inputs: [.inputs[] | {id, type: .content_schema.type}], outputs: [.outputs[] | {id, type: .content_schema.type}]}'
+   ```
+
+   Or ask the user to open the template's **API** tab in the app, which shows the same ports and ready-made snippets.
+3. **Build one input per port** from the [Inputs](#inputs) table, keyed by the port `id` exactly as spelled. Media ports take an `asset`, `generation` or `inline_base64` reference; in an app, upload the file first ([App integration](app-integration.md)).
+4. **Run it**, pinning `version_id` to `version.version_id`: wait for scripts, webhook for production (below).
+
+If the get call fails, or `versions` is empty, see [Access and errors](access-errors.md).
+
+- `versions` lists only versions the API can run, newest first. A version built on a model the API doesn't offer to this caller is left out, so `versions` can be empty.
+- If `versions[0].is_latest` is `false`, the newest published version is blocked: running with `latest` (or no `version_id`) is rejected with `model_access_denied`. Pin `versions[0].version_id`.
+- `flows.templates.list(search=...)` lists published templates in the caller's workspace only.
+
+### Templates with a custom page
+
+Some templates open in the app as a custom page instead of the standard form. The page is the app's own UI; whether the public API can run the template is decided like any other template: call `flows.templates.get` with its id. If `versions` is non-empty, run it with the steps above. If it is empty, the template uses a model the API doesn't offer: tell the user it can only be run in the app, or build the equivalent chain from [Generations](generations.md) with API models.
+
+## When the user pasted Copy for LLM
+
+The template's **API** tab has a **Copy for LLM** button. Its prompt starts with `Help me run the ElevenLabs template "<name>"` and contains the template id, version id, every input id with its type, every output id, the endpoints, and wait/webhook/handler snippets for both SDKs.
+
+- Use its template id, version id and port ids as given. Don't call `templates.get` to re-derive them, and don't rename ports.
+- Don't repeat its snippets back. Adapt them into the user's project (framework, file layout, where the input comes from, where the result goes).
+- Its snippets use `YOUR_ASSET_ID` for media inputs and print `content_url`. Fill those gaps from this skill: [uploading files](generations.md#reference-media), [storing and re-hosting results](app-integration.md), [webhook servers](webhooks.md), [errors](access-errors.md).
+- If it says some inputs "can't be set yet", that version can't run through the API; say so instead of writing code around it.
 
 ## Wait for the result (scripts)
 
@@ -330,10 +360,9 @@ A failed output has `failure_reason` (`timeout`, `model_error`, `moderated`, `in
 
 Pass the `version_id` you tested against. `latest` (or omitting it) switches to whatever the author publishes next, which can rename or add inputs and break your code. To upgrade, read the new version's ports with `flows.templates.get`, update your inputs, then change `version_id`.
 
-## Error Handling
+## Errors
 
-- **401 / 403**: Invalid API key, or the key lacks the Image & Video permission
-- **402 `paid_plan_required`**: The workspace is below Pro
-- **422**: Missing/unknown input id, or a value of the wrong shape for its port
-- **429** on status checks: Too many reads for this API key — wait `Retry-After` seconds; prefer webhooks
-- **Template not found / not runnable**: It isn't shared with your workspace (`Just me` templates only run for their author), or no published version can run through the API (`versions` is empty)
+- **400 `invalid_parameters`**: a missing or unknown input id (the message lists them), a value of the wrong shape for its port, or no published version to run.
+- **422**: the body doesn't match the schema at all (e.g. a reference without `type`).
+- **429** on status checks: too many reads for this key; wait `Retry-After` seconds; prefer webhooks.
+- **401, 402, 403, 404, `model_access_denied`**: see [Access and errors](access-errors.md).
