@@ -3,7 +3,8 @@ from __future__ import annotations
 """Run trigger and functional evaluations across all ElevenLabs skills.
 
 Functional evals run cursor-agent with workspace = each eval's scratch folder only; skill
-SKILL.md files and the rest of the repo are not writable by the nested agent.
+SKILL.md files and the rest of the repo are not writable by the nested agent. Each scratch
+folder holds a copy of the skill directory under ./skill/, so its references/ are readable.
 
 Trigger evals run cursor-agent in an isolated temporary workspace directory (outside the repo),
 with the skill staged under that workspace's Cursor project skills directory so nothing is
@@ -73,6 +74,8 @@ _ensure_cursor_agent_available()
 # eval is isolated from the user's global skills and from other parallel runs.
 CURSOR_PROJECT_SKILLS_DIR = Path(".cursor") / "skills"
 EVAL_INSTALL_SUFFIX = "-eval-"
+# Functional evals copy the skill directory here, inside each eval's workspace.
+SKILL_COPY_DIRNAME = "skill"
 
 
 def _rewrite_skill_frontmatter_name(content: str, new_name: str) -> str:
@@ -417,16 +420,25 @@ def run_functional_eval_for_skill(
         eval_dir = skill_output_dir / f"eval-{eval_id}"
         eval_dir.mkdir(parents=True, exist_ok=True)
 
+        # A copy of the whole skill directory, so links from SKILL.md to references/
+        # resolve inside the workspace. A copy, not the repo path: the workspace is
+        # the only place the nested agent may touch, and it must not "fix" skills.
+        skill_copy_dir = eval_dir / SKILL_COPY_DIRNAME
+        shutil.rmtree(skill_copy_dir, ignore_errors=True)
+        shutil.copytree(skill_path, skill_copy_dir)
+
         # Build prompt that includes skill content. Workspace is only eval_dir so the nested
         # agent cannot edit skill packages or other repo files (eval runs must not "fix" skills).
         full_prompt = (
             f"You have access to the following skill for reference. "
             f"Use its guidance to complete the task.\n\n"
             f"<skill>\n{skill_md}\n</skill>\n\n"
+            f"The full skill directory is at ./{SKILL_COPY_DIRNAME}/; paths the skill links to "
+            f"(such as references/...) are relative to it. Read them when the skill says to.\n\n"
             f"Task: {prompt}\n\n"
             f"This workspace is an isolated eval scratch directory. "
             f"Put all new files under ./outputs/ (create it if needed). "
-            f"Do not edit, create, or delete anything outside this directory.\n"
+            f"Do not edit, create, or delete anything outside ./outputs/.\n"
         )
 
         # Run cursor-agent -p with text output for readable response (--force: non-interactive edits).
