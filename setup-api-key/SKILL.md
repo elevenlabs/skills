@@ -48,8 +48,9 @@ signs the user in for a new one. What each `next` means:
 - Never ask for an API key in chat, and never accept one pasted there. If one
   appears, tell the user to rotate it on the API keys page.
 - Never put the key in code; the SDK reads `ELEVENLABS_API_KEY`.
-- Don't run the app or make your own API calls to try the key unless the
-  user says yes. Once the code is written, run `onboard check` before you
+- Don't run the app (or its start script) or make speech to try it until the
+  user says yes. API calls that what they asked for needs, like creating an
+  agent, are fine. Once the code is written, run `onboard check` before you
   finish: it verifies the key and the code.
 - For browser or client-side apps, keep the key on the server and issue
   short-lived tokens where the product supports them.

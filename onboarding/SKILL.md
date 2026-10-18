@@ -29,15 +29,19 @@ What each `next` means:
 
 - `run`: run `run`.
 - `wait`: the approval page is open. Show `say` (it has the link), then run
-  `run` again right away, without ending your turn.
+  `run` again right away, without ending your turn. Whenever you give the
+  user the link, copy it whole, exactly as printed: a shortened link doesn't
+  work.
 - `ask_what_to_build`: tell the user `say`, which asks what they want to
   build or whether to just add the SDK, and wait for their answer before
   writing any code. Ask it even if they said earlier, and don't pick a product
   for them. Once they answer, run `run`.
 - `write_code`: write what they asked for, as `instruction` says: the SDK
   alone, or the integration, with the skill that fits from
-  `details.fetch_skills` when there is one. Load the key the way
-  `details.load_key` says, then run `run`.
+  `details.fetch_skills` when there is one. If it needs something made in
+  ElevenLabs first, like an agent, make it yourself with the key (load the
+  env file in the command, never print it), not a script for the user to run.
+  Load the key the way `details.load_key` says, then run `run`.
 - `load_key`: the code already uses the SDK, so there is nothing to build.
   Make sure the app loads the key the way `details.load_key` says, change
   nothing else, then run `run`.
@@ -45,9 +49,11 @@ What each `next` means:
   shell, settings or secrets, ask them instead, as for `ask_user`.
 - `ask_user`: ask the user what `say` says and wait for their answer, then
   run `run`, unless they said no.
-- `offer_test`: end your reply with the question in `say`. Run `run` only if
-  they say yes.
-- `done`: tell the user `say`.
+- `offer_test`: say what you set up and anything the user still has to do
+  themselves, like installing the packages you added. Then end your reply
+  with the question in `say`. Run `run` only if they say yes.
+- `done`: tell the user `say`, then anything they still have to do
+  themselves, in one or two concrete steps.
 
 ## Rules
 
@@ -60,9 +66,10 @@ What each `next` means:
   `load_key`.
 - Put anything you download only to read, like a package or an archive, in a
   temp folder, never in the project.
-- Don't run the app or make your own API calls to try the key unless the
-  user says yes. Once the code is written, run `onboard check` before you
-  finish: it verifies the key and the code.
+- Don't run the app (or its start script) or make speech to try it until the
+  user says yes to the test request. API calls that what they asked for
+  needs, like creating an agent, are fine. Once the code is written, run
+  `onboard check` before you finish: it verifies the key and the code.
 
 ## No npx
 

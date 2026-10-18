@@ -48,7 +48,7 @@ RULES = ["Never open, print or cat the env file; run `onboard check` to verify i
          "Never run git clean or delete untracked files.",
          "Don't write or change any code until a reply's `next` is `write_code` or `load_key`.",
          "Put anything you download only to read, like a package or an archive, in a temp folder, never in the project.",
-         "Don't run the app or make your own API calls to try the key unless the user says yes. Once the code is written, run `onboard check` before you finish: it verifies the key and the code."]
+         "Don't run the app (or its start script) or make speech to try it until the user says yes to the test request. API calls that what they asked for needs, like creating an agent, are fine. Once the code is written, run `onboard check` before you finish: it verifies the key and the code."]
 FAKE_KEY = "sk_" + "0" * 40 + "4f2a"
 SKIPPED_DIRS = {"node_modules", "venv", "__pycache__", "dist", "build", "target", "vendor", "third_party"}
 SAMPLE_DIRS = {"examples", "example"}  # beside the app, at its top level only
