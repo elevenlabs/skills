@@ -12,7 +12,7 @@ Dub audio or video into other languages while preserving the original speakers' 
 
 > **Important:** Use the Dubbing Projects API — `elevenlabs.dubbing.project.*` in the SDKs, or the `/v1/dubbing/project` REST endpoints. Do **not** use the legacy v1 dubbing surface (`client.dubbing.create()`, `client.dubbing.get()`, `client.dubbing.audio.get()`, or bare `/v1/dubbing` routes) — that is the older dubbing API, now under Legacy in the API reference.
 
-> **Setup:** See [Installation Guide](references/installation.md). The `elevenlabs` CLI and the SDKs read `ELEVENLABS_API_KEY` automatically; REST base URL is `https://api.elevenlabs.io` with your API key in the `xi-api-key` header.
+> **Setup, before writing any code:** if `ELEVENLABS_API_KEY` isn't set for this project, run `npx -y @elevenlabs/cli@latest onboard init` from the app's folder first and follow what it prints: it signs the user in and stores a key for the project, so nobody copies one by hand. Otherwise see the [Installation Guide](references/installation.md). The `elevenlabs` CLI and the SDKs read `ELEVENLABS_API_KEY` automatically; REST base URL is `https://api.elevenlabs.io` with your API key in the `xi-api-key` header.
 
 ## Concepts
 

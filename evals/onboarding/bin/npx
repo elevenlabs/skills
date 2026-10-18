@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Stand-in for npx in the eval sandbox: `npx [-y] @elevenlabs/cli[@version] ...`
+# runs the ElevenLabs CLI stand-in, as npx would; any other package goes to the
+# real npx, so the agent's own tools keep working.
+OUTPUTS="${EVAL_DIR:-$PWD}/outputs"
+here="$(cd "$(dirname "$0")" && pwd)"
+args=("$@"); i=0
+while [ $i -lt ${#args[@]} ] && [[ "${args[$i]}" == -* ]]; do i=$((i+1)); done
+case "${args[$i]}" in
+  @elevenlabs/cli|@elevenlabs/cli@*)
+    # Help is not a step: not logged.
+    case " $* " in *" -h "*|*" --help "*|*" onboard help "*) ;; *)
+      mkdir -p "$OUTPUTS"; printf '%s\n' "npx $*" >> "$OUTPUTS/elevenlabs-calls.txt" ;;
+    esac
+    npm_command=exec exec "$here/elevenlabs" "${args[@]:$((i+1))}" ;;
+esac
+IFS=: read -ra dirs <<< "$PATH"
+for d in "${dirs[@]}"; do
+  [ "$d" = "$here" ] && continue
+  [ -x "$d/npx" ] && exec "$d/npx" "$@"
+done
+echo "npx: not found" >&2
+exit 127
