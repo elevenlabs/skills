@@ -9,7 +9,7 @@ license: MIT
 Realtime models are ElevenLabs models built for low-latency voice conversation. There are two ways to use them:
 
 - **An ElevenAgents agent** (an agent ID, the dashboard, or an `elevenlabs agents` project with `agent_configs/`): set the agent's Voice mode to Realtime with `conversation_config.realtime_model`, and ElevenLabs manages its LLM, TTS model, and ASR settings. See [Run an agent on a Realtime model](#run-an-agent-on-a-realtime-model).
-- **An app built on OpenAI's Realtime SDK**: keep the SDK and point it at the OpenAI-compatible ElevenLabs Realtime API, `wss://api.elevenlabs.io/v1/convai/realtime`. See [Migrate an app from OpenAI Realtime](#migrate-an-app-from-openai-realtime).
+- **A browser app built on OpenAI's Realtime SDK**: keep the SDK and point it at the OpenAI-compatible ElevenLabs Realtime API, `wss://api.elevenlabs.io/v1/convai/realtime`. See [Migrate an app from OpenAI Realtime](#migrate-an-app-from-openai-realtime).
 
 When the user is starting from scratch and it's unclear which they want, ask. An agent brings a managed system prompt, tools, knowledge base, widget, and telephony; the Realtime API is the quicker path for code that already speaks OpenAI's realtime events. For agent features beyond the voice mode (prompt, tools, workflows, widget), use the `agents` skill.
 
@@ -161,6 +161,8 @@ ElevenLabs Realtime speaks the same wire protocol as OpenAI's GA Realtime API: t
 
 The one structural change: ElevenLabs Realtime is WebSocket-only. In a browser, `RealtimeSession` defaults to WebRTC, which wires the microphone and speaker for you. After switching to the WebSocket transport, the app has to capture and play audio itself.
 
+This covers apps where the browser opens the realtime connection. It doesn't cover apps where a server opens the connection and streams audio to its clients over its own protocol, such as a bespoke WebSocket relay or a telephony bridge. Connecting to ElevenLabs Realtime from a server should work, but this skill has no steps for it. Tell the user so, and suggest they open an issue or a pull request at https://github.com/elevenlabs/skills describing their setup, rather than guessing at the server-side migration.
+
 ### Step 0: Inventory the app
 
 Find every place the app touches OpenAI Realtime before editing anything:
@@ -173,7 +175,7 @@ Classify what you find, because each part migrates differently:
 
 - **Credential minting**: a server route that calls `/v1/realtime/client_secrets` (GA) or `/v1/realtime/sessions` (beta). Migrate in Step 1.
 - **Browser session**: `RealtimeSession`, `OpenAIRealtimeWebRTC`, `OpenAIRealtimeWebSocket`, or a hand-rolled `WebSocket`/`RTCPeerConnection`. Migrate in Steps 2 to 4.
-- **Server-side realtime connections**: a Node or Python process that opens the realtime socket itself, for example a telephony bridge, `openai` Python's `client.realtime.connect()`, or a `RealtimeSession` running in Node with a full API key. ElevenLabs hasn't documented this path yet. Stop and tell the user rather than guessing at it.
+- **Server-side realtime connections**: a Node or Python process that opens the realtime socket itself, for example a relay that streams audio to clients over its own WebSocket protocol, a telephony bridge, `openai` Python's `client.realtime.connect()`, or a `RealtimeSession` running in Node with a full API key. Not covered; see the scope above. If the app also has a browser session, migrate only that part, and only with the user's agreement.
 - **Features beyond a voice conversation**: function tools, handoffs, guardrails, MCP servers, image input, SIP. ElevenLabs documents the voice conversation flow only. Leave this code in place, list it for the user as unverified against ElevenLabs, and have them test it.
 
 `OPENAI_API_KEY` often serves other OpenAI calls too. Remove it only if nothing else uses it.

@@ -83,6 +83,18 @@
         "Does not choose an LLM or TTS model for the agent",
         "Reads the API key from ELEVENLABS_API_KEY instead of hardcoding it"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "Move our voice backend from OpenAI Realtime to ElevenLabs Realtime. A Node server opens the realtime connection with `new OpenAIRealtimeWebSocket()` and our OPENAI_API_KEY, then relays PCM audio to and from our mobile app over our own WebSocket protocol (`{ type: \"audio\", chunk }` messages). The mobile app never talks to OpenAI directly.",
+      "expected_output": "Explanation that server-side relays aren't covered, with a pointer to the skills repo",
+      "files": [],
+      "expectations": [
+        "Tells the user the skill doesn't cover apps where a server opens the realtime connection and relays audio over its own protocol",
+        "Suggests opening an issue or pull request at https://github.com/elevenlabs/skills",
+        "Does not invent undocumented server-side authentication for the ElevenLabs Realtime API",
+        "Does not rewrite the mobile app's relay protocol"
+      ]
     }
   ]
 }
