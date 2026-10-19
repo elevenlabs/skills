@@ -49,70 +49,78 @@ The browser never sees the ElevenLabs API key. A server route mints a short-live
 
 The request body keeps the GA shape, `{ session, expires_after }`. The session config sent here is the authoritative initial session for that credential. The `model` string selects the agent behavior directly; there is no `agent_id`.
 
+Mint with the ElevenLabs SDK (`npm install @elevenlabs/elevenlabs-js` or `pip install elevenlabs`), which sends the `xi-api-key` header for you:
+
 ```typescript
-const response = await fetch(
-  "https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
-  {
-    method: "POST",
-    headers: {
-      "xi-api-key": process.env.ELEVENLABS_API_KEY!,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      session: {
-        type: "realtime",
-        model: "eleven_realtime_v1_mini",
-        instructions:
-          "You are a helpful, friendly voice assistant. Keep replies concise.",
-        output_modalities: ["audio"],
-        audio: {
-          input: {
-            format: { type: "audio/pcm", rate: 24000 },
-            turn_detection: { type: "semantic_vad", eagerness: "medium" },
-          },
-          output: {
-            format: { type: "audio/pcm" },
-            voice: "brian",
-          },
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+
+const elevenlabs = new ElevenLabsClient();
+
+const clientSecret =
+  await elevenlabs.conversationalAi.realtime.createClientSecret({
+    session: {
+      type: "realtime",
+      model: "eleven_realtime_v1_mini",
+      instructions:
+        "You are a helpful, friendly voice assistant. Keep replies concise.",
+      outputModalities: ["audio"],
+      audio: {
+        input: {
+          format: { type: "audio/pcm", rate: 24000 },
+          turnDetection: { type: "semantic_vad", eagerness: "medium" },
+        },
+        output: {
+          format: { type: "audio/pcm" },
+          voice: "brian",
         },
       },
-      expires_after: { anchor: "created_at", seconds: 600 },
-    }),
-  },
-);
-if (!response.ok)
-  throw new Error(`Mint failed: ${response.status} ${await response.text()}`);
-const { value } = await response.json();
+    },
+    expiresAfter: { anchor: "created_at", seconds: 600 },
+  });
 ```
 
 ```python
 import os
 
-import requests
-
-response = requests.post(
-    "https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
-    headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"]},
-    json={
-        "session": {
-            "type": "realtime",
-            "model": "eleven_realtime_v1_mini",
-            "instructions": "You are a helpful, friendly voice assistant. Keep replies concise.",
-            "output_modalities": ["audio"],
-            "audio": {
-                "input": {
-                    "format": {"type": "audio/pcm", "rate": 24000},
-                    "turn_detection": {"type": "semantic_vad", "eagerness": "medium"},
-                },
-                "output": {"format": {"type": "audio/pcm"}, "voice": "brian"},
-            },
-        },
-        "expires_after": {"anchor": "created_at", "seconds": 600},
-    },
+from elevenlabs import (
+    CreateClientSecretRequest,
+    ExpiresAfter,
+    OpenAiAudioConfigInput,
+    OpenAiAudioInputConfigInput,
+    OpenAiAudioInputFormat,
+    OpenAiAudioOutputConfigInput,
+    OpenAiAudioOutputFormat,
+    OpenAiSessionConfigInput,
+    OpenAiTurnDetection,
 )
-response.raise_for_status()
-value = response.json()["value"]
+from elevenlabs.client import ElevenLabs
+
+elevenlabs = ElevenLabs(api_key=os.environ["ELEVENLABS_API_KEY"])
+
+client_secret = elevenlabs.conversational_ai.realtime.create_client_secret(
+    request=CreateClientSecretRequest(
+        session=OpenAiSessionConfigInput(
+            type="realtime",
+            model="eleven_realtime_v1_mini",
+            instructions="You are a helpful, friendly voice assistant. Keep replies concise.",
+            output_modalities=["audio"],
+            audio=OpenAiAudioConfigInput(
+                input=OpenAiAudioInputConfigInput(
+                    format=OpenAiAudioInputFormat(type="audio/pcm", rate=24000),
+                    turn_detection=OpenAiTurnDetection(type="semantic_vad", eagerness="medium"),
+                ),
+                output=OpenAiAudioOutputConfigInput(
+                    format=OpenAiAudioOutputFormat(type="audio/pcm"),
+                    voice="brian",
+                ),
+            ),
+        ),
+        expires_after=ExpiresAfter(anchor="created_at", seconds=600),
+    ),
+)
 ```
+
+Return only `clientSecret.value` (`client_secret.value` in Python) to the browser.
 
 Keep the route's existing framework, path, and response contract; only the upstream call changes. If the app minted with the beta `/v1/realtime/sessions` endpoint, its frontend reads `client_secret.value`. Either update the frontend to read the top-level `value`, or have the route return `{ client_secret: { value } }` so the frontend stays untouched.
 
@@ -133,7 +141,9 @@ import {
   RealtimeSession,
 } from "@openai/agents-realtime";
 
-const { value } = await fetch("/api/token").then((res) => res.json());
+const { value: clientSecret } = await fetch("/api/token").then((res) =>
+  res.json(),
+);
 
 const agent = new RealtimeAgent({
   name: "Assistant",
@@ -143,7 +153,6 @@ const agent = new RealtimeAgent({
 
 const transport = new OpenAIRealtimeWebSocket({
   url: "wss://api.elevenlabs.io/v1/convai/realtime",
-  useInsecureApiKey: true,
 });
 
 const session = new RealtimeSession(agent, {
@@ -155,10 +164,8 @@ const session = new RealtimeSession(agent, {
   },
 });
 
-await session.connect({ apiKey: value });
+await session.connect({ apiKey: clientSecret });
 ```
-
-`useInsecureApiKey: true` is required. The SDK only treats `ek_`-prefixed keys as browser-safe and refuses others in a browser. The ElevenLabs client secret has a different prefix but is still a short-lived credential scoped to the minted session, not the ElevenLabs API key. Never pass `ELEVENLABS_API_KEY` itself to the browser to make this work.
 
 Keep the app's existing `RealtimeAgent` name, instructions, and event handlers. Drop WebRTC-only options (`audioElement`, `mediaStream`, `changePeerConnection`) and any `transport: "webrtc"` setting; they have no WebSocket equivalent.
 
@@ -198,7 +205,6 @@ Apps already on `OpenAIRealtimeWebSocket` have this wiring; check the sample rat
 | WebSocket closes with code `4001`                   | Client secret rejected: expired, or not the minted `value` passed as `apiKey` to `session.connect()`. |
 | Mint returns 401                                    | Still sending `Authorization: Bearer`; ElevenLabs uses the `xi-api-key` header.                       |
 | Mint or `session.update` is rejected                | Beta-shaped fields such as `modalities`. Convert with the [mapping](references/session-config.md).    |
-| SDK throws about using an API key in the browser    | `useInsecureApiKey: true` missing on `OpenAIRealtimeWebSocket`.                                       |
 | Connects, but no audio either way                   | The app was on WebRTC and audio isn't wired yet. See Step 4.                                          |
 | Audio is noise, chipmunk-fast, or slowed down       | Sample-rate or buffer mismatch. Capture and play at 24 kHz; see the pitfalls in the audio reference.  |
 | Assistant talks over the user after an interruption | Playback isn't stopped on `audio_interrupted`.                                                        |

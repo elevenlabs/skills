@@ -26,7 +26,7 @@ export async function startVoiceSession() {
   const tokenResponse = await fetch("/api/token");
   if (!tokenResponse.ok)
     throw new Error(`Token request failed (${tokenResponse.status})`);
-  const { value } = await tokenResponse.json();
+  const { value: clientSecret } = await tokenResponse.json();
 
   const recorder = new WavRecorder({ sampleRate: SAMPLE_RATE });
   const player = new WavStreamPlayer({ sampleRate: SAMPLE_RATE });
@@ -42,7 +42,6 @@ export async function startVoiceSession() {
     {
       transport: new OpenAIRealtimeWebSocket({
         url: "wss://api.elevenlabs.io/v1/convai/realtime",
-        useInsecureApiKey: true,
       }),
       model: "eleven_realtime_v1_mini",
       config: {
@@ -63,7 +62,7 @@ export async function startVoiceSession() {
   });
 
   try {
-    await session.connect({ apiKey: value });
+    await session.connect({ apiKey: clientSecret });
     await recorder.record((data) => {
       session.sendAudio(data.mono as unknown as ArrayBuffer);
     });
@@ -94,9 +93,9 @@ Microphone audio streams continuously; server-side VAD decides when the user's t
 
 ## Replacing WebRTC-specific code
 
-| WebRTC-era code                                                    | WebSocket replacement                                                                              |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `new OpenAIRealtimeWebRTC({ audioElement, mediaStream })`          | `new OpenAIRealtimeWebSocket({ url, useInsecureApiKey: true })` plus the recorder and player above |
-| `<audio autoplay>` element fed by the peer connection              | `WavStreamPlayer`; remove the element                                                              |
-| `getUserMedia` stream passed as `mediaStream`                      | `WavRecorder.begin()` (pass a `deviceId` to pick an input)                                         |
-| Peer-connection event handlers (`changePeerConnection`, ICE state) | Remove; watch `session.on("error")` and transport events instead                                   |
+| WebRTC-era code                                                    | WebSocket replacement                                                     |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `new OpenAIRealtimeWebRTC({ audioElement, mediaStream })`          | `new OpenAIRealtimeWebSocket({ url })` plus the recorder and player above |
+| `<audio autoplay>` element fed by the peer connection              | `WavStreamPlayer`; remove the element                                     |
+| `getUserMedia` stream passed as `mediaStream`                      | `WavRecorder.begin()` (pass a `deviceId` to pick an input)                |
+| Peer-connection event handlers (`changePeerConnection`, ICE state) | Remove; watch `session.on("error")` and transport events instead          |

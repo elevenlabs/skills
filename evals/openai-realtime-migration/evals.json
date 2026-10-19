@@ -7,8 +7,8 @@
       "expected_output": "Express route minting an ElevenLabs realtime client secret",
       "files": [],
       "expectations": [
-        "POSTs to https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
-        "Authenticates with the xi-api-key header using ELEVENLABS_API_KEY, not an Authorization Bearer header",
+        "Mints with the ElevenLabs SDK's conversationalAi.realtime.createClientSecret, or POSTs to https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
+        "Authenticates with ELEVENLABS_API_KEY (via the SDK or the xi-api-key header), not an Authorization Bearer header",
         "Sets session.model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
         "Replaces the OpenAI voice marin with an ElevenLabs voice such as brian",
         "Keeps session.type set to realtime and the instructions unchanged",
@@ -23,7 +23,7 @@
       "files": [],
       "expectations": [
         "Uses OpenAIRealtimeWebSocket with url wss://api.elevenlabs.io/v1/convai/realtime",
-        "Sets useInsecureApiKey: true on the WebSocket transport",
+        "Does not set useInsecureApiKey on the WebSocket transport",
         "Sets the RealtimeSession model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
         "Captures microphone audio as 24 kHz PCM16 and sends it with session.sendAudio",
         "Plays audio from the session's audio event",
