@@ -1,0 +1,100 @@
+{
+  "skill_name": "realtime",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this Express route to mint the realtime credential from ElevenLabs instead of OpenAI. Keep the route path and response shape the frontend expects.\n\n```typescript\napp.get(\"/api/token\", async (_req, res) => {\n  const r = await fetch(\"https://api.openai.com/v1/realtime/client_secrets\", {\n    method: \"POST\",\n    headers: {\n      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,\n      \"Content-Type\": \"application/json\",\n    },\n    body: JSON.stringify({\n      session: {\n        type: \"realtime\",\n        model: \"gpt-realtime\",\n        instructions: \"You are a cheerful concierge.\",\n        audio: { output: { voice: \"marin\" } },\n      },\n    }),\n  });\n  const data = await r.json();\n  res.json({ value: data.value });\n});\n```",
+      "expected_output": "Express route minting an ElevenLabs realtime client secret",
+      "files": [],
+      "expectations": [
+        "Mints with the ElevenLabs SDK's conversationalAi.realtime.createClientSecret, or POSTs to https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
+        "Authenticates with ELEVENLABS_API_KEY (via the SDK or the xi-api-key header), not an Authorization Bearer header",
+        "Sets session.model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
+        "Replaces the OpenAI voice marin with an ElevenLabs voice such as brian",
+        "Keeps session.type set to realtime and the instructions unchanged",
+        "Keeps the /api/token path and returns only { value } to the browser",
+        "Does not send ELEVENLABS_API_KEY or the full mint response to the browser"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This React component talks to OpenAI Realtime over WebRTC. Port it to ElevenLabs Realtime, still using @openai/agents-realtime. The token comes from GET /api/token which now returns { value } minted by ElevenLabs.\n\n```tsx\nimport { RealtimeAgent, RealtimeSession } from \"@openai/agents-realtime\";\n\nexport function Talk() {\n  async function start() {\n    const { value } = await fetch(\"/api/token\").then((r) => r.json());\n    const agent = new RealtimeAgent({ name: \"Concierge\", instructions: \"You are a cheerful concierge.\" });\n    const session = new RealtimeSession(agent, { model: \"gpt-realtime\" });\n    await session.connect({ apiKey: value });\n  }\n  return <button onClick={start}>Talk</button>;\n}\n```",
+      "expected_output": "React component using OpenAIRealtimeWebSocket against ElevenLabs with app-managed audio",
+      "files": [],
+      "expectations": [
+        "Uses OpenAIRealtimeWebSocket with url wss://api.elevenlabs.io/v1/convai/realtime",
+        "Does not set useInsecureApiKey on the WebSocket transport",
+        "Sets the RealtimeSession model to eleven_realtime_v1_mini or eleven_realtime_v1_max",
+        "Captures microphone audio as 24 kHz PCM16 and sends it with session.sendAudio",
+        "Plays audio from the session's audio event",
+        "Stops or clears playback on the audio_interrupted event",
+        "Releases the microphone and closes the session on stop or unmount",
+        "Keeps starting the session from the button click handler"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our backend still uses the old OpenAI beta endpoint POST https://api.openai.com/v1/realtime/sessions with this body, and the frontend reads data.client_secret.value. Convert it for ElevenLabs Realtime.\n\n```json\n{\n  \"model\": \"gpt-4o-realtime-preview\",\n  \"modalities\": [\"audio\", \"text\"],\n  \"voice\": \"alloy\",\n  \"instructions\": \"You are a helpful assistant.\",\n  \"input_audio_format\": \"pcm16\",\n  \"output_audio_format\": \"pcm16\",\n  \"turn_detection\": { \"type\": \"server_vad\" }\n}\n```",
+      "expected_output": "GA-shaped ElevenLabs client_secrets request and a note on the response shape change",
+      "files": [],
+      "expectations": [
+        "Targets POST https://api.elevenlabs.io/v1/convai/realtime/client_secrets",
+        "Wraps the config in a session object with type: realtime",
+        "Uses output_modalities and does not send the deprecated modalities field",
+        "Moves voice to audio.output.voice and replaces alloy with an ElevenLabs voice",
+        "Moves the audio formats to audio.input.format / audio.output.format using audio/pcm at 24000 Hz",
+        "Moves turn_detection under audio.input",
+        "Explains that the credential is now at the top-level value instead of client_secret.value, and handles the frontend accordingly"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our support agent follows a long multi-step refund procedure with several tool calls. Move it to the best-suited ElevenLabs Realtime model. We manage it with the ElevenLabs CLI; its agent ID is agent_7101k5zvyjhmfg983brhmhkd98n6 and this is agent_configs/support.json:\n\n```json\n{\n  \"name\": \"Support\",\n  \"conversation_config\": {\n    \"agent\": {\n      \"first_message\": \"Hi, this is Acme support. How can I help?\",\n      \"prompt\": {\n        \"prompt\": \"You are Acme's support agent. Follow the refund procedure step by step.\",\n        \"llm\": \"gemini-2.5-flash\",\n        \"temperature\": 0.4,\n        \"max_tokens\": 500\n      }\n    },\n    \"tts\": {\n      \"model_id\": \"eleven_flash_v2_5\",\n      \"voice_id\": \"JBFqnCBsd6RMkjVDRZzb\"\n    }\n  }\n}\n```",
+      "expected_output": "Agent config switched to eleven_realtime_v1_max with a compatible token limit, pushed with the CLI",
+      "files": [],
+      "expectations": [
+        "Sets conversation_config.realtime_model to eleven_realtime_v1_max",
+        "Raises agent.prompt.max_tokens to at least 1024 or -1, or tells the user Max requires it",
+        "Keeps the stored llm and tts.model_id instead of deleting them",
+        "Pushes the change with elevenlabs agents push",
+        "Does not migrate anything to the Realtime API, client_secrets, or @openai/agents-realtime"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Switch agent agent_9f2k3m to eleven_realtime_v1_mini with the Python SDK. This is its current config:\n\n```json\n{\n  \"name\": \"Intake\",\n  \"conversation_config\": {\n    \"agent\": {\n      \"prompt\": {\n        \"prompt\": \"You collect patient intake details.\",\n        \"llm\": \"custom-llm\",\n        \"custom_llm\": {\n          \"url\": \"https://llm.example.com/v1\"\n        }\n      }\n    },\n    \"tts\": {\n      \"voice_id\": \"EXAVITQu4vr4xnSDxMaL\"\n    }\n  }\n}\n```",
+      "expected_output": "Explanation that the custom LLM blocks Realtime mode, with the path forward",
+      "files": [],
+      "expectations": [
+        "Identifies that the agent's custom-llm prevents it from using a Realtime model",
+        "Does not present setting realtime_model alone as a working fix",
+        "Explains the agent must move to a built-in LLM in Custom mode before switching, or stay in Custom mode",
+        "Uses conversation_config realtime_model with conversational_ai.agents.update if it shows the eventual SDK call"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Create a new ElevenLabs agent for our US clinic's intake phone line on a Realtime model, using the TypeScript SDK. The workspace has HIPAA enabled.",
+      "expected_output": "agents.create call with realtimeModel eleven_realtime_v1_max",
+      "files": [],
+      "expectations": [
+        "Uses eleven_realtime_v1_max because Mini isn't available under HIPAA",
+        "Sets realtimeModel inside conversationConfig of conversationalAi.agents.create",
+        "Does not choose an LLM or TTS model for the agent",
+        "Reads the API key from ELEVENLABS_API_KEY instead of hardcoding it"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Move our voice backend from OpenAI Realtime to ElevenLabs Realtime. A Node server opens the realtime connection with `new OpenAIRealtimeWebSocket()` and our OPENAI_API_KEY, then relays PCM audio to and from our mobile app over our own WebSocket protocol (`{ type: \"audio\", chunk }` messages). The mobile app never talks to OpenAI directly.",
+      "expected_output": "Explanation that server-side relays aren't covered, with a pointer to the skills repo",
+      "files": [],
+      "expectations": [
+        "Tells the user the skill doesn't cover apps where a server opens the realtime connection and relays audio over its own protocol",
+        "Suggests opening an issue or pull request at https://github.com/elevenlabs/skills",
+        "Does not invent undocumented server-side authentication for the ElevenLabs Realtime API",
+        "Does not rewrite the mobile app's relay protocol"
+      ]
+    }
+  ]
+}

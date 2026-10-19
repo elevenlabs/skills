@@ -55,6 +55,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `sound-effects` | New generation parameters, model changes, SDK method changes |
 | `music` | New endpoints, new parameters, model changes |
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |
+| `realtime` | Realtime model IDs, `realtime_model` agent config, managed settings, Realtime availability by region or compliance mode, Realtime API (`/v1/convai/realtime`) or `client_secrets` changes, SDK method changes for `conversational_ai.realtime` or `conversationalAi.realtime` |
 | `speech-engine` | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations |
 | `voice-changer` | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()` |
 | `setup-api-key` | Authentication flow changes, API key dashboard changes, environment variable guidance |
@@ -83,6 +84,7 @@ Skill directories:
 - `sound-effects/` (`SKILL.md` plus `references/installation.md`)
 - `music/` (`SKILL.md` plus `references/installation.md`, `references/api_reference.md`)
 - `voice-isolator/` (`SKILL.md` plus `references/installation.md`)
+- `realtime/` (`SKILL.md` plus `references/session-config.md`, `references/browser-audio.md`)
 - `speech-engine/` (`SKILL.md` plus `references/installation.md`, `references/javascript-sdk-reference.md`, `references/python-sdk-reference.md`)
 - `voice-changer/` (`SKILL.md` plus `references/installation.md`)
 - `setup-api-key/` (`SKILL.md` only)
