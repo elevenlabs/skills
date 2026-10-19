@@ -14,5 +14,10 @@
   {"query": "upgrade my OpenAI Realtime app from the beta API to the GA API, staying on OpenAI", "should_trigger": false},
   {"query": "my @elevenlabs/react useConversation session disconnects after 10 seconds, how do I debug it?", "should_trigger": false},
   {"query": "use OpenAI's Responses API as the LLM behind my ElevenLabs agent", "should_trigger": false},
-  {"query": "help me set up my ElevenLabs API key in the environment", "should_trigger": false}
+  {"query": "help me set up my ElevenLabs API key in the environment", "should_trigger": false},
+  {"query": "switch my ElevenLabs agent's voice mode to Realtime, should I use mini or max?", "should_trigger": true},
+  {"query": "set realtime_model on agent_configs/support.json and push it with the elevenlabs CLI", "should_trigger": true},
+  {"query": "publishing my agent fails with 'Transfers between default and Realtime model modes are not supported.'", "should_trigger": true},
+  {"query": "create a new ElevenAgents agent that runs on eleven_realtime_v1_max", "should_trigger": true},
+  {"query": "change my ElevenLabs agent's LLM to claude-sonnet-4-6 and its TTS model to eleven_flash_v2_5", "should_trigger": false}
 ]

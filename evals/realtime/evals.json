@@ -1,5 +1,5 @@
 {
-  "skill_name": "openai-realtime-migration",
+  "skill_name": "realtime",
   "evals": [
     {
       "id": 1,
@@ -45,6 +45,43 @@
         "Moves the audio formats to audio.input.format / audio.output.format using audio/pcm at 24000 Hz",
         "Moves turn_detection under audio.input",
         "Explains that the credential is now at the top-level value instead of client_secret.value, and handles the frontend accordingly"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our support agent follows a long multi-step refund procedure with several tool calls. Move it to the best-suited ElevenLabs Realtime model. We manage it with the ElevenLabs CLI; its agent ID is agent_7101k5zvyjhmfg983brhmhkd98n6 and this is agent_configs/support.json:\n\n```json\n{\n  \"name\": \"Support\",\n  \"conversation_config\": {\n    \"agent\": {\n      \"first_message\": \"Hi, this is Acme support. How can I help?\",\n      \"prompt\": {\n        \"prompt\": \"You are Acme's support agent. Follow the refund procedure step by step.\",\n        \"llm\": \"gemini-2.5-flash\",\n        \"temperature\": 0.4,\n        \"max_tokens\": 500\n      }\n    },\n    \"tts\": {\n      \"model_id\": \"eleven_flash_v2_5\",\n      \"voice_id\": \"JBFqnCBsd6RMkjVDRZzb\"\n    }\n  }\n}\n```",
+      "expected_output": "Agent config switched to eleven_realtime_v1_max with a compatible token limit, pushed with the CLI",
+      "files": [],
+      "expectations": [
+        "Sets conversation_config.realtime_model to eleven_realtime_v1_max",
+        "Raises agent.prompt.max_tokens to at least 1024 or -1, or tells the user Max requires it",
+        "Keeps the stored llm and tts.model_id instead of deleting them",
+        "Pushes the change with elevenlabs agents push",
+        "Does not migrate anything to the Realtime API, client_secrets, or @openai/agents-realtime"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Switch agent agent_9f2k3m to eleven_realtime_v1_mini with the Python SDK. This is its current config:\n\n```json\n{\n  \"name\": \"Intake\",\n  \"conversation_config\": {\n    \"agent\": {\n      \"prompt\": {\n        \"prompt\": \"You collect patient intake details.\",\n        \"llm\": \"custom-llm\",\n        \"custom_llm\": {\n          \"url\": \"https://llm.example.com/v1\"\n        }\n      }\n    },\n    \"tts\": {\n      \"voice_id\": \"EXAVITQu4vr4xnSDxMaL\"\n    }\n  }\n}\n```",
+      "expected_output": "Explanation that the custom LLM blocks Realtime mode, with the path forward",
+      "files": [],
+      "expectations": [
+        "Identifies that the agent's custom-llm prevents it from using a Realtime model",
+        "Does not present setting realtime_model alone as a working fix",
+        "Explains the agent must move to a built-in LLM in Custom mode before switching, or stay in Custom mode",
+        "Uses conversation_config realtime_model with conversational_ai.agents.update if it shows the eventual SDK call"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Create a new ElevenLabs agent for our US clinic's intake phone line on a Realtime model, using the TypeScript SDK. The workspace has HIPAA enabled.",
+      "expected_output": "agents.create call with realtimeModel eleven_realtime_v1_max",
+      "files": [],
+      "expectations": [
+        "Uses eleven_realtime_v1_max because Mini isn't available under HIPAA",
+        "Sets realtimeModel inside conversationConfig of conversationalAi.agents.create",
+        "Does not choose an LLM or TTS model for the agent",
+        "Reads the API key from ELEVENLABS_API_KEY instead of hardcoding it"
       ]
     }
   ]
