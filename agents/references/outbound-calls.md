@@ -184,6 +184,23 @@ Detection runs asynchronously. Its verdict arrives through the separate
 `answering_machine_detection` webhook event, which must be enabled in the workspace or agent
 webhook settings.
 
+To act on the verdict during the call, set `twilio_machine_detection.actions` to a list of rules.
+Each rule pairs an `action` (`hang_up`) with the `answered_by` verdicts that trigger it: `human`,
+`fax`, `unknown`, `machine_start`, `machine_end_beep`, `machine_end_silence`, or
+`machine_end_other`. The `machine_end_*` verdicts require `detect_message_end` mode. Verdicts
+without a rule leave the call running.
+
+```json
+{
+  "telephony_call_config": {
+    "twilio_machine_detection": {
+      "mode": "enable",
+      "actions": [{ "action": "hang_up", "answered_by": ["machine_start", "fax"] }]
+    }
+  }
+}
+```
+
 ### Dynamic Variables
 
 Pass custom data to your agent's prompt using `dynamic_variables`. Reference them in your agent's prompt with `{{variable_name}}` syntax.

@@ -104,6 +104,10 @@ The API combines videos in order, accepts an optional natural-language descripti
 steer style with up to 10 tags such as `upbeat` or `cinematic`. This endpoint still defaults to
 `music_v1`; pass `model_id="music_v2_5"` to use the most advanced model.
 
+Three optional flags shape the result: `use_audio_as_reference` takes genre, BPM, instrumentation,
+and mood from the video's own audio, `add_sfx` adds sound effects that match the video, and
+`separate_tracks` returns a ZIP with the music and sound effects as separate files for mixing.
+
 ### Python
 
 ```python
