@@ -201,24 +201,34 @@ A "commit" tells the model to finalize the current segment. You can commit manua
 
 ```python
 import asyncio
-from elevenlabs import ElevenLabs
+from elevenlabs import CommitStrategy, ElevenLabs, RealtimeEvents, RealtimeUrlOptions
 
 client = ElevenLabs()
 
 async def transcribe_realtime():
-    async with client.speech_to_text.realtime.connect(
+    done = asyncio.Event()
+    connection = await client.speech_to_text.realtime.connect(RealtimeUrlOptions(
         model_id="scribe_v2_realtime",
+        url="https://npr-ice.streamguys1.com/live.mp3",
+        commit_strategy=CommitStrategy.VAD,  # URL streams never commit on their own
         include_timestamps=True,
         keyterms=["ElevenLabs", "Scribe"],
         no_verbatim=True,
-    ) as connection:
-        await connection.stream_url("https://example.com/audio.mp3")
+    ))
 
-        async for event in connection:
-            if event.type == "partial_transcript":
-                print(f"Partial: {event.text}")
-            elif event.type == "committed_transcript":
-                print(f"Final: {event.text}")
+    def on_error(error):
+        print(f"Error: {error}")
+        done.set()
+
+    connection.on(RealtimeEvents.PARTIAL_TRANSCRIPT, lambda data: print(f"Partial: {data.get('text', '')}"))
+    connection.on(RealtimeEvents.COMMITTED_TRANSCRIPT, lambda data: print(f"Final: {data.get('text', '')}"))
+    connection.on(RealtimeEvents.ERROR, on_error)
+    connection.on(RealtimeEvents.CLOSE, done.set)
+
+    try:
+        await done.wait()
+    finally:
+        await connection.close()
 
 asyncio.run(transcribe_realtime())
 ```

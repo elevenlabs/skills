@@ -21,17 +21,20 @@ You explicitly control when transcript segments finalize.
 ### Python
 
 ```python
-async with client.speech_to_text.realtime.connect(
-    model_id="scribe_v2_realtime",
-) as connection:
-    # Send audio
-    await connection.send({
-        "audio_base_64": audio_base_64,
-        "sample_rate": 16000,
-    })
+from elevenlabs import AudioFormat, CommitStrategy, RealtimeAudioOptions
 
-    # Commit when ready (e.g., pause in speech, end of sentence)
-    await connection.commit()
+connection = await client.speech_to_text.realtime.connect(RealtimeAudioOptions(
+    model_id="scribe_v2_realtime",
+    audio_format=AudioFormat.PCM_16000,
+    sample_rate=16000,
+    commit_strategy=CommitStrategy.MANUAL,
+))
+
+# Send audio
+await connection.send({"audio_base_64": audio_base_64})
+
+# Commit when ready (e.g., pause in speech, end of sentence)
+await connection.commit()
 ```
 
 ### JavaScript
@@ -64,7 +67,6 @@ Send previous text with the first audio chunk to help the model:
 ```python
 await connection.send({
     "audio_base_64": first_chunk,
-    "sample_rate": 16000,
     "previous_text": "So as I was saying,"  # Keep under 50 characters
 })
 ```
