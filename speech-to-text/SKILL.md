@@ -201,7 +201,7 @@ A "commit" tells the model to finalize the current segment. You can commit manua
 
 ```python
 import asyncio
-from elevenlabs import ElevenLabs, RealtimeEvents, RealtimeUrlOptions
+from elevenlabs import CommitStrategy, ElevenLabs, RealtimeEvents, RealtimeUrlOptions
 
 client = ElevenLabs()
 
@@ -209,7 +209,8 @@ async def transcribe_realtime():
     done = asyncio.Event()
     connection = await client.speech_to_text.realtime.connect(RealtimeUrlOptions(
         model_id="scribe_v2_realtime",
-        url="https://example.com/audio.mp3",
+        url="https://npr-ice.streamguys1.com/live.mp3",
+        commit_strategy=CommitStrategy.VAD,  # URL streams never commit on their own
         include_timestamps=True,
         keyterms=["ElevenLabs", "Scribe"],
         no_verbatim=True,

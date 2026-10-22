@@ -48,7 +48,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from elevenlabs import ElevenLabs
-from elevenlabs import RealtimeEvents, RealtimeUrlOptions
+from elevenlabs import CommitStrategy, RealtimeEvents, RealtimeUrlOptions
 
 load_dotenv()
 
@@ -59,6 +59,7 @@ async def main():
     connection = await elevenlabs.speech_to_text.realtime.connect(RealtimeUrlOptions(
         model_id="scribe_v2_realtime",
         url="https://npr-ice.streamguys1.com/live.mp3",
+        commit_strategy=CommitStrategy.VAD,  # URL streams never commit on their own
         include_timestamps=True,
         keyterms=["ElevenLabs", "Scribe"],
         no_verbatim=True,
