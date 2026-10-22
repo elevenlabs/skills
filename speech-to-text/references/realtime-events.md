@@ -240,27 +240,24 @@ WebSocket connection closed (standard WebSocket close frame with code and reason
 
 ### Python
 
-The Python SDK abstracts the wire protocol. You can use `event.type` (not `message_type`) when using the SDK's event objects:
+The Python SDK uses `RealtimeEvents` members matching the `message_type` values. Each callback receives the event payload as a dict. `ERROR` also fires for every specific error event, so register it to catch all failures:
 
 ```python
-async for event in connection:
-    if event.type == "session_started":
-        print(f"Session: {event.session_id}")
-    elif event.type == "partial_transcript":
-        print(f"Partial: {event.text}")
-    elif event.type == "final_transcript":
-        print(f"Stable segment: {event.text}")
-    elif event.type == "committed_transcript":
-        print(f"Final: {event.text}")
-    elif event.type == "committed_transcript_with_timestamps":
-        for word in event.words:
-            print(f"  {word.text}: {word.start}s - {word.end}s")
-    elif event.type == "edited_transcript":
-        print(f"Edited: {event.edited_text}")
-    elif event.type == "error":
-        print(f"Error: {event.error}")
-    elif event.type == "invalid_request":
-        print(f"Connection rejected: {event.error}")
+from elevenlabs import RealtimeEvents
+
+def on_committed_with_timestamps(data):
+    for word in data.get("words", []):
+        print(f"  {word['text']}: {word['start']}s - {word['end']}s")
+
+connection.on(RealtimeEvents.SESSION_STARTED, lambda data: print(f"Session: {data.get('session_id')}"))
+connection.on(RealtimeEvents.PARTIAL_TRANSCRIPT, lambda data: print(f"Partial: {data.get('text', '')}"))
+connection.on(RealtimeEvents.FINAL_TRANSCRIPT, lambda data: print(f"Stable segment: {data.get('text', '')}"))
+connection.on(RealtimeEvents.COMMITTED_TRANSCRIPT, lambda data: print(f"Final: {data.get('text', '')}"))
+connection.on(RealtimeEvents.COMMITTED_TRANSCRIPT_WITH_TIMESTAMPS, on_committed_with_timestamps)
+connection.on(RealtimeEvents.EDITED_TRANSCRIPT, lambda data: print(f"Edited: {data.get('edited_text', '')}"))
+connection.on(RealtimeEvents.INVALID_REQUEST, lambda data: print(f"Connection rejected: {data.get('error')}"))
+connection.on(RealtimeEvents.ERROR, lambda data: print(f"Error: {data.get('error')}"))
+connection.on(RealtimeEvents.CLOSE, lambda: print("Connection closed"))
 ```
 
 ### JavaScript
