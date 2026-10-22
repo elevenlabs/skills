@@ -352,6 +352,9 @@ Videos are combined in order before music generation.
 | `description` | string | No | Optional text prompt describing the desired music (up to 1000 characters). |
 | `tags` | array of strings | No | Optional style tags such as `upbeat` or `cinematic` (up to 10 tags). |
 | `model_id` | string | No | Music model to use. Defaults to `music_v1` on this endpoint; pass `music_v2_5` for the most advanced model. |
+| `use_audio_as_reference` | boolean | No | Use the genres, BPM, instrumentation, mood, and arc of the video's own audio track as reference. Defaults to `false`. |
+| `add_sfx` | boolean | No | Add sound effects that match the video. Defaults to `false`. |
+| `separate_tracks` | boolean | No | Return a ZIP with separate music and sound effects tracks instead of a single mixed file. Defaults to `false`. |
 | `sign_with_c2pa` | boolean | No | Sign generated MP3 output with C2PA metadata. Defaults to `false`. |
 | `output_format` | string | No | Output codec/sample-rate/bitrate, such as `mp3_44100_128`, `pcm_44100`, or `opus_48000_96`. |
 

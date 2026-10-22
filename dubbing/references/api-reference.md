@@ -239,7 +239,7 @@ A language can be added to a project that isn't `ready` yet — it stays `queued
 
 `GET /v1/dubbing/project/{project_id}/language/{language_id}`
 
-Once `completed`, `outputs` carries a signed, time-limited download URL (valid ~1 hour; re-fetch the language for a fresh URL):
+Once `completed`, `outputs` carries signed, time-limited download URLs (valid ~1 hour; re-fetch the language for a fresh URL): `lossless_audio` for the dubbed audio and `subtitles` for the translated lines as WebVTT subtitles timed to the source speech (`null` when none are available):
 
 ```json
 {
@@ -249,7 +249,8 @@ Once `completed`, `outputs` carries a signed, time-limited download URL (valid ~
   "status": "completed",
   "model_id": "dubbing_v2",
   "outputs": {
-    "lossless_audio": "https://storage.googleapis.com/eleven-dubbing/.../output.wav?X-Goog-Signature=..."
+    "lossless_audio": "https://storage.googleapis.com/eleven-dubbing/.../output.wav?X-Goog-Signature=...",
+    "subtitles": "<signed WebVTT URL>"
   },
   "revision": 0,
   "output_revision": 0,
