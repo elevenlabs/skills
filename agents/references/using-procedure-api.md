@@ -4,7 +4,7 @@ Procedures are reusable instruction blocks that an agent runs when a trigger mat
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
-Turning a structured procedure's steps into the form the agent executes is called compiling. The platform compiles every structured procedure when the agent draft is saved or the agent is published; authors never compile anything themselves. The compiled result is currently visible as read-only nodes in the dashboard's Workflow tab. Both operations validate every structured procedure on the branch and return any errors.
+Turning a structured procedure's steps into the form the agent executes is called compiling. The platform compiles every structured procedure when the agent draft is saved or the agent is published; authors never compile anything themselves. Both operations validate every structured procedure on the branch and return any errors. Workflow edges cannot connect to or from a structured procedure or its compiled elements. Use a Sub-procedure step to chain structured procedures; entry from a matching trigger and completion are platform-managed.
 
 The CLI exposes the complete procedure lifecycle, including draft operations.
 
