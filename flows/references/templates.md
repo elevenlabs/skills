@@ -66,7 +66,7 @@ The template's **API** tab has a **Copy for LLM** button. Its prompt starts with
 
 ## Wait for the result (scripts)
 
-`create_and_wait` starts the run, then checks on it at the interval the server suggests (`Retry-After`) until it is `completed` or `failed`. It needs a recent SDK; see the [Installation Guide](installation.md).
+`create_and_wait` starts the run, then checks on it at the interval the server suggests (`Retry-After`) until it is `completed` or `failed`.
 
 ### Python
 
@@ -185,9 +185,9 @@ Image and video generations take the same reference objects inside `--json`, in 
 
 Don't wrap `runs create` and `runs get` in your own shell loop; `create-and-wait` already reads `Retry-After`, which `runs get` doesn't show. To check on a run started elsewhere, use `elevenlabs flows templates runs get --template-id ... --run-id ...` once.
 
-### Polling by hand (other languages, older SDKs and CLIs)
+### Polling by hand (languages without an SDK)
 
-Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](polling.md) for complete Python, TypeScript and shell loops.
+Without the helper, poll the run yourself and **sleep for the `Retry-After` header value** between checks. See [Polling by hand](polling.md) for the rules and a reference loop.
 
 ## Get the result by webhook (production)
 

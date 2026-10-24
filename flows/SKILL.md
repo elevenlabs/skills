@@ -54,4 +54,4 @@ Never write a fixed-interval poll loop: the server paces checks with `Retry-Afte
 - [Access and errors](references/access-errors.md): every rejection and what to do about it
 - [App integration](references/app-integration.md): browser upload to asset, storing ids, webhook vs wait, re-hosting, idempotency
 - [Webhook handlers](references/webhooks.md): complete FastAPI and Express servers
-- [Polling by hand](references/polling.md): Retry-After loops without `create_and_wait`
+- [Polling by hand](references/polling.md): the polling contract and a Retry-After loop, for languages without an SDK

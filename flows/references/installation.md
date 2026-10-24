@@ -15,8 +15,6 @@ The Flows API is available in the official SDKs under `flows.image`, `flows.vide
 pip install --upgrade elevenlabs requests
 ```
 
-`create_and_wait` is only in recent SDK releases. If `client.flows.templates.runs.create_and_wait` (or `client.flows.image.create_and_wait`) doesn't exist, upgrade, or [poll by hand](polling.md).
-
 ```python
 import os
 from elevenlabs import ElevenLabs
@@ -33,8 +31,6 @@ npm install @elevenlabs/elevenlabs-js@latest
 ```
 
 > **Important:** Always use `@elevenlabs/elevenlabs-js`. The old `elevenlabs` npm package (v1.x) is deprecated and should not be used.
-
-`createAndWait` is only in recent SDK releases. If `client.flows.templates.runs.createAndWait` doesn't exist, upgrade, or [poll by hand](polling.md).
 
 ```typescript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
@@ -59,8 +55,6 @@ elevenlabs flows templates runs create-and-wait --template-id Yz4DETxRv4uXyIo5Pn
   --inputs '{"garment_photo": {"type": "asset", "asset_id": "YOUR_ASSET_ID"}}'
 elevenlabs flows templates runs get --template-id Yz4DETxRv4uXyIo5PnEy --run-id RUN_ID
 ```
-
-`create-and-wait` is only in recent CLI releases. If `elevenlabs flows templates runs create-and-wait --help` reports an unrecognized subcommand, upgrade the CLI, or use the cURL loop in [Polling by hand](polling.md).
 
 ## Getting an API Key
 
