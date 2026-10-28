@@ -184,6 +184,7 @@ conversation_config={
 |-------|------|---------|-------------|
 | `prompt` | string | `""` | System prompt defining agent behavior |
 | `llm` | string | - | Model ID (see LLM providers below) |
+| `service_tier` | string | `"standard"` | `standard` or `fast`. `fast` trades a per-token price premium for higher token throughput; only some models offer it (see `available_service_tiers` in `GET /v1/convai/llm/list`) |
 | `temperature` | float | `0` | 0-1, higher = more creative |
 | `max_tokens` | int | `-1` | Max tokens for LLM response (-1 = unlimited) |
 | `reasoning_effort` | string | - | Reasoning depth: `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max` (model-dependent) |

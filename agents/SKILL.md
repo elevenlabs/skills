@@ -347,7 +347,7 @@ Semantics worth knowing before writing any of these calls:
 - A third `type`, `folder`, groups procedures in the dashboard. Folders carry no `content` or `trigger`; move a procedure into one with `POST .../procedures/{procedure_id}/move`.
 - The agent keeps the five most recently started procedures in context. When more have been started, the content, inline tools, and knowledge base documents of the oldest free-form ones drop out of the prompt, although the procedures remain active. Keep procedures focused and use sub-procedures so that few are active at once.
 - Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say. The model sees only a numbered menu of triggers; it never sees procedure names or IDs.
-- To restrict the starting agent to selected procedures for one conversation, enable `platform_settings.overrides.enable_procedure_ids_from_client`, then pass their IDs as `procedure_ids` in conversation initiation data. An empty list disables all procedures for that starting agent.
+- To restrict the starting agent to selected procedures for one conversation, enable `platform_settings.overrides.enable_procedure_ids_from_client`, then pass their IDs as `procedure_ids` in conversation initiation data. An empty list disables all procedures for that starting agent. The same setting allows `start_procedure_ids`: up to five free-form procedures that start with the conversation, for when the user's task is already known (for example from an IVR choice or the page hosting the widget).
 - Procedure APIs require `elevenlabs` (Python) or `@elevenlabs/elevenlabs-js` at `2.60.0` or newer.
 
 ## Guardrails

@@ -11,8 +11,9 @@ Fine-tune voice characteristics for your use case.
 | `style` | 0.0 - 1.0 | 0.0 | Exaggerates the unique characteristics of the voice's speaking style (v2 and v3 models; not supported on Eleven v4). Higher values make the voice more "characterful" but can reduce stability. |
 | `speed` | 0.25 - 4.0 | 1.0 | Speech speed multiplier. 1.0 = normal speed. Range is 0.25-4.0 for the REST API; the Agents Platform restricts to 0.7-1.2. Not supported on Eleven v4. |
 | `use_speaker_boost` | boolean | true | Post-processing that enhances voice clarity and similarity to the original. Generally leave this on unless you're experiencing artifacts. |
+| `clone_strength` | 0.0 - 1.0 | - | How closely a Professional Voice Clone fine-tuned for the selected v4 model follows its training samples. 0 is recommended for most use cases; increase it only if the default results have issues. Applies only to PVCs fine-tuned for v4. Also accepted in Text to Dialogue `settings`. |
 
-**Eleven v4** (`eleven_v4`, `eleven_v4_turbo`) uses only `stability` and `similarity_boost`. Control pacing and emotion with audio tags (`[whispers]`, `[excited]`, `[sighs]`) and punctuation (ellipses for pauses, capitals for emphasis) instead of `style`/`speed`. SSML is not supported on v4.
+**Eleven v4** (`eleven_v4`, `eleven_v4_turbo`) uses only `stability` and `similarity_boost`, plus `clone_strength` for v4 fine-tuned Professional Voice Clones. Control pacing and emotion with audio tags (`[whispers]`, `[excited]`, `[sighs]`) and punctuation (ellipses for pauses, capitals for emphasis) instead of `style`/`speed`. SSML is not supported on v4.
 
 ## Python Example
 
