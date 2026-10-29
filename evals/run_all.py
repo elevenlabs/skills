@@ -778,6 +778,37 @@ def check_shows(response_text, file, first, second, never=False):
     return (not found, evidence) if never else (found, evidence)
 
 
+KEY_TERM_STOP_WORDS = {
+    "uses", "with", "that", "this", "from", "have", "should", "must",
+    "includes", "contains", "provides", "shows", "calls", "creates",
+    "writes", "saves", "outputs", "handles", "defines", "sets",
+    "parameter", "appropriate", "correct", "proper", "working", "valid",
+    "using", "when", "does", "like", "also", "into", "some", "such",
+    "each", "make", "need", "them", "their", "will", "been", "more",
+    "very", "just", "only", "than", "other", "about", "over", "most",
+    "equivalent", "similar", "least",
+}
+
+
+def mentions_word(text, word):
+    """Match ``word`` as prose, not as part of an identifier, path, or URL."""
+    return re.search(r"(?<![\w./-])%s(?![\w/-]|\.\w)" % re.escape(word), text) is not None
+
+
+def check_key_terms(exp_lower, response_lower):
+    """Return (passed, evidence) for the relaxed key-term match, or None without key terms."""
+    words = (w.strip(".-") for w in re.findall(r"[\w@.-]+", exp_lower))
+    key_terms = [w for w in words if len(w) > 3 and w not in KEY_TERM_STOP_WORDS]
+    if not key_terms:
+        return None
+    matched = [t for t in key_terms if t in response_lower]
+    # Relaxed: 35% match threshold instead of 50%
+    if len(matched) / len(key_terms) >= 0.35:
+        return True, "Found %d/%d key terms: %s" % (len(matched), len(key_terms), ", ".join(matched[:5]))
+    missing = [t for t in key_terms if t not in response_lower]
+    return False, "Missing key terms: %s" % ", ".join(missing[:5])
+
+
 def check_expectation(response_lower, response_text, expectation):
     """Check a single expectation against the response. Returns (passed, evidence)."""
     exp_lower = expectation.lower()
@@ -860,7 +891,7 @@ def check_expectation(response_lower, response_text, expectation):
         ("@elevenlabs/", "@elevenlabs/", "JS SDK package"),
         # Agents
         ("elevenlabs agents", "elevenlabs agents", "CLI agents command"),
-        ("convai", "convai", "ConvAI widget"),
+        ("elevenlabs-convai", "elevenlabs-convai", "ConvAI widget"),
         ("agent-id", "agent-id", "agent-id attribute"),
         ("agent_id", "agent_id", "agent_id attribute"),
         ("webhook", "webhook", "webhook tool"),
@@ -922,7 +953,7 @@ def check_expectation(response_lower, response_text, expectation):
     semantic_check_evidence = ""
     semantic_check_passed = False
     for triggers, indicators, strong_indicators in semantic_checks:
-        if any(t in exp_lower for t in triggers):
+        if any(mentions_word(exp_lower, t) for t in triggers):
             semantic_check_applied = True
             found = [ind for ind in indicators if ind in response_lower]
             if len(found) >= 2:
@@ -946,32 +977,18 @@ def check_expectation(response_lower, response_text, expectation):
     if matched_pattern_checks:
         return pattern_check_passed, pattern_check_evidence
 
+    key_term_check = check_key_terms(exp_lower, response_lower)
+
     if semantic_check_applied:
-        return semantic_check_passed, semantic_check_evidence
+        if not semantic_check_passed:
+            return False, semantic_check_evidence
+        # Semantic indicators are generic words, so the expectation's own terms must also appear.
+        if key_term_check and not key_term_check[0]:
+            return key_term_check
+        return True, semantic_check_evidence
 
-    # Fallback: extract key terms and check presence (relaxed threshold)
-    stop_words = {
-        "uses", "with", "that", "this", "from", "have", "should", "must",
-        "includes", "contains", "provides", "shows", "calls", "creates",
-        "writes", "saves", "outputs", "handles", "defines", "sets",
-        "parameter", "appropriate", "correct", "proper", "working", "valid",
-        "using", "when", "does", "like", "also", "into", "some", "such",
-        "each", "make", "need", "them", "their", "will", "been", "more",
-        "very", "just", "only", "than", "other", "about", "over", "most",
-        "equivalent", "similar", "least",
-    }
-    key_terms = [w for w in exp_lower.split() if len(w) > 3 and w not in stop_words]
-
-    if key_terms:
-        matches = sum(1 for t in key_terms if t in response_lower)
-        ratio = matches / len(key_terms) if key_terms else 0
-        # Relaxed: 35% match threshold instead of 50%
-        if ratio >= 0.35:
-            matched = [t for t in key_terms if t in response_lower]
-            return True, "Found %d/%d key terms: %s" % (matches, len(key_terms), ", ".join(matched[:5]))
-        else:
-            missing = [t for t in key_terms if t not in response_lower]
-            return False, "Missing key terms: %s" % ", ".join(missing[:5])
+    if key_term_check:
+        return key_term_check
 
     if negative_terms:
         return True, "Forbidden references absent: %s" % ", ".join(negative_terms)
