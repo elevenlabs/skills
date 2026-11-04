@@ -195,6 +195,24 @@ Entities detected in a committed segment when the connection includes `entity_de
 | `entities[].start_char` | integer | Start character offset in `text` |
 | `entities[].end_char` | integer | End character offset in `text` |
 
+### redacted_transcript
+
+Redacted version of a committed segment. Sent when the connection includes `entity_redaction`.
+
+```json
+{
+  "message_type": "redacted_transcript",
+  "text": "My name is Alice.",
+  "redacted_text": "My name is {NAME_0}."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message_type` | string | `"redacted_transcript"` |
+| `text` | string | Committed transcript text that entities were redacted from |
+| `redacted_text` | string | Committed text with each redacted entity replaced by a marker |
+
 ## Error Events
 
 ### error

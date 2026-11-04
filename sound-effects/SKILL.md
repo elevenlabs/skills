@@ -23,6 +23,7 @@ client = ElevenLabs()
 
 audio = client.text_to_sound_effects.convert(
     text="Thunder rumbling in the distance with light rain",
+    model_id="eleven_text_to_sound_v3",
 )
 
 with open("thunder.mp3", "wb") as f:
@@ -39,6 +40,7 @@ import { createWriteStream } from "fs";
 const client = new ElevenLabsClient();
 const audio = await client.textToSoundEffects.convert({
   text: "Thunder rumbling in the distance with light rain",
+  modelId: "eleven_text_to_sound_v3",
 });
 audio.pipe(createWriteStream("thunder.mp3"));
 ```
@@ -48,6 +50,7 @@ audio.pipe(createWriteStream("thunder.mp3"));
 ```bash
 elevenlabs text-to-sound-effects convert \
   --text "Thunder rumbling in the distance with light rain" \
+  --model-id eleven_text_to_sound_v3 \
   --output thunder.mp3
 ```
 
@@ -56,10 +59,10 @@ elevenlabs text-to-sound-effects convert \
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `text` | string (required) | — | Description of the desired sound effect |
-| `model_id` | string | `eleven_text_to_sound_v2` | Model to use |
+| `model_id` | string | `eleven_text_to_sound_v2` | Model to use. Set `eleven_text_to_sound_v3` (SFX v3) explicitly: it follows multi-part prompts more closely, handles music and vocals better, and sounds more natural |
 | `duration_seconds` | number \| null | null (auto) | Duration 0.5–30s; auto-calculated if null |
 | `prompt_influence` | number \| null | 0.3 | How closely to follow the prompt (0–1) |
-| `loop` | boolean | false | Generate a seamlessly looping sound (v2 model only) |
+| `loop` | boolean | false | Generate a seamlessly looping sound |
 
 ## Examples with Parameters
 
@@ -67,6 +70,7 @@ elevenlabs text-to-sound-effects convert \
 # Looping ambient sound, 10 seconds
 audio = client.text_to_sound_effects.convert(
     text="Gentle forest ambiance with birds chirping",
+    model_id="eleven_text_to_sound_v3",
     duration_seconds=10.0,
     prompt_influence=0.5,
     loop=True,
@@ -75,6 +79,7 @@ audio = client.text_to_sound_effects.convert(
 # Short UI sound, high prompt adherence
 audio = client.text_to_sound_effects.convert(
     text="Soft notification chime",
+    model_id="eleven_text_to_sound_v3",
     duration_seconds=1.0,
     prompt_influence=0.8,
 )
