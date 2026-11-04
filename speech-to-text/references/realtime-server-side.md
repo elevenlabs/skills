@@ -29,15 +29,17 @@ ELEVENLABS_API_KEY=<your_api_key_here>
 | Limit language detection to expected additional languages | `secondary_languages` | `secondaryLanguages` |
 | Return detected language in delayed final events | `include_language_detection` | `includeLanguageDetection` |
 | Detect entities in committed segments | `entity_detection` | `entityDetection` |
+| Redact entities in committed segments | `entity_redaction`, `entity_redaction_mode` | `entityRedaction`, `entityRedactionMode` |
 | Apply a natural-language edit instruction to committed segments | `transcript_edit` | `transcriptEdit` |
 | Reduce false activation from background speech and noise | `filter_background_audio` | `filterBackgroundAudio` |
 | Disable history and logging for an enterprise zero-retention session | `enable_logging=False` | `enableLogging: false` |
 
 `secondary_languages` accepts additional ISO-639-1 or ISO-639-3 codes. Entity detection accepts
-`all`, a supported entity type or category, or a list of them. Background audio filtering cannot be
-combined with timestamp output. A transcript edit instruction can contain up to 2,000 characters
-and cannot be combined with entity detection. It adds a 30% premium, billed for at least 10 seconds
-of audio per committed transcript.
+`all`, a supported entity type or category, or a list of them; entity redaction accepts the same
+values. Background audio filtering cannot be combined with timestamp output. A transcript edit
+instruction can contain up to 2,000 characters and cannot be combined with entity detection or
+entity redaction. It adds a 30% premium, billed for at least 10 seconds of audio per committed
+transcript.
 
 ## Stream from URL
 
@@ -331,6 +333,19 @@ Each committed segment is followed by a `committed_transcript_entities` event co
 detected entity text, type, and character offsets. See the
 [entity detection guide](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/entity-detection)
 for specific entity types.
+
+### Entity Redaction
+
+Add `entity_redaction` to redact entities from committed segments. It accepts the same values as
+`entity_detection`. `entity_redaction_mode` sets the marker format: `redacted` (`{REDACTED}`),
+`entity_type` (`{ENTITY_TYPE}`), or `enumerated_entity_type` (`{ENTITY_TYPE_N}`, the default):
+
+```
+wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v2_realtime&entity_redaction=pii&entity_redaction_mode=entity_type
+```
+
+Each committed segment is followed by a `redacted_transcript` event containing the original `text`
+and the `redacted_text`. Other transcript events stay unredacted.
 
 ### Message Format
 

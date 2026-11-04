@@ -53,6 +53,7 @@ show a message entry point, and multimodal agents show both.
 | `disable-banner` | Hide "Powered by ElevenLabs" | `false` |
 | `show-resize-button` | Show the expand and collapse control in the widget header | `true` |
 | `mobile-fullscreen` | Open the widget fullscreen on mobile screens; set `false` to keep the compact layout (agent-level setting: `platform_settings.widget.mobile_fullscreen`) | `true` |
+| `transcript-speech-sync` | Reveal the voice call transcript as the agent speaks; set `false` to show each message in full at once (agent-level setting: `platform_settings.widget.transcript_speech_sync_enabled`) | `true` |
 | `end-confirmation` | Ask the user to confirm before ending a chat or call | `false` |
 
 ## Examples
