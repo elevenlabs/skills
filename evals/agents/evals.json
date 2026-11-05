@@ -101,6 +101,22 @@
         "Explains that a 400 with status procedure_validation_failed carries errors keyed by procedure ID with a path per entry, and that the fix goes into the procedure draft",
         "Discards the agent draft afterwards with a DELETE on the drafts endpoint"
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "ElevenLabs onboarding already set this project up: I approved the sign-in in my browser and my key is in .env.local. Using the ElevenLabs CLI agents-as-code commands, write the exact commands you would run to create a customer service voice agent from a template and add a webhook tool called order lookup, then the links you would give me once the agent exists. Don't run anything; write the commands and the links to ./outputs/plan.txt.",
+      "expected_output": "CLI commands that work after onboarding, plus the agent's talk-to and dashboard links",
+      "files": [],
+      "expectations": [
+        "plan.txt never shows auth login",
+        "plan.txt shows agents add",
+        "plan.txt never shows --template complete",
+        "plan.txt shows tools add",
+        "plan.txt shows --type webhook",
+        "plan.txt never shows add-webhook",
+        "plan.txt shows /app/talk-to?agent_id=",
+        "plan.txt shows /app/agents/agents/"
+      ]
     }
   ]
 }
