@@ -178,7 +178,7 @@ Use `GET /v1/convai/llm/list` to inspect the current model catalog, including de
 
 To run an agent on an ElevenLabs Realtime model instead of a separate LLM and TTS model (`conversation_config.realtime_model`), use the `realtime` skill.
 
-**Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel), `XB0fDUnXU5powFXDhCwa` (Charlotte)
+**Popular voices:** `JBFqnCBsd6RMkjVDRZzb` (George), `EXAVITQu4vr4xnSDxMaL` (Sarah), `onwK4e9ZLuTAKqWW03F9` (Daniel)
 
 **Turn eagerness:** `patient` (waits longer for user to finish), `normal`, or `eager` (responds quickly)
 

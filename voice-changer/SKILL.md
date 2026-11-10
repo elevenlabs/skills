@@ -99,13 +99,12 @@ English (US, UK, AU, CA), Japanese, Chinese, German, Hindi, French (FR, CA), Kor
 
 ## Target Voices
 
-Use any voice ID from pre-made voices, your cloned voices, or the voice library.
+Use any voice ID from pre-made voices, your cloned voices, or the voice library. Free plans can use pre-made voices through the API, but not Voice Library voices: those fail with a `402` (`paid_plan_required`). Do not use a voice ID from memory, since tutorials still use voices that have since been retired.
 
 **Popular voices:**
 - `JBFqnCBsd6RMkjVDRZzb` — George (male, narrative)
 - `EXAVITQu4vr4xnSDxMaL` — Sarah (female, soft)
 - `onwK4e9ZLuTAKqWW03F9` — Daniel (male, authoritative)
-- `XB0fDUnXU5powFXDhCwa` — Charlotte (female, conversational)
 
 ```python
 voices = client.voices.get_all()
