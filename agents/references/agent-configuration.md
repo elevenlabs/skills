@@ -772,7 +772,7 @@ agent = client.conversational_ai.agents.create(
                 }
             }
         },
-        "tts": {"voice_id": "XB0fDUnXU5powFXDhCwa", "model_id": "eleven_v4_turbo"},
+        "tts": {"voice_id": "EXAVITQu4vr4xnSDxMaL", "model_id": "eleven_v4_turbo"},
         "turn": {"turn_eagerness": "normal", "turn_timeout": 7},
         "conversation": {"max_duration_seconds": 900}
     }
