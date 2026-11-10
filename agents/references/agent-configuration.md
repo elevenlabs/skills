@@ -551,7 +551,7 @@ agent dependencies and recursively delete the contents of non-empty folders.
 elevenlabs agents init
 
 # Create agent from template
-elevenlabs agents add "My Agent" --template complete
+elevenlabs agents add "My Agent" --template default
 elevenlabs agents add "Support Bot" --template customer-service
 
 # List agents
@@ -573,12 +573,12 @@ elevenlabs agents pull --update             # Override local configs
 elevenlabs agents templates list
 elevenlabs agents templates show <template-name>
 
-# Add tools
-elevenlabs tools add-webhook "API Tool"
-elevenlabs tools add-client "UI Tool"
+# Add tools (names use letters, numbers, - and _)
+elevenlabs tools add api-tool --type webhook
+elevenlabs tools add ui-tool --type client
 
 # Generate widget code
-elevenlabs agents widget <agent-id>
+elevenlabs agents widget embed <agent-id>
 ```
 
 ### SDK: List Agents

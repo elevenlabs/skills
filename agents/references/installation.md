@@ -33,11 +33,11 @@ Set `ELEVENLABS_API_KEY` in your environment — the CLI picks it up automatical
 export ELEVENLABS_API_KEY="your-api-key"
 ```
 
-Or authenticate with OAuth, which stores credentials in the OS keyring:
+Or authenticate with OAuth, which stores credentials in the OS keyring (`onboard init` already did this when the user approved in the browser):
 
 ```bash
 elevenlabs auth login          # Authenticate with OAuth
-elevenlabs auth whoami         # Verify current login status
+elevenlabs auth status         # Verify current login status
 elevenlabs auth logout         # Remove stored credentials
 ```
 
