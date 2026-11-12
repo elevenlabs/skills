@@ -99,7 +99,7 @@ client = ElevenLabs(api_key="your-api-key")
 The CLI reads `ELEVENLABS_API_KEY` automatically — no key flags or headers needed:
 
 ```bash
-elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v2
+elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v3
 ```
 
 ## Getting an API Key

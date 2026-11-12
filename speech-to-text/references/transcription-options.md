@@ -5,9 +5,11 @@
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `file` | file | Yes | Audio or video file to transcribe |
-| `model_id` | string | Yes | `scribe_v2` for general batch transcription or `scribe_v2_medical` for medical and clinical audio |
+| `model_id` | string | Yes | `scribe_v3` for general batch transcription (`scribe_v2` remains available) or `scribe_v2_medical` for medical and clinical audio |
 | `token` | string | No | Single-use authentication token from `POST /v1/single-use-token/batch_scribe`. Alternative to API key or bearer authentication for frontend clients; expires after 15 minutes and is consumed on use. |
 | `language_code` | string | No | Language hint (ISO 639-1 or ISO 639-3, e.g., `en` or `eng`) |
+| `secondary_language_codes` | array | No | Other ISO 639-1 or ISO 639-3 codes that may be spoken alongside `language_code`, for mixed-language audio. `scribe_v3` only; send one form field per code |
+| `numbers_format` | string | No | `digits` (`42`) or `words` (`forty-two`); the model chooses when omitted. `scribe_v3` only |
 | `transcript_edit` | string | No | Natural-language instruction applied to the final transcript (maximum 2,000 characters). Cannot be combined with `entity_detection`, `entity_redaction`, or `use_multi_channel`. Adds a 30% surcharge, billed for at least 10 seconds of audio. |
 | `timestamps_granularity` | string | No | `none`, `word`, or `character` (default: `word`) |
 | `diarize` | boolean | No | Enable speaker diarization (default: `false`; up to 32 speakers) |
@@ -18,7 +20,7 @@
 | `keyterms` | array | No | Terms to bias transcription (up to 100 terms; each ≤50 chars, ≤5 words) |
 | `tag_audio_events` | boolean | No | Detect non-speech sounds like laughter, applause (default: `true`) |
 | `entity_detection` | string or array | No | Detect entities (e.g., `pii`, `phi`, `pci`, `offensive_language`) |
-| `no_verbatim` | boolean | No | If `true`, removes filler words, false starts, and non-speech sounds (supported with `scribe_v2`) |
+| `no_verbatim` | boolean | No | If `true`, removes filler words, false starts, and non-speech sounds (supported with `scribe_v3`, `scribe_v2`, and `scribe_v2_medical`) |
 | `use_multi_channel` | boolean | No | Split multichannel audio into separate transcripts (default: `false`; max 5 channels, max 1 hour) |
 | `multichannel_output_style` | string | No | `separate` (default) returns one transcript per channel under `transcripts`; `combined` returns one merged transcript sorted by word start time with `channel_index` on each word. Requires timestamps and is only used with `use_multi_channel=true` |
 | `cloud_storage_url` | string | No | HTTPS URL to transcribe instead of uploading a file (max 2GB) |
@@ -42,7 +44,7 @@ TOKEN=$(elevenlabs tokens single-use create --token-type batch_scribe --query to
 
 elevenlabs speech-to-text convert \
   --file audio.mp3 \
-  --model-id scribe_v2 \
+  --model-id scribe_v3 \
   --token "$TOKEN"
 ```
 
@@ -56,7 +58,7 @@ client = ElevenLabs()
 with open("audio.mp3", "rb") as audio_file:
     result = client.speech_to_text.convert(
         file=audio_file,
-        model_id="scribe_v2",
+        model_id="scribe_v3",
         language_code="eng",
         timestamps_granularity="word",
         diarize=True,
@@ -74,7 +76,7 @@ const client = new ElevenLabsClient();
 
 const result = await client.speechToText.convert({
   file: createReadStream("audio.mp3"),
-  modelId: "scribe_v2",
+  modelId: "scribe_v3",
   languageCode: "eng",
   timestampsGranularity: "word",
   diarize: true,
@@ -87,7 +89,7 @@ const result = await client.speechToText.convert({
 ```bash
 elevenlabs speech-to-text convert \
   --file audio.mp3 \
-  --model-id scribe_v2 \
+  --model-id scribe_v3 \
   --language-code eng \
   --timestamps-granularity word \
   --diarize true
@@ -102,7 +104,7 @@ Use `detect_speaker_roles` with diarization when you want speaker labels tailore
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     diarize=True,
     detect_speaker_roles=True
 )
@@ -116,7 +118,7 @@ for word in result.words:
 ```javascript
 const result = await client.speechToText.convert({
   file: createReadStream("call.mp3"),
-  modelId: "scribe_v2",
+  modelId: "scribe_v3",
   diarize: true,
   detectSpeakerRoles: true,
 });
@@ -131,7 +133,7 @@ for (const word of result.words ?? []) {
 ```bash
 elevenlabs speech-to-text convert \
   --file call.mp3 \
-  --model-id scribe_v2 \
+  --model-id scribe_v3 \
   --diarize true \
   --detect-speaker-roles true \
   --use-speaker-library true
@@ -145,7 +147,7 @@ instead of uploading a local file:
 ```python
 result = client.speech_to_text.convert(
     cloud_storage_url="https://storage.example.com/audio.mp3?signature=abc123",
-    model_id="scribe_v2"
+    model_id="scribe_v3"
 )
 ```
 
@@ -157,7 +159,7 @@ Use `source_url` when the media is already hosted online and you do not want to 
 
 ```python
 result = client.speech_to_text.convert(
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     source_url="https://example.com/interview.mp4",
 )
 ```
@@ -166,7 +168,7 @@ result = client.speech_to_text.convert(
 
 ```javascript
 const result = await client.speechToText.convert({
-  modelId: "scribe_v2",
+  modelId: "scribe_v3",
   sourceUrl: "https://example.com/interview.mp4",
 });
 ```
@@ -175,7 +177,7 @@ const result = await client.speechToText.convert({
 
 ```bash
 elevenlabs speech-to-text convert \
-  --model-id scribe_v2 \
+  --model-id scribe_v3 \
   --source-url "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 ```
 
@@ -260,7 +262,7 @@ Full list: Afrikaans, Amharic, Armenian, Azerbaijani, Belarusian, Bengali, Bosni
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     timestamps_granularity="word",
     diarize=True
 )
@@ -277,7 +279,7 @@ for i, word in enumerate(result.words, 1):
 with open("meeting.mp3", "rb") as f:
     result = client.speech_to_text.convert(
         file=f,
-        model_id="scribe_v2",
+        model_id="scribe_v3",
         diarize=True,
         keyterms=["Q4 forecast", "revenue target", "ACME Corp"]
     )

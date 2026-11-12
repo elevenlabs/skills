@@ -327,6 +327,47 @@ Use `entry_behavior` on `override_agent` nodes to choose whether a sub-agent spe
 For nested agent transfers, set `enable_nesting` on a `standalone_agent` node and
 `return_when_nested` on an `end` node that should return control to the parent workflow.
 
+### Build Workflows in Code
+
+The Python and JavaScript SDKs include a `Workflow` builder that produces the `workflow` value for `agents.create()` and `agents.update()`. Chain `converse`, `tool`, `transfer`, and `end` steps, and route between them with `when` (a string is an LLM condition; an `Expr` is an expression on dynamic variables), `on_success` / `on_failure`, and `go_to`. `build()` assigns `start_node`, edge IDs, `edge_order`, and editor positions, and raises one `WorkflowValidationError` listing every graph problem. Reference: [Workflows as code](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows-as-code).
+
+```python
+from elevenlabs import ElevenLabs
+from elevenlabs.agent_workflows import Destination, Workflow
+
+client = ElevenLabs()
+
+wf = Workflow()
+triage = wf.converse("triage", "Greet the caller and find out why they're calling")
+lookup = triage.when("Caller gave an order number").tool("lookup_order", ["tool_get_order"])
+lookup.on_result(
+    success=lambda ok: ok.converse("resolve", "Explain the order status").when("Caller is satisfied").end(),
+    failure=lambda failed: failed.go_to(triage),
+)
+triage.when("Caller wants a human").transfer("human", Destination.phone("+15551234567"))
+
+client.conversational_ai.agents.update("agent_id", workflow=wf.build())
+```
+
+```javascript
+import { Destination, ElevenLabsClient, Workflow } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient();
+
+const wf = new Workflow();
+const triage = wf.converse("triage", "Greet the caller and find out why they're calling");
+const lookup = triage.when("Caller gave an order number").tool("lookup_order", ["tool_get_order"]);
+lookup.onResult({
+  success: (ok) => ok.converse("resolve", "Explain the order status").when("Caller is satisfied").end(),
+  failure: (failed) => failed.goTo(triage),
+});
+triage.when("Caller wants a human").transfer("human", Destination.phone("+15551234567"));
+
+await client.conversationalAi.agents.update("agent_id", { workflow: wf.build() });
+```
+
+To edit an existing workflow, load it with `Workflow.from_agent(agent)` / `Workflow.fromAgent(agent)`, then change nodes with `wf.node(id).update(...)`, `insert_between` / `insertBetween`, or `remove`; IDs and positions are kept. `to_json_string()` / `toJSONString()` and `Workflow.from_json()` / `Workflow.fromJSON()` store workflows as JSON in version control, and `elevenlabs agents workflow diagram <file>` draws a workflow file as a flowchart (`--format mermaid` for Mermaid output).
+
 ## Procedures
 
 Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (called "structured" in the dashboard: typed steps that run in a fixed order, for flows that must happen the same way every time). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step reference, validation rules, and authoring guidance.
