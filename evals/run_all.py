@@ -423,9 +423,13 @@ def run_functional_eval_for_skill(
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(fixture["content"])
 
-        # A skill may ship stand-ins for the commands it runs (evals/<skill>/bin). Its
-        # evals treat the workspace as the user's project, where those commands write.
-        fake_bin = EVALS_DIR / skill_name / "bin"
+        # A skill may ship stand-ins for the commands it runs (evals/<skill>/bin), or
+        # reuse another skill's by naming that folder in its evals.json `bin`, relative
+        # to the file. A path, not a symlink: a linked directory breaks copies of this
+        # repo on macOS. Resolved, because the npx stand-in skips its own PATH entry by
+        # exact match. Such evals treat the workspace as the user's project, where
+        # those commands write.
+        fake_bin = (EVALS_DIR / skill_name / eval_data.get("bin", "bin")).resolve()
         where = (
             "This workspace is the user's project, in an isolated eval scratch directory. "
             if fake_bin.is_dir()

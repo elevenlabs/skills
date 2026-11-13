@@ -1,6 +1,7 @@
 {
   "skill_name": "setup-api-key",
-  "_comment": "Uses the onboarding stand-ins (evals/setup-api-key/bin links to evals/onboarding/bin); `onboard check` decides from the workspace like the real one, or is scripted per case.",
+  "_comment": "Uses the onboarding stand-ins (`bin` below names evals/onboarding/bin, relative to this file); `onboard check` decides from the workspace like the real one, or is scripted per case.",
+  "bin": "../onboarding/bin",
   "evals": [
     {
       "id": 1,
