@@ -855,6 +855,7 @@ def check_expectation(response_lower, response_text, expectation):
         ("model_id", "model_id", "model_id param"),
         ("modelid", "modelid", "JS modelId param"),
         ("voice_id", "voice_id", "voice_id param"),
+        ("scribe_v3", "scribe_v3", "scribe_v3 model"),
         ("scribe_v2", "scribe_v2", "scribe_v2 model"),
         ("multilingual", "multilingual", "multilingual model"),
         ("music_length_ms", "music_length_ms", "music duration"),

@@ -1,6 +1,6 @@
 ---
 name: speech-to-text
-description: Transcribe audio to text using ElevenLabs Scribe v2. Use when converting audio/video to text, generating subtitles, transcribing meetings, or processing spoken content.
+description: Transcribe audio to text using ElevenLabs Scribe v3. Use when converting audio/video to text, generating subtitles, transcribing meetings, or processing spoken content.
 license: MIT
 compatibility: Requires internet access and an ElevenLabs API key (ELEVENLABS_API_KEY).
 metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv": "ELEVENLABS_API_KEY"}}
@@ -8,7 +8,7 @@ metadata: {"openclaw": {"requires": {"env": ["ELEVENLABS_API_KEY"]}, "primaryEnv
 
 # ElevenLabs Speech-to-Text
 
-Transcribe audio to text with Scribe v2 - supports 90+ languages, speaker diarization, and word-level timestamps.
+Transcribe audio to text with Scribe v3 - supports 90+ languages, speaker diarization, and word-level timestamps.
 
 > **Setup, before writing any code:** if `ELEVENLABS_API_KEY` isn't set for this project, run `npx -y @elevenlabs/cli@latest onboard init` from the app's folder first and follow what it prints: it signs the user in and stores a key for the project, so nobody copies one by hand. Otherwise see the [Installation Guide](references/installation.md). For JavaScript, use `@elevenlabs/*` packages only.
 
@@ -22,7 +22,7 @@ from elevenlabs import ElevenLabs
 client = ElevenLabs()
 
 with open("audio.mp3", "rb") as audio_file:
-    result = client.speech_to_text.convert(file=audio_file, model_id="scribe_v2")
+    result = client.speech_to_text.convert(file=audio_file, model_id="scribe_v3")
 
 print(result.text)
 ```
@@ -36,7 +36,7 @@ import { createReadStream } from "fs";
 const client = new ElevenLabsClient();
 const result = await client.speechToText.convert({
   file: createReadStream("audio.mp3"),
-  modelId: "scribe_v2",
+  modelId: "scribe_v3",
 });
 console.log(result.text);
 ```
@@ -44,16 +44,18 @@ console.log(result.text);
 ### CLI
 
 ```bash
-elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v2
+elevenlabs speech-to-text convert --file audio.mp3 --model-id scribe_v3
 ```
 
 ## Models
 
 | Model ID | Description | Best For |
 |----------|-------------|----------|
-| `scribe_v2` | State-of-the-art accuracy, 90+ languages | Batch transcription, subtitles, long-form audio |
+| `scribe_v3` | Most accurate batch model, 90+ languages; adds `numbers_format` and `secondary_language_codes` | Batch transcription, subtitles, long-form and mixed-language audio |
+| `scribe_v3_live` | Most accurate realtime model, with turn prediction and multilingual mode | Live transcription, voice agents |
+| `scribe_v2` | Previous-generation batch model, 90+ languages | Existing batch integrations |
 | `scribe_v2_medical` | Specialized recognition for medical and clinical audio, 90+ languages | Clinical documentation, medical dictation, patient calls |
-| `scribe_v2_realtime` | Low latency (~150ms) | Live transcription, voice agents |
+| `scribe_v2_realtime` | Previous-generation realtime model, low latency (~150ms) | Existing realtime integrations |
 | `scribe_v2_realtime_turbo` | Realtime transcription variant | Live transcription |
 | `scribe_v2_realtime_lite` | Realtime transcription variant | Live transcription |
 
@@ -63,7 +65,7 @@ Word-level timestamps include type classification and speaker identification:
 
 ```python
 result = client.speech_to_text.convert(
-    file=audio_file, model_id="scribe_v2", timestamps_granularity="word"
+    file=audio_file, model_id="scribe_v3", timestamps_granularity="word"
 )
 
 for word in result.words:
@@ -78,7 +80,7 @@ Identify WHO said WHAT - the model labels each word with a speaker ID, useful fo
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     diarize=True
 )
 
@@ -93,7 +95,7 @@ If your workspace has registered speaker profiles, set `use_speaker_library=true
 ```bash
 elevenlabs speech-to-text convert \
   --file call.mp3 \
-  --model-id scribe_v2 \
+  --model-id scribe_v3 \
   --diarize true \
   --detect-speaker-roles true \
   --use-speaker-library true
@@ -106,7 +108,7 @@ Use `use_multi_channel=true` when each speaker is isolated on a separate audio c
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     use_multi_channel=True,
     multichannel_output_style="combined",
 )
@@ -119,7 +121,7 @@ Help the model recognize specific words it might otherwise mishear - product nam
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     keyterms=["ElevenLabs", "Scribe", "API"]
 )
 ```
@@ -131,11 +133,27 @@ Automatic detection with optional language hint:
 ```python
 result = client.speech_to_text.convert(
     file=audio_file,
-    model_id="scribe_v2",
+    model_id="scribe_v3",
     language_code="eng"  # ISO 639-1 or ISO 639-3 code
 )
 
 print(f"Detected: {result.language_code} ({result.language_probability:.0%})")
+```
+
+`scribe_v3` also accepts `secondary_language_codes` for mixed-language audio (other languages expected alongside `language_code`) and `numbers_format` (`digits` or `words`) to control how numbers are written. The SDKs don't have typed arguments for these yet, so pass them through `request_options`:
+
+```python
+result = client.speech_to_text.convert(
+    file=audio_file,
+    model_id="scribe_v3",
+    language_code="en",
+    request_options={
+        "additional_body_parameters": {
+            "secondary_language_codes": ["es", "fr"],
+            "numbers_format": "digits",
+        },
+    },
+)
 ```
 
 ## Supported Formats
@@ -168,7 +186,7 @@ print(f"Detected: {result.language_code} ({result.language_probability:.0%})")
 
 ```python
 try:
-    result = client.speech_to_text.convert(file=audio_file, model_id="scribe_v2")
+    result = client.speech_to_text.convert(file=audio_file, model_id="scribe_v3")
 except Exception as e:
     print(f"Transcription failed: {e}")
 ```
@@ -183,14 +201,14 @@ Common errors:
 Monitor usage via `request-id` response header:
 
 ```python
-response = client.speech_to_text.with_raw_response.convert(file=audio_file, model_id="scribe_v2")
+response = client.speech_to_text.with_raw_response.convert(file=audio_file, model_id="scribe_v3")
 result = response.data
 print(f"Request ID: {response.headers.get('request-id')}")
 ```
 
 ## Real-Time Streaming
 
-For live transcription with ultra-low latency (~150ms), use the real-time API. The real-time API produces two types of transcripts:
+For live transcription with ultra-low latency, use the real-time API. The real-time API produces two types of transcripts:
 
 - **Partial transcripts**: Interim results that update frequently as audio is processed - use these for live feedback (e.g., showing text as the user speaks)
 - **Committed transcripts**: Final, stable results after you "commit" - use these as the source of truth for your application
@@ -208,7 +226,7 @@ client = ElevenLabs()
 async def transcribe_realtime():
     done = asyncio.Event()
     connection = await client.speech_to_text.realtime.connect(RealtimeUrlOptions(
-        model_id="scribe_v2_realtime",
+        model_id="scribe_v3_live",
         url="https://npr-ice.streamguys1.com/live.mp3",
         commit_strategy=CommitStrategy.VAD,  # URL streams never commit on their own
         include_timestamps=True,
@@ -242,7 +260,7 @@ function TranscriptionComponent() {
   const [transcript, setTranscript] = useState("");
 
   const scribe = useScribe({
-    modelId: "scribe_v2_realtime",
+    modelId: "scribe_v3_live",
     commitStrategy: CommitStrategy.VAD, // Auto-commit on silence for mic input
     keyterms: ["ElevenLabs", "Scribe"],
     noVerbatim: true,
@@ -271,6 +289,7 @@ function TranscriptionComponent() {
 |----------|-------------|
 | **Manual** | You call `commit()` when ready - use for file processing or when you control the audio segments |
 | **VAD** | Voice Activity Detection auto-commits when silence is detected - use for live microphone input |
+| **Turn prediction** | `scribe_v3_live` only. Commits when the model predicts the speaker has finished their turn, with VAD as a fallback - set `commit_strategy=turn_prediction` on the WebSocket URL (not yet in the SDK `CommitStrategy` enums) |
 
 Set `includeLanguageDetection: true` to receive the detected language code in delayed final
 transcript events.
@@ -280,7 +299,7 @@ transcript events.
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 
 const scribe = useScribe({
-  modelId: "scribe_v2_realtime",
+  modelId: "scribe_v3_live",
   commitStrategy: CommitStrategy.VAD,
   keyterms: ["ElevenLabs", "Scribe"],
   noVerbatim: true,
@@ -293,7 +312,7 @@ const scribe = useScribe({
 ```javascript
 // JavaScript client: pass vad config on connect
 const connection = await client.speechToText.realtime.connect({
-  modelId: "scribe_v2_realtime",
+  modelId: "scribe_v3_live",
   keyterms: ["ElevenLabs", "Scribe"],
   noVerbatim: true,
   vad: {

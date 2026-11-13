@@ -11,7 +11,7 @@
         "Instantiates the client with ElevenLabs(",
         "Opens the audio file in binary read mode",
         "Calls client.speech_to_text.convert() with file parameter",
-        "Uses model_id='scribe_v2'",
+        "Uses model_id='scribe_v3'",
         "Prints the resulting text with print("
       ]
     },
@@ -24,7 +24,7 @@
         "Uses the ElevenLabs Python SDK",
         "Calls speech_to_text.convert() with diarize=True or equivalent diarization parameter",
         "Processes the result to show speaker labels with their text",
-        "Uses model_id scribe_v2"
+        "Uses model_id scribe_v3"
       ]
     },
     {
@@ -36,7 +36,7 @@
         "Imports from '@elevenlabs/elevenlabs-js' (NOT 'elevenlabs')",
         "Enables word-level timestamps via the appropriate parameter",
         "Processes and displays the timestamped words from the result",
-        "Uses the scribe_v2 model"
+        "Uses the scribe_v3 model"
       ]
     }
   ]

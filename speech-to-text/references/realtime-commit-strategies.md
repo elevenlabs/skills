@@ -24,7 +24,7 @@ You explicitly control when transcript segments finalize.
 from elevenlabs import AudioFormat, CommitStrategy, RealtimeAudioOptions
 
 connection = await client.speech_to_text.realtime.connect(RealtimeAudioOptions(
-    model_id="scribe_v2_realtime",
+    model_id="scribe_v3_live",
     audio_format=AudioFormat.PCM_16000,
     sample_rate=16000,
     commit_strategy=CommitStrategy.MANUAL,
@@ -41,7 +41,7 @@ await connection.commit()
 
 ```javascript
 const connection = await client.speechToText.realtime.connect({
-  modelId: "scribe_v2_realtime",
+  modelId: "scribe_v3_live",
 });
 
 // Send audio
@@ -88,7 +88,7 @@ VAD listens for silence and automatically commits when the speaker pauses. This 
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 
 const scribe = useScribe({
-  modelId: "scribe_v2_realtime",
+  modelId: "scribe_v3_live",
   commitStrategy: CommitStrategy.VAD,
   // Optional VAD tuning:
   vadSilenceThresholdSecs: 1.5,    // Silence duration before commit
@@ -104,7 +104,7 @@ const scribe = useScribe({
 
 ```javascript
 const connection = await client.speechToText.realtime.connect({
-  modelId: "scribe_v2_realtime",
+  modelId: "scribe_v3_live",
   vad: {
     silenceThresholdSecs: 1.5,    // Silence duration before commit
     threshold: 0.4,               // Speech detection sensitivity (0-1)
@@ -136,6 +136,23 @@ const connection = await client.speechToText.realtime.connect({
 - Known segment boundaries
 - Maximum control over timing
 - Server-side batch processing
+
+## Turn Prediction
+
+With `scribe_v3_live`, `commit_strategy=turn_prediction` commits a segment when the model predicts the speaker has finished their turn, rather than at the first pause. VAD stays active, so a segment is also committed when the VAD silence threshold is reached, and the VAD parameters apply as usual. Other models reject `turn_prediction` with an `invalid_request` error.
+
+The SDK `CommitStrategy` enums don't include `turn_prediction` yet, so connect to the WebSocket API directly:
+
+```
+wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v3_live&audio_format=pcm_16000&commit_strategy=turn_prediction
+```
+
+With `scribe_v3_live`, every `partial_transcript` on the WebSocket API includes `turn_probability`, the estimated probability that the speaker has finished their turn. The SDK realtime helpers don't expose this field yet (their partial transcript types only carry `text`), so only rely on it over a direct WebSocket connection. There, with `commit_strategy=manual`, read it to decide when to send a `{"message_type": "commit"}` message yourself.
+
+### When to Use Turn Prediction
+
+- Voice agents and contact centers, where callers pause mid-sentence (for example while reading out a number)
+- Live microphone input where a short VAD threshold cuts speakers off and a long one adds lag
 
 ## Supported Audio Formats
 

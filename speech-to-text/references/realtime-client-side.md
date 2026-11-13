@@ -42,7 +42,7 @@ function TranscriptionComponent() {
   const [transcript, setTranscript] = useState("");
 
   const scribe = useScribe({
-    modelId: "scribe_v2_realtime",
+    modelId: "scribe_v3_live",
     commitStrategy: CommitStrategy.VAD, // Auto-commit on silence for mic input
     includeLanguageDetection: true,
     onPartialTranscript: (data) => {
@@ -117,7 +117,7 @@ async function startTranscription() {
 
   const connection = Scribe.connect({
     token,
-    modelId: "scribe_v2_realtime",
+    modelId: "scribe_v3_live",
     includeTimestamps: true,
     includeLanguageDetection: true,
     keyterms: ["ElevenLabs", "Scribe"],
@@ -165,8 +165,8 @@ detected language code in a delayed final transcript event.
 
 Both `Scribe.connect` and `useScribe` accept `secondaryLanguages` for expected additional
 languages, `entityDetection` for entity events, and `filterBackgroundAudio` to reduce false
-activation from background speech and ambient noise. Do not combine `filterBackgroundAudio` with
-`includeTimestamps`. Enterprise zero-retention sessions can set `enableLogging: false`.
+activation from background speech and ambient noise. Enterprise zero-retention sessions can set
+`enableLogging: false`.
 
 To redact entities, pass `entityRedaction` (same values as `entityDetection`) and optionally
 `entityRedactionMode` (`redacted`, `entity_type`, or `enumerated_entity_type`, the default). With

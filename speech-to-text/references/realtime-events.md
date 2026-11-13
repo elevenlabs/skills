@@ -51,7 +51,7 @@ Connection established successfully.
     "sample_rate": 16000,
     "audio_format": "pcm_16000",
     "language_code": "en",
-    "model_id": "scribe_v2_realtime",
+    "model_id": "scribe_v3_live",
     "commit_strategy": "manual",
     "enable_logging": true,
     "include_timestamps": true
@@ -74,6 +74,7 @@ Interim transcription results, updates frequently as audio is processed.
 |-------|------|-------------|
 | `message_type` | string | `"partial_transcript"` |
 | `text` | string | Current partial transcription |
+| `turn_probability` | number \| null | Probability that the speaker has finished their turn. Only sent for models that predict turns (`scribe_v3_live`). WebSocket API only: not yet exposed by the SDK realtime helpers |
 
 ### final_transcript
 

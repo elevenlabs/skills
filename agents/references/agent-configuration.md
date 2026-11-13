@@ -81,6 +81,7 @@ conversation_config={
 | `stability` | float | `0.5` | 0-1, lower = more expressive |
 | `similarity_boost` | float | `0.8` | 0-1, higher = closer to original voice |
 | `speed` | float | `1.0` | 0.7-1.2, speech speed multiplier (not supported on Eleven v4 models) |
+| `clone_strength` | float | `0` | 0-1, how closely Eleven v4 output follows a Professional Voice Clone's training recordings; higher = closer to the original delivery |
 | `expressive_mode` | bool | `true` | Enable expressive voice generation |
 | `agent_output_audio_format` | string | - | Output audio codec format |
 | `pronunciation_dictionary_locators` | array | - | Pronunciation overrides |
@@ -97,7 +98,7 @@ conversation_config={
 | `eleven_v3_conversational` | 70+ | ~280ms (previous generation) |
 | `eleven_multilingual_v2` | 29 | Standard (previous generation) |
 
-`eleven_turbo_v2_5` and `eleven_turbo_v2` are still accepted but superseded by the Flash models. Eleven v4 models use only `stability` and `similarity_boost`; `speed` does not apply.
+`eleven_turbo_v2_5` and `eleven_turbo_v2` are still accepted but superseded by the Flash models. Eleven v4 models use `stability` and `similarity_boost`, plus `clone_strength` for Professional Voice Clones; `speed` does not apply.
 
 ### asr (Automatic Speech Recognition)
 
@@ -714,7 +715,7 @@ elevenlabs agents update --agent-id "your-agent-id" --json '{"name": "New Name"}
 | Root | `name`, `tags` |
 | `conversation_config.agent` | `first_message`, `language`, `disable_first_message_interruptions`, `dynamic_variables`, `text_behavior_overrides` |
 | `conversation_config.agent.prompt` | `prompt`, `llm`, `temperature`, `max_tokens`, `reasoning_effort`, `tools`, `built_in_tools`, `enable_parallel_tool_calls`, `knowledge_base`, `custom_llm`, `timezone` |
-| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `expressive_mode`, `enable_phoneme_tags` |
+| `conversation_config.tts` | `voice_id`, `model_id`, `stability`, `similarity_boost`, `speed`, `clone_strength`, `expressive_mode`, `enable_phoneme_tags` |
 | `conversation_config.asr` | `quality`, `provider`, `keywords`, `user_input_audio_format` |
 | `conversation_config.turn` | `turn_timeout`, `turn_eagerness`, `silence_end_call_timeout`, `turn_model`, `interruption_ignore_terms`, `interruption_ignore_term_languages`, `merge_with_default_ignore_terms`, `transcribe_on_disabled_interruptions`, `soft_timeout_config` |
 | `conversation_config.conversation` | `max_duration_seconds`, `text_only`, `dtmf_input_settings`, `monitoring_enabled`, `background_sound` |

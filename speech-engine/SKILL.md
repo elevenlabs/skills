@@ -98,6 +98,8 @@ console.log(engine.engineId);
 
 The create request can also configure `tts`, `asr`, `turn`, `speech_engine.request_headers` / `speechEngine.requestHeaders`, `overrides`, and `privacy` for custom voices, transcription keywords, turn-taking, server auth headers, client-provided first messages, and recording behavior. See the SDK reference files for expanded examples.
 
+Set `auth={"enable_auth": True}` (Python) or `auth: { enableAuth: true }` (TypeScript) on create or update so clients can only start a conversation with a signed URL or conversation token issued by your server (see [Browser Client](#browser-client)), not with the Speech Engine ID alone. It defaults to `false`.
+
 ## Server Pattern
 
 Run the Speech Engine server at the `ws_url` / `wsUrl` configured on the resource. Keep response generation behind your own validation boundary: raw speech-recognition text should not directly control responses, tools, secrets, or other privileged actions.
