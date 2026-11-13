@@ -147,7 +147,7 @@ The SDK `CommitStrategy` enums don't include `turn_prediction` yet, so connect t
 wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v3_live&audio_format=pcm_16000&commit_strategy=turn_prediction
 ```
 
-With `scribe_v3_live`, every `partial_transcript` includes `turn_probability`, the estimated probability that the speaker has finished their turn. With manual commits, read it to decide when to call `commit()` yourself.
+With `scribe_v3_live`, every `partial_transcript` on the WebSocket API includes `turn_probability`, the estimated probability that the speaker has finished their turn. The SDK realtime helpers don't expose this field yet (their partial transcript types only carry `text`), so only rely on it over a direct WebSocket connection. There, with `commit_strategy=manual`, read it to decide when to send a `{"message_type": "commit"}` message yourself.
 
 ### When to Use Turn Prediction
 

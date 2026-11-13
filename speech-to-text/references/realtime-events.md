@@ -74,7 +74,7 @@ Interim transcription results, updates frequently as audio is processed.
 |-------|------|-------------|
 | `message_type` | string | `"partial_transcript"` |
 | `text` | string | Current partial transcription |
-| `turn_probability` | number \| null | Probability that the speaker has finished their turn. Only sent for models that predict turns (`scribe_v3_live`) |
+| `turn_probability` | number \| null | Probability that the speaker has finished their turn. Only sent for models that predict turns (`scribe_v3_live`). WebSocket API only: not yet exposed by the SDK realtime helpers |
 
 ### final_transcript
 
