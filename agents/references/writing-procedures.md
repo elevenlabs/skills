@@ -75,7 +75,7 @@ Saving an agent draft or publishing rejects a structured procedure that breaks a
 
 - Only `ask` waits for the user. Every other step runs immediately and control moves to the next step within the same turn. There is no step that stops the turn other than `ask`; use `end_call` to end the conversation.
 - Reaching the end of a procedure does not end the turn. The agent returns to its normal behavior with the turn still open and may say more.
-- Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect edges to this authored node, never directly to the structured procedure's generated nodes. Use a `sub_procedure` step to chain structured procedures.
+- Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the workflow graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect workflow edges to the Start procedure node. Use a `sub_procedure` step to chain structured procedures.
 - `ask`, `tell`, and `say` steps have no tools. Do not write "do not call tools" into them.
 - Decisions made inside a `branch` arm are not remembered by later steps. Persist anything needed downstream with a tool call or a dynamic variable.
 
