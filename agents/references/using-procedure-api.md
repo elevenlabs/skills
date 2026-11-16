@@ -1,10 +1,10 @@
 # Using the Procedure API
 
-Procedures are reusable instruction blocks that an agent runs when a trigger matches. Use the ElevenLabs CLI by default to create, edit, and publish them. Python and JavaScript SDKs are also available for application code. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
+Procedures are reusable instruction blocks that an agent runs when a trigger matches or a Start procedure workflow node starts it. Use the ElevenLabs CLI by default to create, edit, and publish them. Python and JavaScript SDKs are also available for application code. Reference: [Procedures](https://elevenlabs.io/docs/eleven-agents/customization/procedures.md) · [API Reference](https://elevenlabs.io/docs/api-reference/agents/procedures/).
 
 For what belongs in `trigger` and `content`, see [Writing Procedures](writing-procedures.md).
 
-Turning a structured procedure's steps into the form the agent executes is called compiling. The platform compiles every structured procedure when the agent draft is saved or the agent is published; authors never compile anything themselves. Both operations validate every structured procedure on the branch and return any errors. Workflow edges cannot connect to or from a structured procedure or its compiled elements. Use a Sub-procedure step to chain structured procedures; entry from a matching trigger and completion are platform-managed.
+Turning a structured procedure's steps into the form the agent executes is called compiling. The platform compiles every structured procedure when the agent draft is saved or the agent is published; authors never compile anything themselves. Both operations validate every structured procedure on the branch and return any errors. Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the workflow graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect workflow edges to the Start procedure node. Use a `sub_procedure` step to chain structured procedures.
 
 The CLI exposes the complete procedure lifecycle, including draft operations.
 

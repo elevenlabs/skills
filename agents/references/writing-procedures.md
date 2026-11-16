@@ -13,7 +13,7 @@ Check the current documentation before authoring procedure content:
 - Use `deterministic` ("structured" in the dashboard) for typed steps that run in a fixed order, such as identity verification, escalation, or payment collection.
 - A procedure's `type` cannot change after creation. Always resend the existing `type` on a draft update. To convert between free-form and structured, create a new procedure and re-point any references to it.
 - Write concrete, non-overlapping triggers from the user's perspective. Cover likely phrasing: `When the user asks to refund, return, or get money back for an order` routes better than `When the user requests a refund`.
-- An empty `trigger` marks a sub-procedure that runs only when another procedure references it. Set `trigger` as its own field; do not embed a trigger inside `content`.
+- An empty `trigger` prevents trigger-based selection; the procedure can still be started by another procedure or a Start procedure workflow node. Set `trigger` as its own field; do not embed a trigger inside `content`.
 - Content is capped at 50,000 characters for both types.
 - Keep each procedure focused on one task. Put tone and refusal policy in the system prompt.
 - Extract steps shared across procedures into a separate procedure and reference it, rather than copying the steps. Copies drift.
@@ -75,7 +75,7 @@ Saving an agent draft or publishing rejects a structured procedure that breaks a
 
 - Only `ask` waits for the user. Every other step runs immediately and control moves to the next step within the same turn. There is no step that stops the turn other than `ask`; use `end_call` to end the conversation.
 - Reaching the end of a procedure does not end the turn. The agent returns to its normal behavior with the turn still open and may say more.
-- Manually authored workflow edges cannot connect to or from a structured procedure. Use a `sub_procedure` step to chain structured procedures; entry from a matching trigger and completion are platform-managed.
+- Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the workflow graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect workflow edges to the Start procedure node. Use a `sub_procedure` step to chain structured procedures.
 - `ask`, `tell`, and `say` steps have no tools. Do not write "do not call tools" into them.
 - Decisions made inside a `branch` arm are not remembered by later steps. Persist anything needed downstream with a tool call or a dynamic variable.
 

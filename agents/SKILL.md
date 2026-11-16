@@ -329,7 +329,7 @@ For nested agent transfers, set `enable_nesting` on a `standalone_agent` node an
 
 ### Build Workflows in Code
 
-The Python and JavaScript SDKs include a `Workflow` builder that produces the `workflow` value for `agents.create()` and `agents.update()`. Chain `converse`, `tool`, `transfer`, and `end` steps, and route between them with `when` (a string is an LLM condition; an `Expr` is an expression on dynamic variables), `on_success` / `on_failure`, and `go_to`. `build()` assigns `start_node`, edge IDs, `edge_order`, and editor positions, and raises one `WorkflowValidationError` listing every graph problem. Reference: [Workflows as code](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows-as-code).
+The Python and JavaScript SDKs include a `Workflow` builder that produces the `workflow` value for `agents.create()` and `agents.update()`. Chain `converse`, `tool`, `transfer`, and `end` steps, and route between them with `when` (a string is an LLM condition; an `Expr` is an expression on dynamic variables), `on_success` / `on_failure`, and `go_to`. `build()` assigns `start_node`, edge IDs, `edge_order`, and editor positions, and raises one `WorkflowValidationError` listing every workflow graph problem. Reference: [Workflows as code](https://elevenlabs.io/docs/eleven-agents/customization/agent-workflows-as-code).
 
 ```python
 from elevenlabs import ElevenLabs
@@ -368,9 +368,11 @@ await client.conversationalAi.agents.update("agent_id", { workflow: wf.build() }
 
 To edit an existing workflow, load it with `Workflow.from_agent(agent)` / `Workflow.fromAgent(agent)`, then change nodes with `wf.node(id).update(...)`, `insert_between` / `insertBetween`, or `remove`; IDs and positions are kept. `to_json_string()` / `toJSONString()` and `Workflow.from_json()` / `Workflow.fromJSON()` store workflows as JSON in version control, and `elevenlabs agents workflow diagram <file>` draws a workflow file as a flowchart (`--format mermaid` for Mermaid output).
 
+A Start procedure node starts an attached procedure at a chosen point in the workflow graph. See [Procedures](#procedures) for the `start_procedure` node and its continuation behavior.
+
 ## Procedures
 
-Reusable instruction blocks an agent runs when a trigger matches. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (called "structured" in the dashboard: typed steps that run in a fixed order, for flows that must happen the same way every time). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step reference, validation rules, and authoring guidance.
+Reusable instruction blocks an agent runs when a trigger matches or a Start procedure workflow node starts it. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (called "structured" in the dashboard: typed steps that run in a fixed order, for flows that must happen the same way every time). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step reference, validation rules, and authoring guidance.
 
 Procedures live on an agent branch, and every write stages a per-user draft:
 
@@ -387,7 +389,7 @@ Semantics worth knowing before writing any of these calls:
 - If a structured procedure is invalid, the publish or draft save returns `400` with `status` `procedure_validation_failed` and `errors` keyed by procedure ID, each entry carrying the `path` of the offending field and a message. Nothing is written; repair the procedure draft and publish again.
 - A draft update replaces the whole body. Read the draft first, then resend `name`, `type`, and `trigger` alongside the new `content`. `type` cannot change after creation.
 - `content` is markdown for a `free_form` procedure, and a JSON-encoded object with a `steps` array for a `deterministic` one. The trigger is the top-level `trigger` field in both cases, not part of `content`. Serialize it; do not hand-escape quotes.
-- Manually authored workflow edges cannot connect to or from a structured procedure. Use a `sub_procedure` step to chain structured procedures; entry from a matching trigger and completion are platform-managed.
+- Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the workflow graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect workflow edges to the Start procedure node. Use a `sub_procedure` step to chain structured procedures.
 - A third `type`, `folder`, groups procedures in the dashboard. Folders carry no `content` or `trigger`; move a procedure into one with `POST .../procedures/{procedure_id}/move`.
 - The agent keeps the five most recently started procedures in context. When more have been started, the content, inline tools, and knowledge base documents of the oldest free-form ones drop out of the prompt, although the procedures remain active. Keep procedures focused and use sub-procedures so that few are active at once.
 - Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say. The model sees only a numbered menu of triggers; it never sees procedure names or IDs.
