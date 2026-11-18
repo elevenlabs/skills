@@ -75,6 +75,7 @@ Interim transcription results, updates frequently as audio is processed.
 | `message_type` | string | `"partial_transcript"` |
 | `text` | string | Current partial transcription |
 | `turn_probability` | number \| null | Probability that the speaker has finished their turn. Only sent for models that predict turns (`scribe_v3_live`). WebSocket API only: not yet exposed by the SDK realtime helpers |
+| `language_code` | string \| null | Language of the speech so far in the current turn. Only present when `include_language_detection=true`; `null` until enough text is detected with confidence. The committed transcript's `language_code` is authoritative |
 
 ### final_transcript
 

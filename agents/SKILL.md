@@ -49,7 +49,7 @@ agent = client.conversational_ai.agents.create(
             "language": "en",
             "prompt": {
                 "prompt": "You are a helpful assistant. Be concise and friendly.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "temperature": 0.7
             }
         },
@@ -72,7 +72,7 @@ const agent = await client.conversationalAi.agents.create({
       language: "en",
       prompt: {
         prompt: "You are a helpful assistant.",
-        llm: "gemini-2.0-flash",
+        llm: "gemini-3.5-flash",
         temperature: 0.7
       }
     },
@@ -87,7 +87,7 @@ The CLI reads `ELEVENLABS_API_KEY` from the environment automatically:
 
 ```bash
 elevenlabs agents create \
-  --json '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
+  --json '{"name": "My Assistant", "conversation_config": {"agent": {"first_message": "Hello!", "language": "en", "prompt": {"prompt": "You are helpful.", "llm": "gemini-3.5-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
 
 ## Starting Conversations
@@ -171,9 +171,9 @@ function App({ signedUrl }: { signedUrl: string }) {
 
 | Provider | Models |
 |----------|--------|
-| OpenAI | `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-sonnet-5-5`, `claude-opus-4-7`, `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
-| Google | `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
+| OpenAI | `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini` |
+| Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-sonnet-5-5`, `claude-opus-4-7`, `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-haiku-4-5` |
+| Google | `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite` |
 | ElevenLabs | `glm-52`, `deepseek-v41-flash`, `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `nemotron-35-super-vl-nvfp4`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
 
@@ -209,7 +209,7 @@ Workspace environment variables can resolve per-environment server tool URLs, he
 ```python
 "prompt": {
     "prompt": "You are a helpful assistant that can check the weather.",
-    "llm": "gemini-2.0-flash",
+    "llm": "gemini-3.5-flash",
     "tools": [
         # Webhook: server-side API call
         {"type": "webhook", "name": "get_weather", "description": "Get weather",
@@ -298,6 +298,43 @@ No-auth APIs useful for prototypes (URLs must be HTTPS):
 | `get_weather` | `https://wttr.in/{location}?format=j1` | Current weather |
 | `search_wikipedia` | `https://en.wikipedia.org/api/rest_v1/page/summary/{topic}` | Topic summary |
 | `get_exchange_rate` | `https://open.er-api.com/v6/latest/{base_currency}` | FX rates |
+
+### Build Tools in Code
+
+The Python and JavaScript SDKs include a tool builder (`Tool`, `Schema`, `Header`, and `SystemTool`; imported from `elevenlabs.agent_tools` in Python and from the package root in JavaScript) that produces the request for `tools.create()` and `tools.update()`. Start with `Tool.webhook(name, description)`, `Tool.client(name, description)`, or a `SystemTool` constructor, then chain calls such as `get()`/`post()`, `path_param()`/`pathParam()`, `body()`, `header()`, and `assign()`. Every literal parameter needs exactly one value source: `describe()` (the LLM fills it), `from_variable()`/`fromVariable()`, `constant()`, `system_provided()`/`systemProvided()`, or `omit()`. `build()` checks the whole tool and raises one `ToolValidationError` listing every problem. Reference: [Tools as code](https://elevenlabs.io/docs/eleven-agents/customization/agents-as-code/tools).
+
+```python
+from elevenlabs import ElevenLabs
+from elevenlabs.agent_tools import Header, Schema, Tool
+
+client = ElevenLabs()
+
+get_order = (
+    Tool.webhook("get_order", "Look up an order by the number the caller gives")
+    .get("https://api.example.com/orders/{order_id}")
+    .path_param("order_id", Schema.string().describe("The order number, e.g. A-1042"))
+    .header("Authorization", Header.secret("sec_orders_api"))
+    .assign("order_status", "order.status")
+)
+
+tool = client.conversational_ai.tools.create(request=get_order.build())
+```
+
+```javascript
+import { ElevenLabsClient, Header, Schema, Tool } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient();
+
+const getOrder = Tool.webhook("get_order", "Look up an order by the number the caller gives")
+  .get("https://api.example.com/orders/{order_id}")
+  .pathParam("order_id", Schema.string().describe("The order number, e.g. A-1042"))
+  .header("Authorization", Header.secret("sec_orders_api"))
+  .assign("order_status", "order.status");
+
+const tool = await client.conversationalAi.tools.create(getOrder.build());
+```
+
+Attach the created tool with `tool_ids`; for system tools, `build_config()` / `buildConfig()` returns the entry for `built_in_tools`. To edit an existing tool, load it with `Tool.from_response()` / `Tool.fromResponse()`, change it, and push it back with `tools.update()`. `to_json_string()` / `toJSONString()` and `Tool.from_json()` / `Tool.fromJSON()` store tools as JSON in version control.
 
 ## Workflows
 
@@ -576,7 +613,7 @@ agent = client.conversational_ai.agents.get(agent_id="your-agent-id")
 client.conversational_ai.agents.update(agent_id="your-agent-id", name="New Name")
 client.conversational_ai.agents.update(agent_id="your-agent-id",
     conversation_config={
-        "agent": {"prompt": {"prompt": "New instructions", "llm": "claude-sonnet-4"}}
+        "agent": {"prompt": {"prompt": "New instructions", "llm": "claude-sonnet-4-6"}}
     })
 
 # Delete

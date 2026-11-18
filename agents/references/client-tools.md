@@ -19,7 +19,7 @@ conversation_config={
     "agent": {
         "prompt": {
             "prompt": "You are helpful.",
-            "llm": "gemini-2.0-flash",
+            "llm": "gemini-3.5-flash",
             "tools": [...],            # Webhook and client tools
             "built_in_tools": {...}     # System tools (end_call, transfer, etc.)
         }
@@ -40,7 +40,7 @@ agent = client.conversational_ai.agents.create(
         "agent": {
             "prompt": {
                 "prompt": "You are a helpful assistant that can check the weather.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "tools": [{
                     "type": "webhook",
                     "name": "get_weather",
@@ -323,7 +323,7 @@ agent = client.conversational_ai.agents.create(
                 "prompt": """You are a shopping assistant.
 When users want to see a product, use show_product.
 When users want to go somewhere, use navigate_to.""",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "tools": [
                     {
                         "type": "client",
@@ -573,7 +573,7 @@ Available actions:
 - transfer_to_number: Transfer to human support
 
 Always verify order ID before lookup. Offer transfer for complex issues.""",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "tools": [
                     # Webhook: Server-side order lookup
                     {
