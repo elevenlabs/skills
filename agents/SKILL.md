@@ -334,7 +334,7 @@ const getOrder = Tool.webhook("get_order", "Look up an order by the number the c
 const tool = await client.conversationalAi.tools.create(getOrder.build());
 ```
 
-Attach the created tool with `tool_ids`; for system tools, `build_config()` / `buildConfig()` returns the entry for `built_in_tools`. To edit an existing tool, load it with `Tool.from_response()` / `Tool.fromResponse()`, change it, and push it back with `tools.update()`. `to_json_string()` / `toJSONString()` and `Tool.from_json()` / `Tool.fromJSON()` store tools as JSON in version control, and `elevenlabs tools diagram <tool_config.json|tool_id|name>` draws a tool's parameters, value sources, headers, and auth (`--format mermaid` for Mermaid output).
+Attach the created tool with `tool_ids`; for system tools, `build_config()` / `buildConfig()` returns the entry for `built_in_tools`. To edit an existing tool, load it with `Tool.from_response()` / `Tool.fromResponse()`, change it, and push it back with `tools.update()`. `to_json_string()` / `toJSONString()` and `Tool.from_json()` / `Tool.fromJSON()` store tools as JSON in version control.
 
 ## Workflows
 
@@ -599,8 +599,6 @@ your_project/
 ├── tool_configs/     # Individual tool configs
 └── test_configs/     # Individual test configs
 ```
-
-Agent, tool, and test config files can be `.json`, `.yaml`/`.yml`, or `.toml`; the file extension sets the format, and the registry files (`agents.json`, `tools.json`, `tests.json`) stay JSON. New files are JSON unless you pass `--config-format json|yaml|toml` to `agents add` or `agents pull`.
 
 ### SDK Examples
 

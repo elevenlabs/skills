@@ -48,7 +48,6 @@ show a message entry point, and multimodal agents show both.
 | Attribute | Description | Default |
 |-----------|-------------|---------|
 | `variant` | Widget style: `compact` or `expanded` | `compact` |
-| `layout` | Set `page` to make the widget fill its host element as a full page that always shows the chat, with a call pane beside it on desktop | `default` |
 | `server-location` | Server region (`us`, `eu-residency`, `in-residency`, `global`) | `us` |
 | `dismissible` | Allow the user to minimize the widget | `false` |
 | `disable-banner` | Hide "Powered by ElevenLabs" | `false` |
