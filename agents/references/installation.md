@@ -135,7 +135,7 @@ Every REST endpoint is available as a CLI subcommand. Set your API key as an env
 export ELEVENLABS_API_KEY="your-api-key"
 
 elevenlabs agents create \
-  --json '{"name": "My Agent", "conversation_config": {"agent": {"prompt": {"prompt": "You are helpful.", "llm": "gemini-2.0-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
+  --json '{"name": "My Agent", "conversation_config": {"agent": {"prompt": {"prompt": "You are helpful.", "llm": "gemini-3.5-flash"}}, "tts": {"voice_id": "JBFqnCBsd6RMkjVDRZzb"}}}'
 ```
 
 ## Getting an API Key

@@ -27,7 +27,7 @@ ELEVENLABS_API_KEY=<your_api_key_here>
 | Purpose | Python / WebSocket | JavaScript |
 |---------|--------------------|------------|
 | Limit language detection to expected additional languages | `secondary_languages` | `secondaryLanguages` |
-| Return detected language in delayed final events | `include_language_detection` | `includeLanguageDetection` |
+| Return detected language in partial and delayed final events | `include_language_detection` | `includeLanguageDetection` |
 | Detect entities in committed segments | `entity_detection` | `entityDetection` |
 | Redact entities in committed segments | `entity_redaction`, `entity_redaction_mode` | `entityRedaction`, `entityRedactionMode` |
 | Apply a natural-language edit instruction to committed segments | `transcript_edit` | `transcriptEdit` |

@@ -13,7 +13,7 @@ agent = client.conversational_ai.agents.create(
             "language": "en",
             "prompt": {           # LLM, system prompt, tools, and knowledge base
                 "prompt": "You are helpful.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "tools": [...],
                 "built_in_tools": {...}
             }
@@ -43,7 +43,7 @@ conversation_config={
         "disable_first_message_interruptions": False,
         "prompt": {
             "prompt": "You are a helpful assistant.",
-            "llm": "gemini-2.0-flash",
+            "llm": "gemini-3.5-flash",
             "temperature": 0.7
         }
     }
@@ -170,7 +170,7 @@ conversation_config={
     "agent": {
         "prompt": {
             "prompt": "You are a helpful customer service agent...",
-            "llm": "gemini-2.0-flash",
+            "llm": "gemini-3.5-flash",
             "temperature": 0.7,
             "max_tokens": 500,
             "tools": [...],
@@ -213,9 +213,9 @@ to resolve per-environment auth connections at runtime.
 
 | Provider | Model IDs |
 |----------|-----------|
-| OpenAI | `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-sonnet-5-5`, `claude-opus-4-7`, `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-sonnet-4`, `claude-haiku-4-5`, `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-haiku` |
-| Google | `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`, `gemini-2.0-flash-lite` |
+| OpenAI | `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini` |
+| Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-sonnet-5-5`, `claude-opus-4-7`, `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-haiku-4-5` |
+| Google | `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite` |
 | ElevenLabs | `glm-52`, `deepseek-v41-flash`, `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `nemotron-35-super-vl-nvfp4`, `gpt-oss-120b` (hosted, ultra-low latency) |
 | Custom | `custom-llm` (requires custom_llm config) |
 
@@ -369,6 +369,7 @@ Use `platform_settings.guardrails` to configure built-in safety controls for use
 | `prompt` | string | Instruction describing what to block. |
 | `execution_mode` | string | Guardrail execution mode: `streaming` or `blocking`. |
 | `model` | string | LLM model used for custom guardrail evaluation, such as `gemini-3.1-flash-lite`, `claude-sonnet-4-6`, or `gpt-5.4-mini`. |
+| `service_tier` | string | `standard` (default) or `fast`. `fast` trades a per-token price premium for higher token throughput; only some models offer it. |
 | `history_message_count` | integer | Number of recent customer messages to include in guardrail history; `0` includes none. |
 | `trigger_action` | object | Action when triggered, such as retrying with feedback or ending the call. |
 | `evaluate_full_response_only` | bool | Evaluate the complete non-TTS response once. Requires `execution_mode` set to `blocking`; defaults to `false`. |
@@ -505,7 +506,7 @@ agent = client.conversational_ai.agents.create(
         "agent": {
             "prompt": {
                 "prompt": "You are a support agent. Use the knowledge base to answer questions.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "knowledge_base": [
                     {"type": "file", "id": "doc-id", "name": "Product Guide", "usage_mode": "auto"}
                 ],
@@ -678,7 +679,7 @@ client.conversational_ai.agents.update(agent_id="id", conversation_config={
 
 # Update prompt/LLM (nested in agent)
 client.conversational_ai.agents.update(agent_id="id", conversation_config={
-    "agent": {"prompt": {"prompt": "New instructions.", "llm": "claude-sonnet-4", "temperature": 0.8}}
+    "agent": {"prompt": {"prompt": "New instructions.", "llm": "claude-sonnet-4-6", "temperature": 0.8}}
 })
 
 # Update first message
@@ -699,7 +700,7 @@ await client.conversationalAi.agents.update("id", {
   conversationConfig: { tts: { voiceId: "EXAVITQu4vr4xnSDxMaL" } }
 });
 await client.conversationalAi.agents.update("id", {
-  conversationConfig: { agent: { prompt: { prompt: "New instructions.", llm: "claude-sonnet-4" } } }
+  conversationConfig: { agent: { prompt: { prompt: "New instructions.", llm: "claude-sonnet-4-6" } } }
 });
 ```
 
@@ -763,7 +764,7 @@ agent = client.conversational_ai.agents.create(
             "language": "en",
             "prompt": {
                 "prompt": "You are a customer support agent. Be helpful, professional, concise.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "temperature": 0.5,
                 "built_in_tools": {
                     "end_call": {},
@@ -790,7 +791,7 @@ agent = client.conversational_ai.agents.create(
             "first_message": "Hey! What do you need?",
             "prompt": {
                 "prompt": "Fast, efficient assistant. Brief answers.",
-                "llm": "gemini-2.0-flash",
+                "llm": "gemini-3.5-flash",
                 "temperature": 0.3,
                 "max_tokens": 100
             }
