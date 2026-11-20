@@ -631,7 +631,7 @@ except Exception as e:
     print(f"API error: {e}")
 ```
 
-Common errors: **401** (invalid key), **404** (not found), **422** (invalid config), **429** (rate limit)
+Common errors: **401** (invalid key), **404** (not found), **422** (invalid config), **429** (rate limit), **504** (request timed out during a latency spike; retry with backoff)
 
 ## References
 
