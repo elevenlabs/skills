@@ -48,9 +48,9 @@ What each `next` means:
   the command, never print it), not a script for the user to run. When the
   code is written, or if it already was, check your changes are in place,
   then run `run`: its reply says how to finish.
-- `offer_test`: say what you set up and anything the user still has to do
-  themselves, like installing the packages you added. Then end your reply
-  with the question in `say`, as it is. If they say yes, run `run`: that
+- `offer_test`: say what you set up, the links to any agent you made, and
+  anything the user still has to do themselves, like installing the packages
+  you added. Then end your reply with the question in `say`, as it is. If they say yes, run `run`: that
   command is the test request, so don't run their app in its place. If they
   say no, run nothing.
 - `run`: run `run`.

@@ -58,7 +58,7 @@ INSTRUCTIONS = {
     "ask_user": "Ask the user what `say` says and wait for their answer, then run `run`, unless they said no.",
     "fix": "Do what `say` describes, then run `run`.",
     "integrate": "Tell the user `say`. The key is in place, so the rest is yours: build what the user asked for with ElevenLabs. Only a request that says what the app should do with ElevenLabs says what to build; one that asks to add, set up or use ElevenLabs, or for something general like voice features, doesn't. If theirs doesn't, ask `details.question`, as it is, and end your turn: write no code and install nothing until they answer, and don't pick for them. If they only want the SDK, install it (`details.sdk_install`) and create the client in one small file. Otherwise first run `details.fetch_skills`: it downloads the ElevenLabs skills into `details.skills_dir`, one folder per skill, outside the project, so list and read it with shell commands like `ls` and `cat` (file search tools may not look there). If one fits, read its SKILL.md and the `references/` files it links before writing any code, and write the code the way the skill shows, not from the SDK's own files; if none fits, write it without one. Install the SDK. Whatever they asked for, even nothing new, the app has to get the key: look at how it starts, and if nothing loads the env file, make it load it the way `details.load_key` says. That is part of the setup, not new work. If it needs something made in ElevenLabs first, like an agent, make it yourself with the key (load the env file in the command, never print it), and when you're done give the user the links in `details.agent_links` with its ID filled in. When the code is written (or if it already was), check your changes are in place, then run `run`: its reply says how to finish.",
-    "offer_test": "Say what you set up, how to run it and anything the user still has to do themselves, like installing the packages you added. Then end your reply with the question in `say`, as it is, and end your turn. If they say yes, run `run`: that command is the test request, so don't run their app in its place. If they say no, run nothing.",
+    "offer_test": "Say what you set up, how to run it, the links to any agent you made, and anything the user still has to do themselves, like installing the packages you added. Then end your reply with the question in `say`, as it is, and end your turn. If they say yes, run `run`: that command is the test request, so don't run their app in its place. If they say no, run nothing.",
     "done": "Tell the user `say`, then anything they still have to do themselves, like installing the packages you added, in one or two concrete steps. There's nothing left to run."
 }
 CLI = "npx -y @elevenlabs/cli@latest" if os.environ.get("npm_command") == "exec" else "elevenlabs"
@@ -153,8 +153,9 @@ def integrate(key, say, **more):
     archive = os.path.join(skills, "skills.tar.gz")
     load_key = ("The SDK reads ELEVENLABS_API_KEY from the environment. "
                 f"It is in {env_file}, so make sure the app loads that file into its environment before the SDK is "
-                "imported: many frameworks only read `.env` on their own, and some read env files into their own "
-                "object instead of the process environment. Keep the key in server-side code: never in the source, "
+                "imported: many tools, `dotenv` included, only read `.env` unless given this file's name, and some "
+                "read env files into their own object instead of the process environment. Keep the key in "
+                "server-side code: never in the source, "
                 "and never in anything that runs in the browser.")
     return reply("integrate", say, cmd("check --written"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
                  sdk_install=install, load_key=load_key, skills_dir=skills,
