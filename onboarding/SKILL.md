@@ -40,8 +40,10 @@ What each `next` means:
   turn: write no code and install nothing until they answer, and don't pick a
   product for them. If they only want the SDK, install it and create the
   client in one small file. Otherwise use the skill that fits from
-  `details.fetch_skills` when there is one, and get the key to the code the
-  way `details.load_key` says. If it needs something made in ElevenLabs
+  `details.fetch_skills` when there is one. Whatever they asked for, even
+  nothing new, the app has to get the key: look at how it starts, and if
+  nothing loads the env file, make it load it the way `details.load_key`
+  says. If it needs something made in ElevenLabs
   first, like an agent, make it yourself with the key (load the env file in
   the command, never print it), not a script for the user to run. When the
   code is written, or if it already was, say what you set up and anything the
