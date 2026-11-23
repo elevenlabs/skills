@@ -5,7 +5,7 @@
     {
       "id": 1,
       "prompt": "Add text to speech to my app: it's a Next.js notes app, and it should read notes aloud. I don't have an ElevenLabs account yet.",
-      "expected_output": "Runs onboard init, which signs in and stores the key in one command. The prompt says what to build, so it builds it without asking, and ends by offering the test request without sending it",
+      "expected_output": "Runs onboard init, which signs in and stores the key in one command. The prompt says what to build, so it builds it without asking, runs the closing check, and ends on the CLI's test offer without sending it",
       "files": [
         {
           "path": "package.json",
@@ -16,6 +16,7 @@
       "expectations": [
         "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard init",
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard init",
+        "elevenlabs-calls.txt shows -> offer_test after elevenlabs onboard check --written",
         "elevenlabs-calls.txt never shows (in outputs",
         "elevenlabs-calls.txt never shows elevenlabs onboard connect",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
@@ -37,7 +38,8 @@
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response shows build",
         "(NOT 'ElevenLabsClient')",
-        "(NOT 'from elevenlabs import') (NOT 'from elevenlabs.client')"
+        "(NOT 'from elevenlabs import') (NOT 'from elevenlabs.client')",
+        "elevenlabs-calls.txt never shows --written"
       ]
     },
     {
@@ -67,6 +69,7 @@
       "expectations": [
         "elevenlabs-calls.txt shows elevenlabs onboard connect after elevenlabs onboard init",
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard connect",
+        "elevenlabs-calls.txt shows -> offer_test after elevenlabs onboard check --written",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response never shows would you like to build",
         "(NOT 'sk_000000000000')"
@@ -110,13 +113,14 @@
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard init",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response shows build",
-        "(NOT 'ElevenLabsClient')"
+        "(NOT 'ElevenLabsClient')",
+        "elevenlabs-calls.txt never shows --written"
       ]
     },
     {
       "id": 7,
       "prompt": "My chat app already reads messages aloud with ElevenLabs, it just has no API key yet. Set it up.",
-      "expected_output": "Signs in. The code already uses the SDK and the prompt says what it does, so there is no question about what to build: it makes sure the app loads the key, then asks before sending a test request",
+      "expected_output": "Signs in. The code already uses the SDK and the prompt says what it does, so there is no question about what to build: it makes sure the app loads the key, runs the closing check, then asks before sending a test request",
       "files": [
         {
           "path": "package.json",
@@ -130,6 +134,7 @@
       "env": {},
       "expectations": [
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard init",
+        "elevenlabs-calls.txt shows -> offer_test after elevenlabs onboard check --written",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response never shows would you like to build",
         "response shows test",
@@ -156,7 +161,8 @@
         "elevenlabs-calls.txt never shows elevenlabs onboard connect",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response shows build",
-        "(NOT 'ElevenLabsClient')"
+        "(NOT 'ElevenLabsClient')",
+        "elevenlabs-calls.txt never shows --written"
       ]
     },
     {
@@ -182,7 +188,8 @@
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard init",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
         "response shows build",
-        "(NOT 'ElevenLabsClient')"
+        "(NOT 'ElevenLabsClient')",
+        "elevenlabs-calls.txt never shows --written"
       ]
     }
   ]

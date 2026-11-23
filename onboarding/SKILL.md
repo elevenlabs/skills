@@ -46,10 +46,13 @@ What each `next` means:
   says. If it needs something made in ElevenLabs
   first, like an agent, make it yourself with the key (load the env file in
   the command, never print it), not a script for the user to run. When the
-  code is written, or if it already was, say what you set up and anything the
-  user still has to do themselves, then end your reply with
-  `details.test_offer`, as it is. If they say yes, run `run`: that command is the test
-  request, so don't run their app in its place. If they say no, run nothing.
+  code is written, or if it already was, run `run`: its reply says how to
+  finish.
+- `offer_test`: say what you set up and anything the user still has to do
+  themselves, like installing the packages you added. Then end your reply
+  with the question in `say`, as it is. If they say yes, run `run`: that
+  command is the test request, so don't run their app in its place. If they
+  say no, run nothing.
 - `run`: run `run`.
 - `fix`: do what `say` describes, then run `run`. If it needs the user's
   shell, settings or secrets, ask them instead, as for `ask_user`.

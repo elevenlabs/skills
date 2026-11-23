@@ -41,6 +41,7 @@
         "elevenlabs-calls.txt shows elevenlabs onboard connect --replace --env-path .env.local after elevenlabs onboard check",
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard connect --replace",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
+        "elevenlabs-calls.txt never shows --written",
         "response never shows would you like to build",
         "(NOT 'sk_000000000000')",
         "(NOT 'sk_stale')"

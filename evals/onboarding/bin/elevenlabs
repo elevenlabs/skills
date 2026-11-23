@@ -35,10 +35,11 @@ with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
 # The flags each step takes, as the real CLI defines them; the framework adds the global ones.
 # `--env-file` is the old name of `--env-path`, still accepted like the real CLI does. `--wait` and
 # `--answered` are what replies from before this flow asked for: accepted, and they change nothing.
+# `check --written` is the closing step: the code is written, so a working key ends on the test offer.
 ENV = {"--env-path", "--env-file"}
 KEY_STEP = ENV | {"--no-browser", "--replace", "--wait", "--authorize-url"}
 FLAGS = {"init": KEY_STEP, "connect": KEY_STEP,
-         "check": ENV | {"--no-browser", "--answered"}, "test": ENV | {"--no-browser"}}
+         "check": ENV | {"--no-browser", "--answered", "--written"}, "test": ENV | {"--no-browser"}}
 GLOBAL_FLAGS = {"--format", "--human", "--base-url", "-q", "--quiet", "--debug", "--dry-run", "--via",
                 "--query", "--schema", "--spec", "--spec-raw"}
 # Flags followed by a value (unless given as --flag=value).
@@ -56,7 +57,8 @@ INSTRUCTIONS = {
     "run": "Tell the user `say`, then run `run`.",
     "ask_user": "Ask the user what `say` says and wait for their answer, then run `run`, unless they said no.",
     "fix": "Do what `say` describes, then run `run`.",
-    "integrate": "Tell the user `say`. The key is in place, so the rest is yours: build what the user asked for with ElevenLabs. Only a request that says what the app should do with ElevenLabs says what to build; one that asks to add, set up or use ElevenLabs, or for something general like voice features, doesn't. If theirs doesn't, ask `details.question`, as it is, and end your turn: write no code and install nothing until they answer, and don't pick for them. If they only want the SDK, install it (`details.sdk_install`) and create the client in one small file. Otherwise first run `details.fetch_skills`: it downloads the ElevenLabs skills into `details.skills_dir`, one folder per skill, outside the project, so list and read it with shell commands like `ls` and `cat` (file search tools may not look there). If one fits, read its SKILL.md and the `references/` files it links before writing any code, and write the code the way the skill shows, not from the SDK's own files; if none fits, write it without one. Install the SDK. Whatever they asked for, even nothing new, the app has to get the key: look at how it starts, and if nothing loads the env file, make it load it the way `details.load_key` says. That is part of the setup, not new work. If it needs something made in ElevenLabs first, like an agent, make it yourself with the key (load the env file in the command, never print it), and when you're done give the user the links in `details.agent_links` with its ID filled in. When the code is written (or if it already was), say what you set up, how to run it and anything the user still has to do themselves, like installing the packages you added. Then end your reply with `details.test_offer`, as it is, and end your turn. If they say yes, run `run`: that command is the test request, so don't run their app in its place. If they say no, run nothing.",
+    "integrate": "Tell the user `say`. The key is in place, so the rest is yours: build what the user asked for with ElevenLabs. Only a request that says what the app should do with ElevenLabs says what to build; one that asks to add, set up or use ElevenLabs, or for something general like voice features, doesn't. If theirs doesn't, ask `details.question`, as it is, and end your turn: write no code and install nothing until they answer, and don't pick for them. If they only want the SDK, install it (`details.sdk_install`) and create the client in one small file. Otherwise first run `details.fetch_skills`: it downloads the ElevenLabs skills into `details.skills_dir`, one folder per skill, outside the project, so list and read it with shell commands like `ls` and `cat` (file search tools may not look there). If one fits, read its SKILL.md and the `references/` files it links before writing any code, and write the code the way the skill shows, not from the SDK's own files; if none fits, write it without one. Install the SDK. Whatever they asked for, even nothing new, the app has to get the key: look at how it starts, and if nothing loads the env file, make it load it the way `details.load_key` says. That is part of the setup, not new work. If it needs something made in ElevenLabs first, like an agent, make it yourself with the key (load the env file in the command, never print it), and when you're done give the user the links in `details.agent_links` with its ID filled in. When the code is written (or if it already was), run `run`: its reply says how to finish.",
+    "offer_test": "Say what you set up, how to run it and anything the user still has to do themselves, like installing the packages you added. Then end your reply with the question in `say`, as it is, and end your turn. If they say yes, run `run`: that command is the test request, so don't run their app in its place. If they say no, run nothing.",
     "done": "Tell the user `say`, then anything they still have to do themselves, like installing the packages you added, in one or two concrete steps. There's nothing left to run."
 }
 CLI = "npx -y @elevenlabs/cli@latest" if os.environ.get("npm_command") == "exec" else "elevenlabs"
@@ -143,7 +145,7 @@ def reply(next_, say, run=None, rules=True, **details):
 
 def integrate(key, say, **more):
     """The real CLI's one reply once a working key is in place: where the key is, what the app needs
-    to load it, where the skills are, and the test request to offer at the end."""
+    to load it, where the skills are, and the closing step to run once the code is written."""
     install = {"python": "pip install elevenlabs (and add elevenlabs to the project's dependencies)",
                "node": "npm install @elevenlabs/elevenlabs-js"}.get(
         STACK, "npm install @elevenlabs/elevenlabs-js (or pip install elevenlabs, and add elevenlabs to requirements.txt)")
@@ -154,12 +156,12 @@ def integrate(key, say, **more):
                 "imported: many frameworks only read `.env` on their own, and some read env files into their own "
                 "object instead of the process environment. Keep the key in server-side code: never in the source, "
                 "and never in anything that runs in the browser.")
-    return reply("integrate", say, cmd("test"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
+    return reply("integrate", say, cmd("check --written"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
                  sdk_install=install, load_key=load_key, skills_dir=skills,
                  fetch_skills=f"curl -fsSL -o {archive} {SKILLS_ARCHIVE} && tar -xzf {archive} -C {skills} --strip-components=1",
                  agent_links="Its page: https://elevenlabs.io/app/agents/agents/<agent_id>. To talk to it, when anyone "
                              "with the link may: https://elevenlabs.io/app/talk-to?agent_id=<agent_id>.",
-                 test_offer=TEST_OFFER, **more)
+                 **more)
 
 
 def scripted(step):
@@ -239,6 +241,10 @@ if step == "check":
         emit(reply("run", f"There's no ElevenLabs API key in this project yet, so {approval} to create one.", cmd("connect")))
     if key == "":
         emit(reply("ask_user", f"ELEVENLABS_API_KEY in {env_file} is still empty. Paste the key after the = (never into this chat), and tell me when it's done.", cmd("check")))
+    if "--written" in args:
+        # The closing step: the question the developer answers, and the test request as `run`.
+        emit(reply("offer_test", f"Your ElevenLabs key ending in {key[-4:]} works. It's in {env_file}. {TEST_OFFER}", cmd("test"),
+                   rules=False, key_last4=key[-4:]))
     emit(works(key))
 if step == "test":
     if not key:
