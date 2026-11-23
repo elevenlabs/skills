@@ -12,8 +12,8 @@ ElevenLabs to a project from scratch, use the `onboarding` skill.
 
 **A key the user already has (for example from an administrator):** don't
 sign in for a new one. Tell them to paste it after `ELEVENLABS_API_KEY=` in
-the env file of the app that uses it (`.env.local`, or `.env` in a Python
-project), never into this chat, and to tell you when it's done. Then check it
+the env file of the app that uses it (`.env`), never into this chat, and to
+tell you when it's done. Then check it
 (if `check` finds no key, or ElevenLabs rejects it, and offers to sign in,
 ask the user to check the paste instead of signing in):
 
@@ -31,7 +31,8 @@ in for a new one. What each `next` means:
 
 - `run`: run `run`. When it is a sign-in (`onboard connect`), it opens the
   approval page and waits, for up to five minutes, while the user approves:
-  tell them first, and give the command that long.
+  tell them first, then keep the command running until it finishes and don't
+  end your turn while it waits.
 - `ask_user`, or a `fix` that needs the user's shell or secrets: ask them
   what `say` says, wait for their answer, then run `run`, unless they said no.
 - `integrate`: the key works. If the user only asked to fix or place a key,

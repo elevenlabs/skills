@@ -102,11 +102,10 @@ STACK = "node" if has("package.json") else "python" if has("pyproject.toml", "re
 
 
 def default_env_file():
-    """`.env` for Python, `.env.local` otherwise; a key the project already keeps in its `.env` stays there."""
-    default = ".env" if STACK == "python" else ".env.local"
-    if default != ".env" and key_in(default) is None and key_in(".env") is not None:
-        return ".env"
-    return default
+    """`.env`; a key the project already keeps in its `.env.local` stays there."""
+    if key_in(".env") is None and key_in(".env.local") is not None:
+        return ".env.local"
+    return ".env"
 
 
 env_file = flag("--env-path") or flag("--env-file") or default_env_file()
@@ -153,9 +152,8 @@ def integrate(key, say, **more):
     archive = os.path.join(skills, "skills.tar.gz")
     load_key = ("The SDK reads ELEVENLABS_API_KEY from the environment. "
                 f"It is in {env_file}, so make sure the app loads that file into its environment before the SDK is "
-                "imported: many tools, `dotenv` included, only read `.env` unless given this file's name, and some "
-                "read env files into their own object instead of the process environment. Keep the key in "
-                "server-side code: never in the source, "
+                "imported: many frameworks only read `.env` on their own, and some read env files into their own "
+                "object instead of the process environment. Keep the key in server-side code: never in the source, "
                 "and never in anything that runs in the browser.")
     return reply("integrate", say, cmd("check --written"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
                  sdk_install=install, load_key=load_key, skills_dir=skills,

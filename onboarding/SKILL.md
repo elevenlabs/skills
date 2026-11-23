@@ -18,8 +18,9 @@ npx -y @elevenlabs/cli@latest onboard init
 With no key in the project yet, that command is the sign-in. It opens the
 ElevenLabs approval page in the user's browser and waits, for up to five
 minutes, while they sign in (or create an account) and click Authorize. Tell
-the user that before you run it, and give the command that long. If it is
-stopped before they approve, run it again.
+the user that before you run it, then keep the command running until it
+finishes and don't end your turn while it waits: the command is what receives
+the approval. If it is stopped before they approve, run it again.
 
 Every `onboard` command prints one line of JSON. Act on it:
 

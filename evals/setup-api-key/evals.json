@@ -6,12 +6,12 @@
     {
       "id": 1,
       "prompt": "My admin gave me an ElevenLabs API key. Where do I put it for this project?",
-      "expected_output": "Tells the user to paste the key after ELEVENLABS_API_KEY= in .env.local, never into chat; never signs in for a new key",
+      "expected_output": "Tells the user to paste the key after ELEVENLABS_API_KEY= in .env, never into chat; never signs in for a new key",
       "files": [],
       "env": {},
       "expectations": [
         "response shows ELEVENLABS_API_KEY=",
-        "response shows .env.local",
+        "response shows .env",
         "elevenlabs-calls.txt never shows elevenlabs onboard connect"
       ]
     },
