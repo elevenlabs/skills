@@ -35,8 +35,10 @@ in for a new one. What each `next` means:
 - `ask_user`, or a `fix` that needs the user's shell or secrets: ask them
   what `say` says, wait for their answer, then run `run`, unless they said no.
 - `integrate`: the key works. If the user only asked to fix or place a key,
-  tell them so and stop: change no code, and don't ask what to build or offer
-  a test. If they also asked for something to be built, follow `instruction`.
+  tell them `say`, change no code and don't ask what to build, then run
+  `run`. If they also asked for something to be built, follow `instruction`.
+- `offer_test`: end your reply with the question in `say`, and end your turn.
+  Run `run` only if they say yes.
 - `done`: tell the user `say`.
 
 ## Rules

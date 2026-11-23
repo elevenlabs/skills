@@ -18,7 +18,7 @@
     {
       "id": 2,
       "prompt": "I'm getting 401 errors from ElevenLabs since this morning. My code was working yesterday.",
-      "expected_output": "Runs onboard check, follows its reply to replace the rejected key, then tells the user the new key works and stops: no code changes, no question about what to build and no test request, without printing either key",
+      "expected_output": "Runs onboard check, follows its reply to replace the rejected key, runs the closing check, then tells the user the new key works and ends on the test request question: no code changes, no question about what to build and no test request sent, without printing either key",
       "files": [
         {
           "path": ".env.local",
@@ -34,14 +34,16 @@
         }
       ],
       "env": {
-        "ONBOARD_CHECK_JSON": "[{\"next\": \"run\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --replace --env-path .env.local\", \"say\": \"ElevenLabs rejects the key ending in tale, so I'll open the approval page to create a new one.\"}, {\"next\": \"integrate\", \"run\": \"npx -y @elevenlabs/cli@latest onboard test --env-path .env.local\", \"say\": \"Your ElevenLabs key ending in 4f2a works. It's in .env.local.\", \"details\": {\"key_last4\": \"4f2a\", \"env_file\": \".env.local\", \"api_key_source\": \"env_file\", \"fixed\": []}}]"
+        "ONBOARD_CHECK_JSON": "[{\"next\": \"run\", \"run\": \"npx -y @elevenlabs/cli@latest onboard connect --replace --env-path .env.local\", \"say\": \"ElevenLabs rejects the key ending in tale, so I'll open the approval page to create a new one.\"}, {\"next\": \"offer_test\", \"run\": \"npx -y @elevenlabs/cli@latest onboard test --env-path .env.local\", \"say\": \"Your ElevenLabs key ending in 4f2a works. It's in .env.local. Want me to send a test request? It makes a short text-to-speech clip with your key and uses a few credits.\", \"details\": {\"key_last4\": \"4f2a\"}}]"
       },
       "expectations": [
         "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest onboard check",
         "elevenlabs-calls.txt shows elevenlabs onboard connect --replace --env-path .env.local after elevenlabs onboard check",
         "elevenlabs-calls.txt shows -> integrate after elevenlabs onboard connect --replace",
+        "elevenlabs-calls.txt shows elevenlabs onboard check --written after elevenlabs onboard connect --replace",
+        "elevenlabs-calls.txt shows -> offer_test after elevenlabs onboard check --written",
         "elevenlabs-calls.txt never shows elevenlabs onboard test",
-        "elevenlabs-calls.txt never shows --written",
+        "response shows test request",
         "response never shows would you like to build",
         "(NOT 'sk_000000000000')",
         "(NOT 'sk_stale')"
