@@ -42,9 +42,10 @@ What each `next` means:
   product for them. If they only want the SDK, install it and create the
   client in one small file. Otherwise use the skill that fits from
   `details.fetch_skills` when there is one. Whatever they asked for, even
-  nothing new, the app has to get the key: look at how it starts, and if
-  nothing loads the env file, make it load it the way `details.load_key`
-  says. If it needs something made in ElevenLabs
+  nothing new, the app has to get the key, and an env file is only read if
+  something loads it. So find what loads the key's env file when the app
+  starts, in this project's own language and framework. If you can't point
+  to it, make the app load the file the way `details.load_key` says. If it needs something made in ElevenLabs
   first, like an agent, make it yourself with the key (load the env file in
   the command, never print it), not a script for the user to run. When the
   code is written, or if it already was, check your changes are in place,
