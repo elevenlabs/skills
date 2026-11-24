@@ -152,9 +152,10 @@ def integrate(key, say, **more):
     skills = tempfile.mkdtemp(prefix="elevenlabs-skills-")
     archive = os.path.join(skills, "skills.tar.gz")
     load_key = ("The SDK reads ELEVENLABS_API_KEY from the environment. "
-                f"It is in {env_file}, and nothing reads that file unless the app or its framework loads it. It has "
-                "to reach the process environment before the SDK is imported; some frameworks read env files into "
-                "their own object instead. Keep the key in server-side code: never in the source, "
+                f"It is in {env_file}, in the folder this command ran in, and nothing reads that file unless the "
+                "app or its framework loads it from there. It has to reach the process environment before the SDK "
+                "is imported; some frameworks read env files into their own object instead. Keep the key in "
+                "server-side code: never in the source, "
                 "and never in anything that runs in the browser.")
     return reply("integrate", say, cmd("check --written"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
                  sdk_install=install, load_key=load_key, skills_dir=skills,
