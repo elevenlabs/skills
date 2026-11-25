@@ -407,6 +407,68 @@ To edit an existing workflow, load it with `Workflow.from_agent(agent)` / `Workf
 
 A Start procedure node starts an attached procedure at a chosen point in the workflow graph. See [Procedures](#procedures) for the `start_procedure` node and its continuation behavior.
 
+## Agents as Code
+
+The Python and JavaScript SDKs include an `Agent` builder (imported from `elevenlabs.agent_builder` in Python and from the package root in JavaScript) that holds an agent's settings, its `Tool` objects, and its `Workflow` in one definition. `agents.push()` validates the agent, creates or updates every webhook and client tool it uses, fills their IDs into the agent and its workflow nodes, then creates or updates the agent. Unchanged tools are left alone, so re-running a push duplicates nothing. Reference: [Agents as code](https://elevenlabs.io/docs/eleven-agents/customization/agents-as-code/agents).
+
+```python
+from elevenlabs import ElevenLabs
+from elevenlabs.agent_builder import Agent
+from elevenlabs.agent_tools import Schema, SystemTool, Tool
+from elevenlabs.agent_workflows import Workflow
+
+client = ElevenLabs()
+
+get_order = (
+    Tool.webhook("get_order", "Look up an order by its number")
+    .get("https://api.example.com/orders/{order_id}")
+    .path_param("order_id", Schema.string().describe("The order number, e.g. A-1042"))
+)
+
+wf = Workflow()
+wf.converse("triage", "Find out what the caller needs").when("Caller gave an order number").tool("lookup", [get_order])
+
+agent = Agent(
+    "Support line",
+    prompt="You are a support agent for Acme.",
+    first_message="Hi, how can I help?",
+    llm="gemini-3.5-flash",
+    voice_id="JBFqnCBsd6RMkjVDRZzb",
+    tools=[SystemTool.end_call()],
+    workflow=wf,
+)
+
+result = client.conversational_ai.agents.push(agent)
+client.conversational_ai.agents.push(agent, agent_id=result.agent_id)  # later pushes update the same agent
+```
+
+```javascript
+import { Agent, ElevenLabsClient, Schema, SystemTool, Tool, Workflow } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient();
+
+const getOrder = Tool.webhook("get_order", "Look up an order by its number")
+  .get("https://api.example.com/orders/{order_id}")
+  .pathParam("order_id", Schema.string().describe("The order number, e.g. A-1042"));
+
+const wf = new Workflow();
+wf.converse("triage", "Find out what the caller needs").when("Caller gave an order number").tool("lookup", [getOrder]);
+
+const agent = new Agent("Support line", {
+  prompt: "You are a support agent for Acme.",
+  firstMessage: "Hi, how can I help?",
+  llm: "gemini-3.5-flash",
+  voiceId: "JBFqnCBsd6RMkjVDRZzb",
+  tools: [SystemTool.endCall()],
+  workflow: wf,
+});
+
+const result = await client.conversationalAi.agents.push(agent);
+await client.conversationalAi.agents.push(agent, { agentId: result.agentId }); // later pushes update the same agent
+```
+
+Without an agent ID or project, `push()` creates a new agent each time. Settings without a typed option go in `conversation_config` / `conversationConfig` and `platform_settings` / `platformSettings`, in the same shape as `agents.create()`. `AgentProject.open(".")` reads and writes the same `agents.json`, `tools.json`, `agent_configs/`, and `tool_configs/` layout as `elevenlabs agents push`; pass it as `project` to `push()` so IDs are recorded for you. `agents.pull(agent_id)` loads an existing agent as an `Agent`, and `agent.validate()` checks an agent without an API key, raising one `AgentValidationError` listing every issue, which suits CI.
+
 ## Procedures
 
 Reusable instruction blocks an agent runs when a trigger matches or a Start procedure workflow node starts it. A procedure is `free_form` (markdown guidance the agent adapts, and the only type that can reference knowledge base documents) or `deterministic` (called "structured" in the dashboard: typed steps that run in a fixed order, for flows that must happen the same way every time). See [Using the Procedure API](references/using-procedure-api.md) for the full CLI and SDK flow, and [Writing Procedures](references/writing-procedures.md) for the step reference, validation rules, and authoring guidance.
