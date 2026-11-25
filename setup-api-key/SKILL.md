@@ -12,8 +12,8 @@ ElevenLabs to a project from scratch, use the `onboarding` skill.
 
 **A key the user already has (for example from an administrator):** don't
 sign in for a new one. Tell them to paste it after `ELEVENLABS_API_KEY=` in
-the env file of the app that uses it (`.env.local`, or `.env` in a Python
-project), never into this chat, and to tell you when it's done. Then check it
+the env file of the app that uses it (`.env`), never into this chat, and to
+tell you when it's done. Then check it
 (if `check` finds no key, or ElevenLabs rejects it, and offers to sign in,
 ask the user to check the paste instead of signing in):
 
@@ -22,23 +22,24 @@ npx -y @elevenlabs/cli@latest onboard check
 ```
 
 **A key that stopped working:** run the same command from the app's folder.
-It finds the key the app would use (the shell, the env file, or a `.env` up
-the tree), checks it with ElevenLabs without printing it, and prints JSON:
-`next` is the step (spelled out in `instruction`; where the list below differs,
-follow the list), `run` the exact command, and `say` what to tell the user (tell
-them as written). Follow it until the key works; for a rejected key it
-signs the user in for a new one. What each `next` means:
+It finds the key the app would use (the shell, or the app's env file), checks
+it with ElevenLabs without printing it, and prints JSON: `next` is the step
+(spelled out in `instruction`; where the list below differs, follow the
+list), `run` the exact command, and `say` what to tell the user (tell them as
+written). Follow it until the key works; for a rejected key it signs the user
+in for a new one. What each `next` means:
 
-- `run`: run `run`. `wait`: show `say`, then run `run` again right away.
+- `run`: run `run`. When it is a sign-in (`onboard connect`), it opens the
+  approval page and waits, for up to five minutes, while the user approves:
+  tell them first, then keep the command running until it finishes and don't
+  end your turn while it waits.
 - `ask_user`, or a `fix` that needs the user's shell or secrets: ask them
   what `say` says, wait for their answer, then run `run`, unless they said no.
-- `write_code`: if the app already reads `ELEVENLABS_API_KEY` (through the
-  SDK or its own requests), don't change its code: after `connect`, run
-  `run`; after `check`, tell the user the key works (not `say`) and stop.
-  Otherwise make sure the code uses the SDK, then run `run`; if nothing
-  shows what the app should do with ElevenLabs, ask the user first, and don't
-  pick a product for them.
-- `offer_test`: ask the question in `say`; run `run` only if they say yes.
+- `integrate`: the key works. If the user only asked to fix or place a key,
+  tell them `say`, change no code and don't ask what to build, then run
+  `run`. If they also asked for something to be built, follow `instruction`.
+- `offer_test`: end your reply with the question in `say`, and end your turn.
+  Run `run` only if they say yes.
 - `done`: tell the user `say`.
 
 ## Rules
@@ -50,8 +51,7 @@ signs the user in for a new one. What each `next` means:
 - Never put the key in code; the SDK reads `ELEVENLABS_API_KEY`.
 - Don't run the app (or its start script) or make speech to try it until the
   user says yes. API calls that what they asked for needs, like creating an
-  agent, are fine. Once the code is written, run `onboard check` before you
-  finish: it verifies the key and the code.
+  agent, are fine.
 - For browser or client-side apps, keep the key on the server and issue
   short-lived tokens where the product supports them.
 
