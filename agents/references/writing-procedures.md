@@ -18,6 +18,14 @@ Check the current documentation before authoring procedure content:
 - Keep each procedure focused on one task. Put tone and refusal policy in the system prompt.
 - Extract steps shared across procedures into a separate procedure and reference it, rather than copying the steps. Copies drift.
 
+## Visibility
+
+Use a visibility condition over dynamic variables to limit when the agent sees a procedure's trigger. The agent leaves the trigger out of the menu for the current turn if the condition evaluates to false or raises an expression evaluation error. An absent condition adds no restriction. A procedure is eligible only when its own condition and every ancestor folder condition pass.
+
+**Visibility is soft routing.** Explicit starts, including Start procedure workflow nodes and handoffs from other procedures, bypass visibility. Procedures that are already active continue. Enforce access requirements independently of trigger visibility.
+
+To scope trigger-based selection to workflow nodes, compare `system__current_workflow_node_id` with an authored node ID. Combine comparisons with `or_operator` to match several nodes. See [Set or Clear Visibility](using-procedure-api.md#set-or-clear-visibility) for the request format.
+
 ## Free-Form Content
 
 Write `content` as markdown. Use numbered steps for sequences and bullets for requirements within a step. Use the imperative. Explain a step's rationale only when it helps the agent handle cases the procedure does not enumerate.

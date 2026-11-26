@@ -236,6 +236,8 @@ Fail if `procedure_id` is empty or null.
 
 A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
 
+Create also accepts optional `visibility` for a procedure or folder. Use the condition object shown below.
+
 ## Read and Update the Draft
 
 ```bash
@@ -255,6 +257,31 @@ elevenlabs agents procedures drafts update \
 Treat the draft update body as a full replacement. Read the current draft, preserve `name` and `trigger` unless the user requested changes to them, and send them with the new `content`. Always send the existing `type`; it cannot change after creation, and a different value is rejected with `procedure_type_cannot_change`. Always send `trigger` explicitly rather than relying on a trigger embedded in `content`.
 
 Publish with the flow under [Publish](#publish).
+
+## Set or Clear Visibility
+
+The general `PATCH .../procedures/{procedure_id}/draft` request has no `visibility` field. Use the dedicated endpoint or the hosted MCP tool `agents_update_procedure_visibility`. This example offers a trigger only while the workflow is at the authored node with ID `support_node`.
+
+```bash
+curl --fail-with-body --request PATCH \
+  "https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}/branches/${BRANCH_ID}/procedures/${PROCEDURE_ID}/visibility" \
+  --header "xi-api-key: ${ELEVENLABS_API_KEY}" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "visibility": {
+      "expression": {
+        "type": "eq_operator",
+        "left": {
+          "type": "dynamic_variable",
+          "name": "system__current_workflow_node_id"
+        },
+        "right": {"type": "string_literal", "value": "support_node"}
+      }
+    }
+  }'
+```
+
+For a folder, use its ID in the same endpoint. Send `{"visibility": null}` to clear the condition on the targeted procedure or folder. Ancestor folder conditions still apply. The change stays in your branch draft until you [publish](#publish).
 
 ## Publish
 

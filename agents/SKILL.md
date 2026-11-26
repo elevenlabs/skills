@@ -416,6 +416,7 @@ Procedures live on an agent branch, and every write stages a per-user draft:
 | Operation | Call |
 |-----------|------|
 | List, create, read, update, discard, remove | `/v1/convai/agents/{agent_id}/branches/{branch_id}/procedures...` (`procedures.*` and `procedures.drafts.*` in the SDKs) |
+| Set or clear visibility | `PATCH .../procedures/{procedure_id}/visibility` (`agents_update_procedure_visibility` in the hosted MCP server) |
 | Publish | `PATCH /v1/convai/agents/{agent_id}?branch_id=...` (`agents.update`) |
 
 Semantics worth knowing before writing any of these calls:
@@ -428,6 +429,7 @@ Semantics worth knowing before writing any of these calls:
 - `content` is markdown for a `free_form` procedure, and a JSON-encoded object with a `steps` array for a `deterministic` one. The trigger is the top-level `trigger` field in both cases, not part of `content`. Serialize it; do not hand-escape quotes.
 - Use a Start procedure workflow node (`type: "start_procedure"`, `procedure_id: "<attached procedure ID>"`) to start either procedure type at a chosen point in the workflow graph without a trigger match. Free-form content loads and traversal continues in the same turn; a structured procedure runs before the node's outgoing edges are evaluated. Connect workflow edges to the Start procedure node. Use a `sub_procedure` step to chain structured procedures.
 - A third `type`, `folder`, groups procedures in the dashboard. Folders carry no `content` or `trigger`; move a procedure into one with `POST .../procedures/{procedure_id}/move`.
+- Optional `visibility` filters the trigger menu on each turn. An absent condition adds no restriction. The procedure's condition and all ancestor folder conditions must pass. Explicit starts bypass visibility, and active procedures continue when visibility changes. See [Set or Clear Visibility](references/using-procedure-api.md#set-or-clear-visibility).
 - The agent keeps the five most recently started procedures in context. When more have been started, the content, inline tools, and knowledge base documents of the oldest free-form ones drop out of the prompt, although the procedures remain active. Keep procedures focused and use sub-procedures so that few are active at once.
 - Routing is driven by the `trigger` text, not the procedure name. Write concrete, non-overlapping triggers that cover the phrasings a user would actually say. The model sees only a numbered menu of triggers; it never sees procedure names or IDs.
 - To restrict the starting agent to selected procedures for one conversation, enable `platform_settings.overrides.enable_procedure_ids_from_client`, then pass their IDs as `procedure_ids` in conversation initiation data. An empty list disables all procedures for that starting agent. The same setting allows `start_procedure_ids`: up to five free-form procedures that start with the conversation, for when the user's task is already known (for example from an IVR choice or the page hosting the widget).
