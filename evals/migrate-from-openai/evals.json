@@ -315,7 +315,7 @@
     {
       "id": 11,
       "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
-      "expected_output": "The text to speech route moves to the ElevenLabs SDK, and the Realtime credential route is moved the way the realtime skill says, to the ElevenLabs Realtime API and a Realtime model",
+      "expected_output": "The text to speech route moves to the ElevenLabs SDK. The Realtime credential route stays on OpenAI and is listed with the realtime skill and its date, because the browser app it serves lives in another repo and moving one side would break the other",
       "files": [
         {
           "path": "package.json",
@@ -332,12 +332,12 @@
         "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
         "elevenlabs-calls.txt never shows elevenlabs onboard",
         "server.js shows textToSpeech.convert(",
-        "server.js shows eleven_realtime_v1",
-        "server.js shows app.get(\"/api/token\"",
-        "server.js shows res.json({ value",
-        "server.js never shows api.openai.com/v1/realtime",
+        "server.js shows modelId: \"eleven_v4\"",
         "server.js never shows openai.audio.speech",
+        "server.js shows https://api.openai.com/v1/realtime/client_secrets",
+        "server.js shows model: \"gpt-realtime\"",
         "response shows realtime",
+        "response shows january 20",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
     }

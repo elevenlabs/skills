@@ -17,7 +17,7 @@ ElevenLabs has no OpenAI-compatible speech endpoint, so this is a port, not a UR
 | --- | --- |
 | Text to speech: `audio.speech.create`, `POST /v1/audio/speech` | Convert. See [Text to speech](references/text-to-speech.md). |
 | Transcription of a file: `audio.transcriptions.create`, `POST /v1/audio/transcriptions` | Convert. See [Transcription](references/transcription.md). |
-| Realtime voice: `@openai/agents-realtime`, `/v1/realtime`, `gpt-realtime*`, `gpt-4o-realtime*` | Move it with the `realtime` skill, which sits next to this one (`../realtime/SKILL.md`): follow that skill for it after Step 4, then carry on here from Step 5. It covers a browser app; list anything else. |
+| Realtime voice: `@openai/agents-realtime`, `/v1/realtime`, `gpt-realtime*`, `gpt-4o-realtime*` | Move it with the `realtime` skill, which sits next to this one (`../realtime/SKILL.md`): follow that skill for it after Step 4, then carry on here from Step 5. It covers a browser app whose code is in this project. Leave and list anything else, including one side on its own, such as a route that only mints the credential for an app kept elsewhere: moving one side would break the other. |
 | Live transcription (`/v1/realtime` transcription sessions, `stream=True` on a transcription) | Leave it and list it. |
 | Audio translation (`audio.translations`), `gpt-audio*` in chat, custom voices | Leave it and list it. ElevenLabs has no direct match. |
 
