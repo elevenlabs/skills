@@ -1,0 +1,94 @@
+[
+  {
+    "query": "OpenAI is shutting down tts-1 in January, move our text to speech over to ElevenLabs",
+    "should_trigger": true
+  },
+  {
+    "query": "migrate this repo from openai.audio.speech.create to elevenlabs",
+    "should_trigger": true
+  },
+  {
+    "query": "we use whisper-1 for transcription and it's being retired, switch us to ElevenLabs Scribe",
+    "should_trigger": true
+  },
+  {
+    "query": "replace gpt-4o-mini-tts with an ElevenLabs voice in my Flask app",
+    "should_trigger": true
+  },
+  {
+    "query": "port my OpenAI speech-to-text calls (gpt-4o-transcribe) to the ElevenLabs SDK",
+    "should_trigger": true
+  },
+  {
+    "query": "I got the OpenAI deprecation email about the audio models. Can you convert the calls in this project to ElevenLabs?",
+    "should_trigger": true
+  },
+  {
+    "query": "swap out the OpenAI TTS in server.ts for ElevenLabs but leave the chat completions alone",
+    "should_trigger": true
+  },
+  {
+    "query": "our Next.js route posts to https://api.openai.com/v1/audio/speech, change it to use ElevenLabs",
+    "should_trigger": true
+  },
+  {
+    "query": "switch transcription provider from OpenAI to ElevenLabs, we need the word timestamps to keep working",
+    "should_trigger": true
+  },
+  {
+    "query": "what do I need to change to move from OpenAI's tts-1-hd to ElevenLabs eleven_v4? do it for this codebase",
+    "should_trigger": true
+  },
+  {
+    "query": "migrate from OpenAI gpt-4o-transcribe-diarize to ElevenLabs with speaker labels",
+    "should_trigger": true
+  },
+  {
+    "query": "move this project from OpenAI's speech models to ElevenLabs",
+    "should_trigger": true
+  },
+  {
+    "query": "add text to speech to my app with ElevenLabs",
+    "should_trigger": false
+  },
+  {
+    "query": "transcribe this meeting recording with ElevenLabs and give me the speakers",
+    "should_trigger": false
+  },
+  {
+    "query": "we built our voice assistant on @openai/agents-realtime with gpt-realtime, how do I switch it over to ElevenLabs?",
+    "should_trigger": false
+  },
+  {
+    "query": "migrate our chat completions from gpt-4o to gpt-5",
+    "should_trigger": false
+  },
+  {
+    "query": "my ElevenLabs API key returns 401, fix it",
+    "should_trigger": false
+  },
+  {
+    "query": "set me up with ElevenLabs in this project, I don't have an account yet",
+    "should_trigger": false
+  },
+  {
+    "query": "convert our OpenAI embeddings calls to a local model",
+    "should_trigger": false
+  },
+  {
+    "query": "generate a sound effect of rain on a tin roof",
+    "should_trigger": false
+  },
+  {
+    "query": "move my agent's voice from Rachel to a different ElevenLabs voice",
+    "should_trigger": false
+  },
+  {
+    "query": "build a voice agent that answers support calls",
+    "should_trigger": false
+  },
+  {
+    "query": "upgrade the openai python package to the latest version and fix the type errors",
+    "should_trigger": false
+  }
+]

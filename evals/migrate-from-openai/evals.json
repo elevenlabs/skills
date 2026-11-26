@@ -1,0 +1,400 @@
+{
+  "skill_name": "migrate-from-openai",
+  "_comment": "Stand-ins for npx and the ElevenLabs CLI (evals/onboarding/bin) are on PATH. `migrate openai` prints the real CLI's reply, with the guide in a copy of this checkout's skills outside the project. Every call is appended to outputs/elevenlabs-calls.txt, then `  -> <next>` for its reply. `<file> [never] shows <text> [after <text>]` is checked literally against that file as the agent left it (or, for `response`, against its last message, ignoring case), so what the report says never passes for what the code does. Each case is one turn, so it ends on the guide's question and must never reach `onboard`.",
+  "bin": "../onboarding/bin",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "Python text to speech moved to text_to_speech.convert with eleven_v4 and the placeholder voice, the tone instructions dropped and reported, the chat call untouched, ending on the offer to set up a key without running onboarding",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "openai>=2.0\n"
+        },
+        {
+          "path": "speak.py",
+          "content": "from pathlib import Path\n\nfrom openai import OpenAI\n\nclient = OpenAI()\n\n\ndef speak(text: str, path: str) -> None:\n    with client.audio.speech.with_streaming_response.create(\n        model=\"gpt-4o-mini-tts\",\n        voice=\"coral\",\n        input=text,\n        instructions=\"Speak in a cheerful and positive tone.\",\n    ) as response:\n        response.stream_to_file(Path(path))\n"
+        },
+        {
+          "path": "summarize.py",
+          "content": "from openai import OpenAI\n\nclient = OpenAI()\n\n\ndef summarize(note: str) -> str:\n    completion = client.chat.completions.create(\n        model=\"gpt-5-mini\",\n        messages=[{\"role\": \"user\", \"content\": f\"Summarize: {note}\"}],\n    )\n    return completion.choices[0].message.content or \"\"\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "speak.py shows text_to_speech.convert(",
+        "speak.py shows model_id=\"eleven_v4\"",
+        "speak.py shows JBFqnCBsd6RMkjVDRZzb",
+        "speak.py never shows client.audio.speech",
+        "speak.py never shows instructions=",
+        "summarize.py shows client.chat.completions.create(",
+        "requirements.txt shows openai",
+        "requirements.txt shows elevenlabs",
+        "response shows `instructions",
+        "response shows george",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "An Express route that streamed Opus from OpenAI now streams it from textToSpeech.stream with the same path and content type, keeping the route's shape",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"reader\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^5.0.0\",\n    \"openai\": \"^6.0.0\"\n  }\n}\n"
+        },
+        {
+          "path": "server.js",
+          "content": "import express from \"express\";\nimport OpenAI from \"openai\";\nimport { Readable } from \"node:stream\";\n\nconst app = express();\nconst openai = new OpenAI();\n\napp.get(\"/articles/:id/audio\", async (req, res) => {\n  const text = await loadArticle(req.params.id);\n  const response = await openai.audio.speech.create({\n    model: \"tts-1\",\n    voice: \"alloy\",\n    input: text,\n    response_format: \"opus\",\n  });\n  res.setHeader(\"Content-Type\", \"audio/ogg\");\n  Readable.fromWeb(response.body).pipe(res);\n});\n\nasync function loadArticle(id) {\n  return `Article ${id}`;\n}\n\napp.listen(3000);\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "server.js shows @elevenlabs/elevenlabs-js",
+        "server.js shows textToSpeech.stream(",
+        "server.js shows modelId: \"eleven_v4\"",
+        "server.js shows opus_48000_128",
+        "server.js shows app.get(\"/articles/:id/audio\"",
+        "server.js never shows openai.audio.speech",
+        "package.json shows @elevenlabs/elevenlabs-js",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "A whisper-1 verbose_json transcription with word timestamps moved to speech_to_text.convert with scribe_v3: the language kept, sound tags turned off, the prompt dropped and reported, and only entries of type word kept so the function returns the same list",
+      "files": [
+        {
+          "path": "pyproject.toml",
+          "content": "[project]\nname = \"captions\"\nversion = \"0.1.0\"\ndependencies = [\"openai>=2.0\"]\n"
+        },
+        {
+          "path": "captions.py",
+          "content": "from openai import OpenAI\n\nclient = OpenAI()\n\n\ndef word_times(path: str) -> list[dict]:\n    \"\"\"Each spoken word with its start and end time, in seconds.\"\"\"\n    with open(path, \"rb\") as audio_file:\n        transcript = client.audio.transcriptions.create(\n            model=\"whisper-1\",\n            file=audio_file,\n            language=\"en\",\n            prompt=\"A product demo for Acme Rocketry.\",\n            response_format=\"verbose_json\",\n            timestamp_granularities=[\"word\"],\n        )\n    return [{\"word\": w.word, \"start\": w.start, \"end\": w.end} for w in transcript.words]\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "captions.py shows speech_to_text.convert(",
+        "captions.py shows model_id=\"scribe_v3\"",
+        "captions.py shows language_code=\"en\"",
+        "captions.py shows tag_audio_events=False",
+        "captions.py shows == \"word\"",
+        "captions.py shows def word_times(path: str) -> list[dict]:",
+        "captions.py never shows client.audio.transcriptions",
+        "captions.py never shows prompt=",
+        "response shows `prompt",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "A diarized transcription moved to speechToText.convert with scribe_v3 and diarize, with segments built from the words by speaker, and the different speaker labels reported",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"meetings\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"openai\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.6.0\"\n  }\n}\n"
+        },
+        {
+          "path": "src/meeting.ts",
+          "content": "import fs from \"node:fs\";\nimport OpenAI from \"openai\";\n\nconst openai = new OpenAI();\n\nexport interface Turn {\n  speaker: string;\n  start: number;\n  end: number;\n  text: string;\n}\n\nexport async function turns(path: string): Promise<Turn[]> {\n  const transcript = await openai.audio.transcriptions.create({\n    model: \"gpt-4o-transcribe-diarize\",\n    file: fs.createReadStream(path),\n    response_format: \"diarized_json\",\n    chunking_strategy: \"auto\",\n  });\n  return transcript.segments.map((s) => ({ speaker: s.speaker, start: s.start, end: s.end, text: s.text }));\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "src/meeting.ts shows speechToText.convert(",
+        "src/meeting.ts shows modelId: \"scribe_v3\"",
+        "src/meeting.ts shows diarize: true",
+        "src/meeting.ts shows tagAudioEvents: false",
+        "src/meeting.ts shows speakerId",
+        "src/meeting.ts shows export async function turns(path: string): Promise<Turn[]>",
+        "src/meeting.ts never shows openai.audio.transcriptions",
+        "response shows speaker_0",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "Nothing is converted: both clients talk to other providers through OpenAI's SDK, which aren't being retired. No ElevenLabs SDK is added, the report says why, and no key is offered",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "openai>=2.0\n"
+        },
+        {
+          "path": "transcribe.py",
+          "content": "import os\n\nfrom openai import OpenAI\n\n# Groq's OpenAI-compatible API.\nclient = OpenAI(base_url=\"https://api.groq.com/openai/v1\", api_key=os.environ[\"GROQ_API_KEY\"])\n\n\ndef transcribe(path: str) -> str:\n    with open(path, \"rb\") as audio_file:\n        transcript = client.audio.transcriptions.create(model=\"whisper-large-v3\", file=audio_file)\n    return transcript.text\n"
+        },
+        {
+          "path": "speak.py",
+          "content": "import os\n\nfrom openai import AzureOpenAI\n\nclient = AzureOpenAI(\n    azure_endpoint=os.environ[\"AZURE_OPENAI_ENDPOINT\"],\n    api_version=\"2025-03-01-preview\",\n)\n\n\ndef speak(text: str) -> bytes:\n    response = client.audio.speech.create(model=\"tts-hd\", voice=\"alloy\", input=text)\n    return response.content\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "speak.py shows client.audio.speech.create(",
+        "transcribe.py shows client.audio.transcriptions.create(",
+        "requirements.txt never shows elevenlabs",
+        "response shows groq",
+        "response shows azure",
+        "response never shows want me to set up an elevenlabs api key"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "A Go project is left unchanged: the calls are listed with the docs guide, since ElevenLabs has no Go SDK, and no key is offered",
+      "files": [
+        {
+          "path": "go.mod",
+          "content": "module example.com/reader\n\ngo 1.23\n"
+        },
+        {
+          "path": "speech.go",
+          "content": "package main\n\nimport (\n\t\"bytes\"\n\t\"encoding/json\"\n\t\"io\"\n\t\"net/http\"\n\t\"os\"\n)\n\nfunc speak(text string) ([]byte, error) {\n\tbody, _ := json.Marshal(map[string]string{\"model\": \"tts-1\", \"voice\": \"alloy\", \"input\": text})\n\treq, _ := http.NewRequest(\"POST\", \"https://api.openai.com/v1/audio/speech\", bytes.NewReader(body))\n\treq.Header.Set(\"Authorization\", \"Bearer \"+os.Getenv(\"OPENAI_API_KEY\"))\n\treq.Header.Set(\"Content-Type\", \"application/json\")\n\tres, err := http.DefaultClient.Do(req)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer res.Body.Close()\n\treturn io.ReadAll(res.Body)\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "response shows speech.go",
+        "response shows elevenlabs.io/docs/eleven-api/guides/how-to/text-to-speech/migrate-from-openai",
+        "response never shows want me to set up an elevenlabs api key"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "The plain call and the one with a speed in range move (the second to eleven_multilingual_v2 with the speed kept); the FLAC call, the call with a speed out of range and the translation stay on OpenAI and are listed",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "openai>=2.0\n"
+        },
+        {
+          "path": "audio.py",
+          "content": "from openai import OpenAI\n\nclient = OpenAI()\n\n\ndef speak(text: str) -> bytes:\n    return client.audio.speech.create(model=\"tts-1-hd\", voice=\"nova\", input=text).content\n\n\ndef speak_briskly(text: str) -> bytes:\n    return client.audio.speech.create(model=\"tts-1\", voice=\"nova\", input=text, speed=1.1).content\n\n\ndef speak_fast(text: str) -> bytes:\n    return client.audio.speech.create(model=\"tts-1\", voice=\"nova\", input=text, speed=2.0).content\n\n\ndef speak_lossless(text: str) -> bytes:\n    return client.audio.speech.create(model=\"tts-1-hd\", voice=\"nova\", input=text, response_format=\"flac\").content\n\n\ndef to_english(path: str) -> str:\n    with open(path, \"rb\") as audio_file:\n        return client.audio.translations.create(model=\"whisper-1\", file=audio_file).text\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "audio.py shows text_to_speech.convert(",
+        "audio.py shows model_id=\"eleven_v4\"",
+        "audio.py shows model_id=\"eleven_multilingual_v2\"",
+        "audio.py shows speed=1.1",
+        "audio.py shows speed=2.0).content",
+        "audio.py shows response_format=\"flac\").content",
+        "audio.py shows client.audio.translations.create(",
+        "response shows flac",
+        "response shows to_english",
+        "response shows eleven_multilingual_v2",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "A direct fetch to OpenAI's speech endpoint in a Next.js route becomes an SDK call that returns the stream in a Response, with the key never sent to the browser",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"site\",\n  \"private\": true,\n  \"dependencies\": {\n    \"next\": \"^16.0.0\",\n    \"react\": \"^19.0.0\",\n    \"react-dom\": \"^19.0.0\"\n  }\n}\n"
+        },
+        {
+          "path": "app/api/speak/route.ts",
+          "content": "export async function POST(request: Request) {\n  const { text } = await request.json();\n  const response = await fetch(\"https://api.openai.com/v1/audio/speech\", {\n    method: \"POST\",\n    headers: {\n      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,\n      \"Content-Type\": \"application/json\",\n    },\n    body: JSON.stringify({ model: \"gpt-4o-mini-tts\", voice: \"sage\", input: text }),\n  });\n  if (!response.ok) {\n    return Response.json({ error: \"Speech failed\" }, { status: 502 });\n  }\n  return new Response(response.body, { headers: { \"Content-Type\": \"audio/mpeg\" } });\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "app/api/speak/route.ts shows @elevenlabs/elevenlabs-js",
+        "app/api/speak/route.ts shows textToSpeech.",
+        "app/api/speak/route.ts shows modelId: \"eleven_v4\"",
+        "app/api/speak/route.ts shows audio/mpeg",
+        "app/api/speak/route.ts shows status: 502",
+        "app/api/speak/route.ts never shows api.openai.com",
+        "app/api/speak/route.ts never shows NEXT_PUBLIC",
+        "package.json shows @elevenlabs/elevenlabs-js",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "A FastAPI route that streamed OpenAI speech and turned its errors into 429 and 502 now streams from ElevenLabs, reads the first piece before the response starts so those errors still reach the caller, and says text to speech is no longer retried",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "fastapi>=0.115\nuvicorn>=0.30\nopenai>=2.0\n"
+        },
+        {
+          "path": "main.py",
+          "content": "import openai\nfrom fastapi import FastAPI, HTTPException\nfrom fastapi.responses import StreamingResponse\nfrom openai import OpenAI\n\napp = FastAPI()\nclient = OpenAI(max_retries=4)\n\n\n@app.get(\"/speak\")\ndef speak(text: str):\n    try:\n        response = client.audio.speech.create(model=\"tts-1\", voice=\"alloy\", input=text)\n    except openai.RateLimitError:\n        raise HTTPException(status_code=429, detail=\"Busy, try again\")\n    except openai.APIError:\n        raise HTTPException(status_code=502, detail=\"Speech failed\")\n    return StreamingResponse(response.iter_bytes(), media_type=\"audio/mpeg\")\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "main.py shows text_to_speech.stream(",
+        "main.py shows next(",
+        "main.py shows ApiError",
+        "main.py shows status_code == 429",
+        "main.py shows status_code=502",
+        "main.py shows def speak(text: str):",
+        "main.py never shows client.audio.speech",
+        "main.py never shows max_retries",
+        "response shows max_retries",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "The speech route moves to ElevenLabs with its client created in the speech file, not in the shared module the chat route also loads, so a missing key can't break chat",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"assistant\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^5.0.0\",\n    \"openai\": \"^6.0.0\"\n  }\n}\n"
+        },
+        {
+          "path": "lib/clients.js",
+          "content": "import OpenAI from \"openai\";\n\nexport const openai = new OpenAI();\n"
+        },
+        {
+          "path": "routes/chat.js",
+          "content": "import { openai } from \"../lib/clients.js\";\n\nexport async function chat(req, res) {\n  const completion = await openai.chat.completions.create({\n    model: \"gpt-5-mini\",\n    messages: req.body.messages,\n  });\n  res.json({ reply: completion.choices[0].message.content });\n}\n"
+        },
+        {
+          "path": "routes/speak.js",
+          "content": "import { openai } from \"../lib/clients.js\";\n\nexport async function speak(req, res) {\n  const response = await openai.audio.speech.create({\n    model: \"gpt-4o-mini-tts\",\n    voice: \"ash\",\n    input: req.body.text,\n  });\n  res.type(\"audio/mpeg\").send(Buffer.from(await response.arrayBuffer()));\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "routes/speak.js shows new ElevenLabsClient(",
+        "routes/speak.js shows textToSpeech.convert(",
+        "routes/speak.js shows export async function speak(req, res)",
+        "routes/speak.js never shows openai.audio.speech",
+        "lib/clients.js never shows ElevenLabsClient",
+        "lib/clients.js shows export const openai = new OpenAI();",
+        "routes/chat.js shows openai.chat.completions.create(",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "The text to speech route moves to the ElevenLabs SDK. The Realtime credential route stays on OpenAI and is listed with the realtime skill and its date, because the browser app it serves lives in another repo and moving one side would break the other",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"concierge\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^5.0.0\",\n    \"openai\": \"^6.0.0\"\n  }\n}\n"
+        },
+        {
+          "path": "server.js",
+          "content": "import express from \"express\";\nimport OpenAI from \"openai\";\n\nconst app = express();\nconst openai = new OpenAI();\n\n// The browser app (served from another repo) calls this for a Realtime credential.\napp.get(\"/api/token\", async (_req, res) => {\n  const r = await fetch(\"https://api.openai.com/v1/realtime/client_secrets\", {\n    method: \"POST\",\n    headers: {\n      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,\n      \"Content-Type\": \"application/json\",\n    },\n    body: JSON.stringify({\n      session: {\n        type: \"realtime\",\n        model: \"gpt-realtime\",\n        instructions: \"You are a cheerful concierge.\",\n        audio: { output: { voice: \"marin\" } },\n      },\n    }),\n  });\n  const data = await r.json();\n  res.json({ value: data.value });\n});\n\napp.get(\"/api/welcome\", async (_req, res) => {\n  const speech = await openai.audio.speech.create({ model: \"tts-1\", voice: \"alloy\", input: \"Welcome back!\" });\n  res.type(\"audio/mpeg\").send(Buffer.from(await speech.arrayBuffer()));\n});\n\napp.listen(3000);\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "server.js shows textToSpeech.convert(",
+        "server.js shows modelId: \"eleven_v4\"",
+        "server.js never shows openai.audio.speech",
+        "server.js shows https://api.openai.com/v1/realtime/client_secrets",
+        "server.js shows model: \"gpt-realtime\"",
+        "response shows realtime",
+        "response shows january 20",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "The speech call moves to text_to_speech.convert, and the client is given the key read when it is made, after load_dotenv(), because ElevenLabs() on its own reads the key when the SDK is imported, before the env file is loaded",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "openai>=2.0\npython-dotenv>=1.0\n"
+        },
+        {
+          "path": "speak.py",
+          "content": "from dotenv import load_dotenv\nfrom openai import OpenAI\n\nload_dotenv()\nclient = OpenAI()\n\n\ndef speak(text: str, path: str) -> None:\n    response = client.audio.speech.create(model=\"tts-1\", voice=\"alloy\", input=text)\n    response.write_to_file(path)\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "speak.py shows text_to_speech.convert(",
+        "speak.py shows load_dotenv()",
+        "speak.py shows ELEVENLABS_API_KEY after load_dotenv()",
+        "speak.py never shows ElevenLabs()",
+        "speak.py never shows client.audio.speech",
+        "requirements.txt shows elevenlabs",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "In a TypeScript file that keeps an embeddings call on OpenAI, the speech function moves to textToSpeech.convert with its ElevenLabs client created inside it, so the file still loads without an ElevenLabs key and embed keeps working",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"reader\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"openai\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.6.0\"\n  }\n}\n"
+        },
+        {
+          "path": "src/ai.ts",
+          "content": "import OpenAI from \"openai\";\n\nconst openai = new OpenAI();\n\nexport async function embed(text: string): Promise<number[]> {\n  const response = await openai.embeddings.create({ model: \"text-embedding-3-small\", input: text });\n  return response.data[0].embedding;\n}\n\nexport async function readAloud(text: string): Promise<Buffer> {\n  const response = await openai.audio.speech.create({ model: \"tts-1\", voice: \"alloy\", input: text });\n  return Buffer.from(await response.arrayBuffer());\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "src/ai.ts shows openai.embeddings.create(",
+        "src/ai.ts shows textToSpeech.convert(",
+        "src/ai.ts shows new ElevenLabsClient( after export async function readAloud(text: string): Promise<Buffer>",
+        "src/ai.ts never shows openai.audio.speech",
+        "package.json shows @elevenlabs/elevenlabs-js",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    }
+  ]
+}

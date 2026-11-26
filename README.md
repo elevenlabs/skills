@@ -18,6 +18,7 @@ npx skills add elevenlabs/skills
 | [speech-to-text](./speech-to-text) | Transcribe audio files to text with timestamps |
 | [speech-engine](./speech-engine) | Add real-time voice conversations to a custom LLM or chat agent |
 | [realtime](./realtime) | Run agents on ElevenLabs Realtime models, or migrate an OpenAI Realtime voice app to them |
+| [migrate-from-openai](./migrate-from-openai) | Move a project's OpenAI text to speech and transcription code to ElevenLabs |
 | [agents](./agents) | Build conversational voice AI agents |
 | [sound-effects](./sound-effects) | Generate sound effects from text descriptions |
 | [music](./music) | Generate music tracks using AI composition |

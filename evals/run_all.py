@@ -117,6 +117,7 @@ ALL_SKILLS = [
     "speech-to-text",
     "speech-engine",
     "realtime",
+    "migrate-from-openai",
     "agents",
     "sound-effects",
     "music",
@@ -746,7 +747,7 @@ LOCKFILES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "uv
 RUNNER_FILES = {"response.md", "stderr.txt", "grading.json"}
 
 SHOWS_RE = re.compile(
-    r"^(?P<file>[\w./-]+\.txt|response) (?P<never>never )?shows (?P<first>.+?)(?: after (?P<second>.+?))?$"
+    r"^(?P<file>[\w./-]+\.\w+|response) (?P<never>never )?shows (?P<first>.+?)(?: after (?P<second>.+?))?$"
 )
 
 
