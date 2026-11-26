@@ -218,8 +218,6 @@ The list does not include procedure content. Read a body with `GET .../procedure
 
 ## Create
 
-Include `visibility` in the create request when a procedure or folder needs a condition. See [Set or Clear Visibility](#set-or-clear-visibility) for the condition format.
-
 ```bash
 CREATE_RESPONSE=$(
   elevenlabs agents procedures create \
@@ -233,6 +231,8 @@ CREATE_RESPONSE=$(
 )
 PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
 ```
+
+Include `visibility` in the create request when a procedure or folder needs a condition. See [Set or Clear Visibility](#set-or-clear-visibility) for the condition format.
 
 Fail if `procedure_id` is empty or null.
 
