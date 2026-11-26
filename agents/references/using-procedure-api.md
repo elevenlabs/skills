@@ -232,6 +232,8 @@ CREATE_RESPONSE=$(
 PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
 ```
 
+Include `visibility` in the create request when a procedure or folder needs a condition. See [Set or Clear Visibility](#set-or-clear-visibility) for the condition format.
+
 Fail if `procedure_id` is empty or null.
 
 A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
@@ -255,6 +257,31 @@ elevenlabs agents procedures drafts update \
 Treat the draft update body as a full replacement. Read the current draft, preserve `name` and `trigger` unless the user requested changes to them, and send them with the new `content`. Always send the existing `type`; it cannot change after creation, and a different value is rejected with `procedure_type_cannot_change`. Always send `trigger` explicitly rather than relying on a trigger embedded in `content`.
 
 Publish with the flow under [Publish](#publish).
+
+## Set or Clear Visibility
+
+Use the dedicated visibility endpoint or the hosted MCP tool `agents_update_procedure_visibility` to set the condition. The general `PATCH .../procedures/{procedure_id}/draft` request has no `visibility` field. This example makes the trigger visible to the agent only when the workflow is at node `support_node`.
+
+```bash
+curl --fail-with-body --request PATCH \
+  "https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}/branches/${BRANCH_ID}/procedures/${PROCEDURE_ID}/visibility" \
+  --header "xi-api-key: ${ELEVENLABS_API_KEY}" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "visibility": {
+      "expression": {
+        "type": "eq_operator",
+        "left": {
+          "type": "dynamic_variable",
+          "name": "system__current_workflow_node_id"
+        },
+        "right": {"type": "string_literal", "value": "support_node"}
+      }
+    }
+  }'
+```
+
+For a folder, use its ID in the same endpoint. Send `{"visibility": null}` to clear the condition on the procedure or folder you're editing. Conditions on the folders that contain it still apply. The change stays in your branch draft until you [publish](#publish).
 
 ## Publish
 
