@@ -271,7 +271,7 @@
         "main.py shows def speak(text: str):",
         "main.py never shows client.audio.speech",
         "main.py never shows max_retries",
-        "response shows retried",
+        "response shows max_retries",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
     },

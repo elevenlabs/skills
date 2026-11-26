@@ -293,6 +293,8 @@ The OpenAI client fails when it is created without a key. The ElevenLabs client 
 | `new OpenAI({ maxRetries: 3 })` | `new ElevenLabsClient({ maxRetries: 3 })`. Both retry twice by default, so drop a `maxRetries: 2`. |
 | `{ timeout, maxRetries, signal }` as the call's last argument | `{ timeoutInSeconds, maxRetries, abortSignal }` as the call's last argument |
 
+Retries carry over in JavaScript: both SDKs retry twice by default, text to speech included, so there is nothing to report.
+
 ```typescript
 import { ElevenLabsError, ElevenLabsTimeoutError } from "@elevenlabs/elevenlabs-js";
 
