@@ -56,6 +56,7 @@ Read `/tmp/changelog-${CHANGELOG_DATE}.md` and map changes against these skills:
 | `music` | New endpoints, new parameters, model changes |
 | `voice-isolator` | New parameters, model changes, SDK method changes for `audio_isolation.convert()` |
 | `realtime` | Realtime model IDs, `realtime_model` agent config, managed settings, Realtime availability by region or compliance mode, Realtime API (`/v1/convai/realtime`) or `client_secrets` changes, SDK method changes for `conversational_ai.realtime` or `conversationalAi.realtime` |
+| `migrate-from-openai` | Text to speech or speech to text model defaults, parameters, output formats or response fields that its mapping tables name, SDK method or error class changes for `text_to_speech.convert()`, `text_to_speech.stream()` or `speech_to_text.convert()`, `elevenlabs migrate` or `elevenlabs onboard` CLI changes |
 | `speech-engine` | Speech Engine WebSocket API changes, conversation token changes, SDK method changes for real-time voice conversations |
 | `voice-changer` | New speech-to-speech parameters, model changes, SDK method changes for `speech_to_speech.convert()` or `speechToSpeech.convert()` |
 | `setup-api-key` | Authentication flow changes, API key dashboard changes, environment variable guidance |
@@ -85,6 +86,7 @@ Skill directories:
 - `music/` (`SKILL.md` plus `references/installation.md`, `references/api_reference.md`)
 - `voice-isolator/` (`SKILL.md` plus `references/installation.md`)
 - `realtime/` (`SKILL.md` plus `references/session-config.md`, `references/browser-audio.md`)
+- `migrate-from-openai/` (`SKILL.md` plus `references/text-to-speech.md`, `references/transcription.md`)
 - `speech-engine/` (`SKILL.md` plus `references/installation.md`, `references/javascript-sdk-reference.md`, `references/python-sdk-reference.md`)
 - `voice-changer/` (`SKILL.md` plus `references/installation.md`)
 - `setup-api-key/` (`SKILL.md` only)

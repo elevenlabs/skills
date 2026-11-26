@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""A stand-in for the ElevenLabs CLI's `onboard` steps, put on PATH by
-evals/run_all.py for the onboarding and setup-api-key functional evals. Each
+"""A stand-in for the ElevenLabs CLI's `onboard` steps and `migrate openai`,
+put on PATH by evals/run_all.py for the onboarding, setup-api-key and
+migrate-from-openai functional evals. Each
 step prints the real CLI's reply (next, instruction, run, say, details, rules) for the
 states the evals use: a laptop with no key yet, a key in the env file (always
 accepted), an empty placeholder. Like the real CLI, it never reads the
@@ -17,8 +18,12 @@ key to the env file and gitignores it, as the real CLI does once the approval
 page hands one over. The real one waits in the browser first; this one doesn't.
 Every call is appended to $EVAL_DIR/outputs/elevenlabs-calls.txt with the
 folder it ran in, followed by `-> <next>` for its reply, for grading.
+
+`migrate openai` prints the real CLI's reply too. The real one downloads the
+skills from GitHub; this one copies them from this checkout, so a change to
+the migration skill is what gets tested.
 """
-import json, os, re, sys, tempfile
+import json, os, re, shutil, sys, tempfile
 
 args = sys.argv[1:]
 EVAL_DIR = os.environ.get("EVAL_DIR", ".")
@@ -27,7 +32,7 @@ OUTPUTS = os.path.join(EVAL_DIR, "outputs")
 os.makedirs(OUTPUTS, exist_ok=True)
 if "-h" in args or "--help" in args or args[1:2] == ["help"]:
     # Help is not a step: printed, and not logged as a call.
-    print("Usage: elevenlabs onboard <init|check|test> [OPTIONS]")
+    print("Usage: elevenlabs onboard <init|check|test> [OPTIONS]\n       elevenlabs migrate openai")
     sys.exit(0)
 with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
     log.write(f"elevenlabs {' '.join(args)} (in {os.path.relpath(os.getcwd(), EVAL_DIR)})\n")
@@ -37,14 +42,15 @@ with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
 # `--answered` are what replies from before this flow asked for: accepted, and they change nothing.
 # `check --written` is the closing step: the code is written, so a working key ends on the test offer.
 # `--again` is what the reply to a timed-out approval passes: a second timeout then asks the developer.
+# `--from` is what `migrate openai`'s reply passes, and every next command keeps, so its hand-off can be counted.
 ENV = {"--env-path", "--env-file"}
-KEY_STEP = ENV | {"--no-browser", "--replace", "--wait", "--again", "--authorize-url"}
+KEY_STEP = ENV | {"--no-browser", "--replace", "--wait", "--again", "--authorize-url", "--from"}
 FLAGS = {"init": KEY_STEP, "connect": KEY_STEP,
-         "check": ENV | {"--no-browser", "--answered", "--written"}, "test": ENV | {"--no-browser"}}
+         "check": ENV | {"--no-browser", "--answered", "--written", "--from"}, "test": ENV | {"--no-browser", "--from"}}
 GLOBAL_FLAGS = {"--format", "--human", "--base-url", "-q", "--quiet", "--debug", "--dry-run", "--via",
                 "--query", "--schema", "--spec", "--spec-raw"}
 # Flags followed by a value (unless given as --flag=value).
-VALUE_FLAGS = {"--env-path", "--env-file", "--authorize-url", "--format", "--base-url", "--via", "--query"}
+VALUE_FLAGS = {"--env-path", "--env-file", "--authorize-url", "--from", "--format", "--base-url", "--via", "--query"}
 RULES = [
          "Never open, print or cat the env file; run `onboard check` to verify the key.",
          "Never ask for an API key in chat, and never accept one pasted there.",
@@ -60,7 +66,8 @@ INSTRUCTIONS = {
     "fix": "Do what `say` describes, then run `run`.",
     "integrate": "Tell the user `say`. The key is in place, so the rest is yours: build what the user asked for with ElevenLabs. Only a request that says what the app should do with ElevenLabs says what to build; one that asks to add, set up or use ElevenLabs, or for something general like voice features, doesn't. If theirs doesn't, ask `details.question`, as it is, and end your turn: write no code and install nothing until they answer, and don't pick for them. If they only want the SDK, install it (`details.sdk_install`) and create the client in one small file. Otherwise first run `details.fetch_skills`: it downloads the ElevenLabs skills into `details.skills_dir`, one folder per skill, outside the project, so list and read it with shell commands like `ls` and `cat` (file search tools may not look there). If one fits, read its SKILL.md and the `references/` files it links before writing any code, and write the code the way the skill shows, not from the SDK's own files; if none fits, write it without one. Install the SDK. Whatever they asked for, even nothing new, the app has to get the key, and an env file is only read if something loads it. So find what loads the key's env file when the app starts, in this project's own language and framework. If you can't point to it, make the app load the file the way `details.load_key` says. That is part of the setup, not new work. If it needs something made in ElevenLabs first, like an agent, make it yourself with the key (load the env file in the command, never print it), and when you're done give the user the links in `details.agent_links` with its ID filled in. When the code is written (or if it already was), check your changes are in place, then run `run`: its reply says how to finish.",
     "offer_test": "Say what you set up, how to run it, the links to any agent you made, and anything the user still has to do themselves, like installing the packages you added. Then end your reply with the question in `say`, as it is, and end your turn. If they say yes, run `run`: that command is the test request, so don't run their app in its place. If they say no, run nothing.",
-    "done": "Tell the user `say`, then anything they still have to do themselves, like installing the packages you added, in one or two concrete steps. There's nothing left to run."
+    "done": "Tell the user `say`, then anything they still have to do themselves, like installing the packages you added, in one or two concrete steps. There's nothing left to run.",
+    "follow_guide": "Tell the user `say`. Then read `details.guide` and follow it from its first step to its last: it is the whole task, and it says when you're done. It is one of the ElevenLabs skills, which are in `details.skills_dir`, one folder per skill, outside the project, so read it and the files it points to with shell commands like `cat` (file search tools may not look there). Where the guide covers something, do it the guide's way, not from memory or from the SDK's own files. Don't run `run` now: it is the command for the guide's last step, which asks the user first."
 }
 CLI = "npx -y @elevenlabs/cli@latest" if os.environ.get("npm_command") == "exec" else "elevenlabs"
 # Asked only when the developer hasn't said, so the agent never picks a product for them.
@@ -119,6 +126,8 @@ def cmd(step):
         out += f" --env-path {env_file}"
     if "--no-browser" in args:
         out += " --no-browser"
+    if flag("--from"):
+        out += f" --from {flag('--from')}"
     return out
 
 
@@ -199,8 +208,20 @@ def refuse(message):
     sys.exit(3)
 
 
+if args == ["migrate", "openai"]:
+    # A copy of this checkout's skills in a temp folder, as the real CLI makes from GitHub.
+    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    skills = tempfile.mkdtemp(prefix="elevenlabs-skills-")
+    for name in sorted(os.listdir(repo)):
+        if os.path.isfile(os.path.join(repo, name, "SKILL.md")):
+            shutil.copytree(os.path.join(repo, name), os.path.join(skills, name))
+    emit({"next": "follow_guide", "instruction": INSTRUCTIONS["follow_guide"],
+          "run": f"{CLI} onboard init --from openai",
+          "say": "I'll move this project's OpenAI speech code to ElevenLabs, following the ElevenLabs migration guide.",
+          "rules": RULES,
+          "details": {"guide": os.path.join(skills, "migrate-from-openai", "SKILL.md"), "skills_dir": skills}})
 if args[:1] != ["onboard"] or len(args) < 2:
-    print("elevenlabs stand-in: only `onboard init|check|test` is available", file=sys.stderr)
+    print("elevenlabs stand-in: only `onboard init|check|test` and `migrate openai` are available", file=sys.stderr)
     sys.exit(2)
 step = "check" if args[1] == "status" else args[1]
 if step not in FLAGS:
