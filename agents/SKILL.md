@@ -171,9 +171,9 @@ function App({ signedUrl }: { signedUrl: string }) {
 
 | Provider | Models |
 |----------|--------|
-| OpenAI | `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini` |
+| OpenAI | `gpt-6.2-sol`, `gpt-6.2-astra`, `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.5`, `gpt-5.5-2026-04-23`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano`, `gpt-5.4-2026-03-05`, `gpt-5.4-mini-2026-03-17`, `gpt-5.4-nano-2026-03-17`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4o`, `gpt-4o-mini` |
 | Anthropic | `claude-opus-5-5`, `claude-opus-5`, `claude-sonnet-5-5`, `claude-opus-4-7`, `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-haiku-4-5` |
-| Google | `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite` |
+| Google | `gemini-4-hydrogen`, `gemini-4-neon`, `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite-preview`, `gemini-3.1-pro-preview`, `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite` |
 | ElevenLabs | `glm-52`, `deepseek-v41-flash`, `glm-45-air-fp8`, `qwen3-30b-a3b`, `qwen36-35b-a3b`, `qwen35-35b-a3b`, `qwen35-397b-a17b`, `nemotron-35-super-vl-nvfp4`, `gpt-oss-120b` |
 | Custom | `custom-llm` (bring your own endpoint) |
 
@@ -406,6 +406,68 @@ await client.conversationalAi.agents.update("agent_id", { workflow: wf.build() }
 To edit an existing workflow, load it with `Workflow.from_agent(agent)` / `Workflow.fromAgent(agent)`, then change nodes with `wf.node(id).update(...)`, `insert_between` / `insertBetween`, or `remove`; IDs and positions are kept. `to_json_string()` / `toJSONString()` and `Workflow.from_json()` / `Workflow.fromJSON()` store workflows as JSON in version control, and `elevenlabs agents workflow diagram <file>` draws a workflow file as a flowchart (`--format mermaid` for Mermaid output).
 
 A Start procedure node starts an attached procedure at a chosen point in the workflow graph. See [Procedures](#procedures) for the `start_procedure` node and its continuation behavior.
+
+## Agents as Code
+
+The Python and JavaScript SDKs include an `Agent` builder (imported from `elevenlabs.agent_builder` in Python and from the package root in JavaScript) that holds an agent's settings, its `Tool` objects, and its `Workflow` in one definition. `agents.push()` validates the agent, creates or updates every webhook and client tool it uses, fills their IDs into the agent and its workflow nodes, then creates or updates the agent. Unchanged tools are left alone, so re-running a push duplicates nothing. Reference: [Agents as code](https://elevenlabs.io/docs/eleven-agents/customization/agents-as-code/agents).
+
+```python
+from elevenlabs import ElevenLabs
+from elevenlabs.agent_builder import Agent
+from elevenlabs.agent_tools import Schema, SystemTool, Tool
+from elevenlabs.agent_workflows import Workflow
+
+client = ElevenLabs()
+
+get_order = (
+    Tool.webhook("get_order", "Look up an order by its number")
+    .get("https://api.example.com/orders/{order_id}")
+    .path_param("order_id", Schema.string().describe("The order number, e.g. A-1042"))
+)
+
+wf = Workflow()
+wf.converse("triage", "Find out what the caller needs").when("Caller gave an order number").tool("lookup", [get_order])
+
+agent = Agent(
+    "Support line",
+    prompt="You are a support agent for Acme.",
+    first_message="Hi, how can I help?",
+    llm="gemini-3.5-flash",
+    voice_id="JBFqnCBsd6RMkjVDRZzb",
+    tools=[SystemTool.end_call()],
+    workflow=wf,
+)
+
+result = client.conversational_ai.agents.push(agent)
+client.conversational_ai.agents.push(agent, agent_id=result.agent_id)  # later pushes update the same agent
+```
+
+```javascript
+import { Agent, ElevenLabsClient, Schema, SystemTool, Tool, Workflow } from "@elevenlabs/elevenlabs-js";
+
+const client = new ElevenLabsClient();
+
+const getOrder = Tool.webhook("get_order", "Look up an order by its number")
+  .get("https://api.example.com/orders/{order_id}")
+  .pathParam("order_id", Schema.string().describe("The order number, e.g. A-1042"));
+
+const wf = new Workflow();
+wf.converse("triage", "Find out what the caller needs").when("Caller gave an order number").tool("lookup", [getOrder]);
+
+const agent = new Agent("Support line", {
+  prompt: "You are a support agent for Acme.",
+  firstMessage: "Hi, how can I help?",
+  llm: "gemini-3.5-flash",
+  voiceId: "JBFqnCBsd6RMkjVDRZzb",
+  tools: [SystemTool.endCall()],
+  workflow: wf,
+});
+
+const result = await client.conversationalAi.agents.push(agent);
+await client.conversationalAi.agents.push(agent, { agentId: result.agentId }); // later pushes update the same agent
+```
+
+Without an agent ID or project, `push()` creates a new agent each time. Settings without a typed option go in `conversation_config` / `conversationConfig` and `platform_settings` / `platformSettings`, in the same shape as `agents.create()`. `AgentProject.open(".")` reads and writes the same `agents.json`, `tools.json`, `agent_configs/`, and `tool_configs/` layout as `elevenlabs agents push`; pass it as `project` to `push()` so IDs are recorded for you. `agents.pull(agent_id)` loads an existing agent as an `Agent`, and `agent.validate()` checks an agent without an API key, raising one `AgentValidationError` listing every issue, which suits CI.
 
 ## Procedures
 
