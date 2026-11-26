@@ -218,6 +218,8 @@ The list does not include procedure content. Read a body with `GET .../procedure
 
 ## Create
 
+Include `visibility` in the create request when a procedure or folder needs a condition. See [Set or Clear Visibility](#set-or-clear-visibility) for the condition format.
+
 ```bash
 CREATE_RESPONSE=$(
   elevenlabs agents procedures create \
@@ -235,8 +237,6 @@ PROCEDURE_ID=$(printf '%s' "$CREATE_RESPONSE" | jq -r '.procedure_id')
 Fail if `procedure_id` is empty or null.
 
 A structured procedure uses the same endpoint with `type` set to `deterministic` and its steps JSON-encoded into `content`. See [Writing Procedures](writing-procedures.md) for what belongs in `trigger` and `content`, and for building that JSON string.
-
-Create also accepts optional `visibility` for a procedure or folder. Use the condition object shown below.
 
 ## Read and Update the Draft
 
@@ -260,7 +260,7 @@ Publish with the flow under [Publish](#publish).
 
 ## Set or Clear Visibility
 
-The general `PATCH .../procedures/{procedure_id}/draft` request has no `visibility` field. Use the dedicated endpoint or the hosted MCP tool `agents_update_procedure_visibility`. This example offers a trigger only while the workflow is at the authored node with ID `support_node`.
+Use the dedicated visibility endpoint or the hosted MCP tool `agents_update_procedure_visibility` to set the condition. The general `PATCH .../procedures/{procedure_id}/draft` request has no `visibility` field. This example makes the trigger visible to the agent only when the workflow is at node `support_node`.
 
 ```bash
 curl --fail-with-body --request PATCH \
@@ -281,7 +281,7 @@ curl --fail-with-body --request PATCH \
   }'
 ```
 
-For a folder, use its ID in the same endpoint. Send `{"visibility": null}` to clear the condition on the targeted procedure or folder. Ancestor folder conditions still apply. The change stays in your branch draft until you [publish](#publish).
+For a folder, use its ID in the same endpoint. Send `{"visibility": null}` to clear the condition on the procedure or folder you're editing. Conditions on the folders that contain it still apply. The change stays in your branch draft until you [publish](#publish).
 
 ## Publish
 

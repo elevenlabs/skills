@@ -20,11 +20,11 @@ Check the current documentation before authoring procedure content:
 
 ## Visibility
 
-Use a visibility condition over dynamic variables to limit when the agent sees a procedure's trigger. The agent leaves the trigger out of the menu for the current turn if the condition evaluates to false or raises an expression evaluation error. An absent condition adds no restriction. A procedure is eligible only when its own condition and every ancestor folder condition pass.
+By default, the agent sees a procedure's trigger on every turn. Use a visibility condition with dynamic variables to limit when it appears. If any condition on the procedure or the folders that contain it is false or can't be evaluated, the agent leaves the trigger out of the menu for that turn.
 
-**Visibility is soft routing.** Explicit starts, including Start procedure workflow nodes and handoffs from other procedures, bypass visibility. Procedures that are already active continue. Enforce access requirements independently of trigger visibility.
+**Visibility only filters the trigger menu.** A Start procedure node or a handoff from another procedure can still start the procedure. Procedures that are already active continue. Enforce access requirements independently of trigger visibility.
 
-To scope trigger-based selection to workflow nodes, compare `system__current_workflow_node_id` with an authored node ID. Combine comparisons with `or_operator` to match several nodes. See [Set or Clear Visibility](using-procedure-api.md#set-or-clear-visibility) for the request format.
+To limit visibility to specific workflow nodes in the dashboard, select a subagent node, open its **Procedures** tab, and choose **Add procedure**. The editor creates a condition that checks `system__current_workflow_node_id` against the IDs of the selected nodes. To set the same condition through the API, combine node ID comparisons with `or_operator` when you need to match several nodes. See [Set or Clear Visibility](using-procedure-api.md#set-or-clear-visibility) for the request format.
 
 ## Free-Form Content
 
