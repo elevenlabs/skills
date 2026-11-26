@@ -61,26 +61,33 @@ If nothing moves, change nothing: report why ([Step 6](#step-6-report)) and stop
 
 ## Step 3: Install the ElevenLabs SDK
 
-Use the project's own package manager, the one its lockfile belongs to:
+Install it now, into the environment the project runs in: its virtual environment (such as `.venv`) or its package manager's, the one its lockfile belongs to. Step 5's type check can only see the new calls once it is installed. This is the project's own dependency, so it goes in the project, not in a temp folder. Only when there is no environment to install into, add it to the project's dependencies and give the user the exact install command in the report.
 
-- Python: the `elevenlabs` package (`pip install elevenlabs`, `uv add elevenlabs`, `poetry add elevenlabs`). Add it wherever the project lists `openai` (`requirements.txt`, `pyproject.toml`).
+- Python: the `elevenlabs` package (`.venv/bin/pip install elevenlabs`, `uv add elevenlabs`, `poetry add elevenlabs`). Add it wherever the project lists `openai` (`requirements.txt`, `pyproject.toml`).
 - JavaScript/TypeScript: `@elevenlabs/elevenlabs-js` (`npm install`, `pnpm add`, `yarn add`, `bun add`). Not the `elevenlabs` npm package, which is outdated.
 
-Create one client and reuse it:
+Create the client in the file that makes the speech calls.
+
+In Python, create one client and reuse it. Pass the key as shown: `ElevenLabs()` on its own reads `ELEVENLABS_API_KEY` when the SDK is imported, so an app that loads its env file after its imports would send no key. The Python client doesn't check for the key until a call is made.
 
 ```python
+import os
+
 from elevenlabs import ElevenLabs  # AsyncElevenLabs where the app used AsyncOpenAI
 
-elevenlabs = ElevenLabs()  # reads ELEVENLABS_API_KEY
+elevenlabs = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 ```
+
+In JavaScript/TypeScript, create the client inside each function that makes a speech call, never at the top of a file. `new ElevenLabsClient()` throws when `ELEVENLABS_API_KEY` isn't set, so at the top of a file it would stop that file, and every file that imports it, from loading, chat and embeddings included. Creating it is cheap: it opens no connection.
 
 ```typescript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-const elevenlabs = new ElevenLabsClient(); // reads ELEVENLABS_API_KEY
+async function speak(text: string) {
+  const elevenlabs = new ElevenLabsClient(); // reads ELEVENLABS_API_KEY
+  // the speech call, as the references show
+}
 ```
-
-Put it in the file that makes the speech calls. In JavaScript, never in a module that other code loads, such as a shared `lib/openai.ts`: `new ElevenLabsClient()` throws when `ELEVENLABS_API_KEY` isn't set, so until the key is in place it would take the chat and embeddings code down with it. The Python client doesn't check for the key until a call is made.
 
 Where the project lists the variables it needs (`.env.example`, a README, a config schema, deployment files), add `ELEVENLABS_API_KEY` the way `OPENAI_API_KEY` is listed, with no value.
 

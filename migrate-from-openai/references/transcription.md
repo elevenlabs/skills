@@ -116,7 +116,7 @@ OpenAI returns words only when asked (`verbose_json` with `timestamp_granulariti
 
 ```python
 words = [
-    {"word": w.text, "start": w.start, "end": w.end}
+    {"word": w.text, "start": w.start or 0.0, "end": w.end or 0.0}
     for w in result.words
     if w.type == "word"
 ]
@@ -137,7 +137,7 @@ OpenAI's `verbose_json` groups the text into segments. ElevenLabs returns words,
 ```python
 def segments(result, max_gap=1.0):
     out = []
-    text, start, end, speaker = "", None, 0.0, None
+    text, start, end, speaker = "", None, 0.0, ""
 
     def push():
         if text.strip():
@@ -148,7 +148,7 @@ def segments(result, max_gap=1.0):
             continue
         spoken = w.type == "word"
         if spoken and start is not None and (
-            w.speaker_id != speaker
+            (w.speaker_id or "") != speaker
             or (w.start or 0.0) - end > max_gap
             or text.rstrip().endswith((".", "?", "!"))
         ):
@@ -156,7 +156,7 @@ def segments(result, max_gap=1.0):
             text, start = "", None
         if spoken:
             if start is None:
-                start, speaker = w.start or 0.0, w.speaker_id
+                start, speaker = w.start or 0.0, w.speaker_id or ""
             end = w.end or end
         text += w.text
     push()

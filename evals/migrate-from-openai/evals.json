@@ -34,7 +34,7 @@
         "summarize.py shows client.chat.completions.create(",
         "requirements.txt shows openai",
         "requirements.txt shows elevenlabs",
-        "response shows instructions",
+        "response shows `instructions",
         "response shows george",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
@@ -95,7 +95,7 @@
         "captions.py shows def word_times(path: str) -> list[dict]:",
         "captions.py never shows client.audio.transcriptions",
         "captions.py never shows prompt=",
-        "response shows prompt",
+        "response shows `prompt",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
     },
@@ -209,7 +209,7 @@
         "audio.py shows response_format=\"flac\").content",
         "audio.py shows client.audio.translations.create(",
         "response shows flac",
-        "response shows translation",
+        "response shows to_english",
         "response shows eleven_multilingual_v2",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
@@ -338,6 +338,61 @@
         "server.js shows model: \"gpt-realtime\"",
         "response shows realtime",
         "response shows january 20",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "The speech call moves to text_to_speech.convert, and the client is given the key read when it is made, after load_dotenv(), because ElevenLabs() on its own reads the key when the SDK is imported, before the env file is loaded",
+      "files": [
+        {
+          "path": "requirements.txt",
+          "content": "openai>=2.0\npython-dotenv>=1.0\n"
+        },
+        {
+          "path": "speak.py",
+          "content": "from dotenv import load_dotenv\nfrom openai import OpenAI\n\nload_dotenv()\nclient = OpenAI()\n\n\ndef speak(text: str, path: str) -> None:\n    response = client.audio.speech.create(model=\"tts-1\", voice=\"alloy\", input=text)\n    response.write_to_file(path)\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "speak.py shows text_to_speech.convert(",
+        "speak.py shows load_dotenv()",
+        "speak.py shows ELEVENLABS_API_KEY after load_dotenv()",
+        "speak.py never shows ElevenLabs()",
+        "speak.py never shows client.audio.speech",
+        "requirements.txt shows elevenlabs",
+        "response shows want me to set up an elevenlabs api key for this project and check it works?"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Move this project from OpenAI's speech models to ElevenLabs: run `npx -y @elevenlabs/cli@latest migrate openai` and follow what it prints.",
+      "expected_output": "In a TypeScript file that keeps an embeddings call on OpenAI, the speech function moves to textToSpeech.convert with its ElevenLabs client created inside it, so the file still loads without an ElevenLabs key and embed keeps working",
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"reader\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"openai\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.6.0\"\n  }\n}\n"
+        },
+        {
+          "path": "src/ai.ts",
+          "content": "import OpenAI from \"openai\";\n\nconst openai = new OpenAI();\n\nexport async function embed(text: string): Promise<number[]> {\n  const response = await openai.embeddings.create({ model: \"text-embedding-3-small\", input: text });\n  return response.data[0].embedding;\n}\n\nexport async function readAloud(text: string): Promise<Buffer> {\n  const response = await openai.audio.speech.create({ model: \"tts-1\", voice: \"alloy\", input: text });\n  return Buffer.from(await response.arrayBuffer());\n}\n"
+        }
+      ],
+      "env": {},
+      "expectations": [
+        "elevenlabs-calls.txt shows npx -y @elevenlabs/cli@latest migrate openai",
+        "elevenlabs-calls.txt shows -> follow_guide after elevenlabs migrate openai",
+        "elevenlabs-calls.txt never shows elevenlabs onboard",
+        "src/ai.ts shows openai.embeddings.create(",
+        "src/ai.ts shows textToSpeech.convert(",
+        "src/ai.ts shows new ElevenLabsClient( after export async function readAloud(text: string): Promise<Buffer>",
+        "src/ai.ts never shows openai.audio.speech",
+        "package.json shows @elevenlabs/elevenlabs-js",
         "response shows want me to set up an elevenlabs api key for this project and check it works?"
       ]
     }

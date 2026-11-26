@@ -17,11 +17,13 @@ used one item per call, the last item repeating):
 key to the env file and gitignores it, as the real CLI does once the approval
 page hands one over. The real one waits in the browser first; this one doesn't.
 Every call is appended to $EVAL_DIR/outputs/elevenlabs-calls.txt with the
-folder it ran in, followed by `-> <next>` for its reply, for grading.
+folder it ran in, followed by `-> <next>` for its JSON reply, for grading.
 
-`migrate openai` prints the real CLI's reply too. The real one downloads the
-skills from GitHub; this one copies them from this checkout, so a change to
-the migration skill is what gets tested.
+`migrate openai` prints the real CLI's reply too, and `onboard skills <dir>`
+(what the hand-over names in `details.fetch_skills`) prints the names of the
+skills it put in the folder, one a line. The real ones download the skills
+from GitHub; these copy them from this checkout, so a change to a skill is what
+gets tested.
 """
 import json, os, re, shutil, sys, tempfile
 
@@ -32,7 +34,7 @@ OUTPUTS = os.path.join(EVAL_DIR, "outputs")
 os.makedirs(OUTPUTS, exist_ok=True)
 if "-h" in args or "--help" in args or args[1:2] == ["help"]:
     # Help is not a step: printed, and not logged as a call.
-    print("Usage: elevenlabs onboard <init|check|test> [OPTIONS]\n       elevenlabs migrate openai")
+    print("Usage: elevenlabs onboard <init|check|test> [OPTIONS]\n       elevenlabs onboard skills <DIR>\n       elevenlabs migrate openai")
     sys.exit(0)
 with open(os.path.join(OUTPUTS, "elevenlabs-calls.txt"), "a") as log:
     log.write(f"elevenlabs {' '.join(args)} (in {os.path.relpath(os.getcwd(), EVAL_DIR)})\n")
@@ -73,7 +75,8 @@ CLI = "npx -y @elevenlabs/cli@latest" if os.environ.get("npm_command") == "exec"
 # Asked only when the developer hasn't said, so the agent never picks a product for them.
 WHAT_TO_BUILD = "What would you like to build with ElevenLabs, or should I just add the SDK for now?"
 TEST_OFFER = "Want me to send a test request? It makes a short text-to-speech clip with your key and uses a few credits."
-SKILLS_ARCHIVE = "https://github.com/elevenlabs/skills/archive/refs/heads/main.tar.gz"
+# This checkout, whose skills stand in for the ones the real CLI downloads.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 
 def flag(name):
@@ -83,6 +86,21 @@ def flag(name):
         if a.startswith(name + "="):
             return a[len(name) + 1:]
     return None
+
+
+def shell_arg(arg):
+    """`arg` as one shell word, as the real CLI quotes it: as is when it is plain, else single-quoted."""
+    if arg and all(c.isascii() and (c.isalnum() or c in "._-/") for c in arg):
+        return arg
+    return "'" + arg.replace("'", "'\\''") + "'"
+
+
+def copy_skills(dest):
+    """This checkout's skills, one folder per skill, into `dest`; their names."""
+    names = [n for n in sorted(os.listdir(REPO)) if os.path.isfile(os.path.join(REPO, n, "SKILL.md"))]
+    for name in names:
+        shutil.copytree(os.path.join(REPO, name), os.path.join(dest, name), dirs_exist_ok=True)
+    return names
 
 
 def has(*files):
@@ -159,7 +177,6 @@ def integrate(key, say, **more):
                "node": "npm install @elevenlabs/elevenlabs-js"}.get(
         STACK, "npm install @elevenlabs/elevenlabs-js (or pip install elevenlabs, and add elevenlabs to requirements.txt)")
     skills = tempfile.mkdtemp(prefix="elevenlabs-skills-")
-    archive = os.path.join(skills, "skills.tar.gz")
     load_key = ("The SDK reads ELEVENLABS_API_KEY from the environment. "
                 f"It is in {env_file}, in the folder this command ran in, and nothing reads that file unless the "
                 "app or its framework loads it from there. It has to reach the process environment before the SDK "
@@ -168,7 +185,7 @@ def integrate(key, say, **more):
                 "and never in anything that runs in the browser.")
     return reply("integrate", say, cmd("check --written"), key_last4=key[-4:], env_file=env_file, question=WHAT_TO_BUILD,
                  sdk_install=install, load_key=load_key, skills_dir=skills,
-                 fetch_skills=f"curl -fsSL -o {archive} {SKILLS_ARCHIVE} && tar -xzf {archive} -C {skills} --strip-components=1",
+                 fetch_skills=f"{CLI} onboard skills {shell_arg(skills)}",
                  agent_links="Its page: https://elevenlabs.io/app/agents/agents/<agent_id>. To talk to it, when anyone "
                              "with the link may: https://elevenlabs.io/app/talk-to?agent_id=<agent_id>.",
                  **more)
@@ -210,19 +227,23 @@ def refuse(message):
 
 if args == ["migrate", "openai"]:
     # A copy of this checkout's skills in a temp folder, as the real CLI makes from GitHub.
-    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
     skills = tempfile.mkdtemp(prefix="elevenlabs-skills-")
-    for name in sorted(os.listdir(repo)):
-        if os.path.isfile(os.path.join(repo, name, "SKILL.md")):
-            shutil.copytree(os.path.join(repo, name), os.path.join(skills, name))
+    copy_skills(skills)
     emit({"next": "follow_guide", "instruction": INSTRUCTIONS["follow_guide"],
           "run": f"{CLI} onboard init --from openai",
           "say": "I'll move this project's OpenAI speech code to ElevenLabs, following the ElevenLabs migration guide.",
           "rules": RULES,
           "details": {"guide": os.path.join(skills, "migrate-from-openai", "SKILL.md"), "skills_dir": skills}})
 if args[:1] != ["onboard"] or len(args) < 2:
-    print("elevenlabs stand-in: only `onboard init|check|test` and `migrate openai` are available", file=sys.stderr)
+    print("elevenlabs stand-in: only `onboard init|check|test|skills` and `migrate openai` are available", file=sys.stderr)
     sys.exit(2)
+if args[1] == "skills":
+    # Not a JSON reply: the skills it copied, one name a line.
+    if len(args) != 3 or args[2].startswith("-"):
+        print("error: onboard skills takes one folder: elevenlabs onboard skills <DIR>", file=sys.stderr)
+        sys.exit(2)
+    print("\n".join(copy_skills(args[2])))
+    sys.exit(0)
 step = "check" if args[1] == "status" else args[1]
 if step not in FLAGS:
     print(f"elevenlabs stand-in: unknown step {step!r}", file=sys.stderr)

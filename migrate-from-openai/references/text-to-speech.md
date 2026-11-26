@@ -54,7 +54,7 @@ Don't use any other voice ID from memory: many in older tutorials have been reti
 | `opus` | `opus_48000_128` | |
 | `pcm` | `pcm_24000` | Both are raw 24 kHz, 16-bit, mono samples with no header. |
 | `wav` | `wav_24000` | Only with `convert`. `stream` has no WAV formats. Where the app streamed WAV, keep it WAV with `convert`, so whatever reads the header still works, and tell the user the audio now arrives once the whole clip is ready. If they want it as it is generated, `stream` with `pcm_24000` is the same samples without the header. |
-| `aac`, `flac` | None | Leave the call on OpenAI and list it. |
+| `aac`, `flac` | None | Leave the call on OpenAI and list it. The docs guide says to ask for another format and convert it, but that adds an audio tool to the app, which is the user's call. |
 
 If the app sets a `Content-Type` or a file extension from the format, keep them matching (`audio/mpeg` and `.mp3` for MP3).
 
@@ -251,7 +251,7 @@ Keep what the app does when a call fails; change only which error it catches.
 | `openai.BadRequestError` | `ApiError` with `status_code` 400 or 422 |
 | `openai.APITimeoutError` | `httpx.TimeoutException` |
 | `openai.APIConnectionError` | `httpx.TransportError` |
-| `OpenAI(timeout=30)` | `ElevenLabs(timeout=30)` (seconds on both) |
+| `OpenAI(timeout=30)` | `ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"), timeout=30)` (seconds on both) |
 | `timeout=30` on one call, `client.with_options(timeout=30)` | `request_options={"timeout_in_seconds": 30}` on the call |
 | `OpenAI(max_retries=...)`, `client.with_options(max_retries=...)`, or neither | None for text to speech. See below. |
 
